@@ -47,4 +47,7 @@ Node界有一些常用的守护进程库如forever/pm2/nodemon/Egg-Cluster等。
 
 [实现一个简单的守护进程](https://github.com/FunnyLiu/nodeDemo/blob/master/readme.md#daemon)
 
+[forever的原理也是类似](https://github.com/foreversd/forever-monitor/blob/master/lib/forever-monitor/monitor.js#L229)
+
+
 
