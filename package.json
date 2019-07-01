@@ -1,0 +1,29 @@
+{
+  "name": "interview",
+  "version": "1.0.0",
+  "description": "收录一些常见的面试题，用于巩固技术基础。",
+  "main": "index.js",
+  "private": true,
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omnipotent-front-end/Interview.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/omnipotent-front-end/Interview/issues"
+  },
+  "homepage": "https://github.com/omnipotent-front-end/Interview#readme",
+  "devDependencies": {
+    "vuepress": "^1.0.0-rc.1"
+  }
+}
