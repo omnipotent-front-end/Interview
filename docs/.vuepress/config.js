@@ -15,6 +15,7 @@ module.exports = {
         {
             title: "库",
             children: [
+              "/library/babel.md",
               "/library/react.md",
               "/library/vue.md"
             ]
