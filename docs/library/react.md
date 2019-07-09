@@ -154,6 +154,14 @@ function RenderFunctionComponent() {
 
 ## Cli
 
+### react可以写命令行？体验怎么样？
+
+最近有一个库[ink](https://github.com/vadimdemedes/ink)，赋予了react写命令行UI的操作。下面提供一个本人在[yoso](https://github.com/Linjovi/yoso)开发时封装的一套流程：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/Jul-09-2019%2010-41-40.gif"/>
+
+可以看到，非常流程，这里更不谈其组件化后会有多少种可能性和效率提升。其原理可以参考下面的问题。
+
 ### 使用react操作cli的工具ink的原理是什么？
 
 react在传统的web开发中，通过react，和react-dom两个包来配合使用。在app开发中则是react和react-native来完成。所以自然可以操作各种终端的前端开发。
