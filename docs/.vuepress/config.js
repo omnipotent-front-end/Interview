@@ -6,6 +6,13 @@ module.exports = {
     sidebar: {
       "": [
         {
+          title: "计算机基础",
+          children:[
+            "/cp/network",
+            "/cp/soft"
+          ]
+        },
+        {
           title: "编程语言",
           children: ["/language/html","/language/javascript", "/language/node"]
         },
@@ -13,6 +20,7 @@ module.exports = {
           title: "库",
           children: [
             "/library/babel.md",
+            "/library/nest.md",
             "/library/react.md",
             "/library/vue.md"
           ]

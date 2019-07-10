@@ -242,3 +242,57 @@ react在传统的web开发中，通过react，和react-dom两个包来配合使�
 
 这里简单介绍下它的原理。
 首先它内置的部分组件如Color，[Text](https://github.com/vadimdemedes/ink/blob/v2.3.0/src/components/Text.js#L6)是直接基于[chalk](https://www.npmjs.com/package/chalk)，其他逻辑则是[在render时](https://github.com/vadimdemedes/ink/blob/v2.3.0/src/renderer.js#L21)，基于[wrap-ansi](https://github.com/chalk/wrap-ansi)来转化为命令行[asni转义码](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors_and_Styles)的。
+
+---
+
+## 原理
+
+### Fiber原理
+
+在了解Fiber前，需要先了解virtual DOM的相关原理，可以参考[Vue中Virtual DOM到底是什么？如何实现的？](https://omnipotent-front-end.github.io/library/vue.html#vue2-x%E4%B8%AD%E7%9A%84virtual-dom%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84%EF%BC%9F)
+
+然后[Fiber要解决的问题](https://reactjs.org/docs/reconciliation.html)，主要是大量DOM在进行渲染时的卡顿情况。
+
+Fiber Tree相比之前的Virtual DOM，不再仅仅是dom的基本属性了，还增加了任务调度相关的信息。
+
+**整个结构是一个链表树**。每个工作单元（fiber）执行完成后，都会查看是否还继续拥有主线程时间片，如果有继续下一个，如果没有则先处理其他高优先级事务，等主线程空闲下来继续执行。
+
+对比图：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190710155311.png"/>
+
+
+Fiber解决任务调度的方式，主要是使用了[requestIdleCallback](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback)和[requestAnimationFrame](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestAnimationFrame)两个API。
+
+整个Fiber的reconciler过程分为两个阶段：
+
+1、（可中断）render/reconciliation 通过构造workInProgress tree得出change
+
+2、（不可中断）commit 应用这些DOM change
+
+render/reconciliation流程如下：
+
+1、如果当前节点不需要更新，直接把子节点clone过来，跳到5；要更新的话打个tag
+
+2、更新当前节点状态（props, state, context等）
+
+3、调用shouldComponentUpdate()，false的话，跳到5
+
+4、调用render()获得新的子节点，并为子节点创建fiber（创建过程会尽量复用现有fiber，子节点增删也发生在这里）
+
+5、如果没有产生child fiber，该工作单元结束，把effect list归并到return，并把当前节点的sibling作为下一个工作单元；否则把child作为下一个工作单元
+
+6、如果没有剩余可用时间了，等到下一次主线程空闲时才开始下一个工作单元；否则，立即开始做
+
+7、如果没有下一个工作单元了（回到了workInProgress tree的根节点），第1阶段结束，进入pendingCommit状态
+
+实际上是**1-6的工作循环**，7是出口，工作循环每次只做一件事，做完看要不要喘口气。工作循环结束时，workInProgress tree的根节点身上的effect list就是收集到的所有side effect（因为每做完一个都向上归并）
+
+所以，**构建workInProgress tree的过程就是diff的过程**，**通过requestIdleCallback来调度执行一组任务，每完成一个任务后回来看看有没有插队的（更紧急的）**，每完成一组任务，把时间控制权交还给主线程，直到下一次requestIdleCallback回调再继续构建workInProgress tree。
+
+commit阶段是一气呵成的，如下流程：
+
+1、处理effect list（包括3种处理：更新DOM树、调用组件生命周期函数以及更新ref等内部状态）
+
+2、所有更新都commit到DOM树上了
+
