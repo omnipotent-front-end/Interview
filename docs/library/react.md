@@ -2,6 +2,78 @@
 
 ## Web
 
+### 使用JSX时有那些基本技巧？
+#### 传递多参数
+
+利用解构、剩余参数和展开运算符
+``` js
+function Greeting({ name, ...platformProps }) {
+  return <div {...platformProps}>Hi {name}!</div>;
+}
+```
+
+#### 合并参数
+利用默认参数、展开运算符，
+在操作className时非常常见
+
+``` js
+function MyButton({ className = "", ...props }) {
+  let classNames = ["btn", className].join(" ");
+
+  return <button className={classNames} {...props} />;
+}
+```
+
+#### 条件判断
+
+if：
+``` js
+{
+  condition && <span>Rendered when `truthy`</span>;
+}
+```
+
+unless：
+``` js
+{
+  condition || <span>Rendered when `falsy`</span>;
+}
+
+```
+if-else
+``` js
+{
+  condition ? (
+    <span>Rendered when `truthy`</span>
+  ) : (
+    <span>Rendered when `falsy`</span>
+  );
+}
+```
+
+#### children内容
+可以为字符串，也可以是数组：
+``` js
+<div>Hello World!</div>
+
+<div>{["Hello ", <span>World</span>, "!"]}</div>
+```
+
+#### list
+使用map
+``` js
+<ul>
+  {["first", "second"].map(item => (
+    <li>{item}</li>
+  ))}
+</ul>
+//等同于
+<ul>{[<li>first</li>, <li>second</li>]}</ul>
+```
+
+
+
+
 ### React Hooks的原理
 
 首先，如果不了解Hooks是什么，先学习[官方文档](https://reactjs.org/docs/hooks-intro.html)，然后我也开发了一个基于Hooks的[todomvc](https://github.com/FunnyLiu/reactDemo/tree/master/todomvc_hook)。
@@ -160,7 +232,7 @@ function RenderFunctionComponent() {
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/Jul-09-2019%2010-41-40.gif"/>
 
-可以看到，非常流程，这里更不谈其组件化后会有多少种可能性和效率提升。其原理可以参考下面的问题。
+可以看到，非常流畅，这里更不谈其组件化后会有多少种可能性和效率提升。其原理可以参考下面的问题。
 
 ### 使用react操作cli的工具ink的原理是什么？
 

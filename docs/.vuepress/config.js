@@ -7,7 +7,7 @@ module.exports = {
       "": [
         {
           title: "编程语言",
-          children: ["/language/html", "/language/node"]
+          children: ["/language/html","/language/javascript", "/language/node"]
         },
         {
           title: "库",
