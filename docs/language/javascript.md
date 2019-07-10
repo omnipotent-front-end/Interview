@@ -56,18 +56,21 @@ export function decorate(handleDescriptor, entryArgs) {
 我们再来看看typescript对以下代码的编译：
 
 ``` ts
-class Greeter {
-  greeting: string;
-  constructor(message: string) {
-    this.greeting = message;
-  }
-  @After(3)
-  greet() {
-    return "Hello, " + this.greeting;
+function Injectable(): ClassDecorator {
+  return target => {
+    const metadata = Reflect.getMetadata('design:paramtypes', target)
+    console.log(metadata)
   }
 }
 
-let greeter = new Greeter("world");
+class Service {
+  constructor() {}
+}
+
+@Injectable() // Array [ Service() ]
+class Controller {
+  constructor(private Service: Service) {}
+}
 
 ```
 
@@ -81,18 +84,29 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-class Greeter {
-    constructor(message) {
-        this.greeting = message;
-    }
-    greet() {
-        return "Hello, " + this.greeting;
-    }
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+function Injectable() {
+    return target => {
+        const metadata = Reflect.getMetadata('design:paramtypes', target);
+        console.log(metadata);
+    };
 }
-__decorate([
-    After(3)
-], Greeter.prototype, "greet", null);
-let greeter = new Greeter("world");
+class Service {
+    constructor() { }
+}
+let Controller = class Controller {
+    constructor(Service) {
+        this.Service = Service;
+    }
+};
+Controller = __decorate([
+    Injectable() // Array [ Service() ]
+    ,
+    __metadata("design:paramtypes", [Service])
+], Controller);
+
 ```
 
 可以看到__decorate函数就是封装decorator的核心逻辑：
@@ -116,6 +130,15 @@ var __decorate = (this && this.__decorate) || function(decorators, target, key, 
 - [Object.defineProperty](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty) - 直接在一个对象上定义一个新属性，或者修改一个对象的现有属性， 并返回这个对象。
 
 所以主要流程就是判断其是否还有其他装饰器，然后尝试调用Reflect.decorate来直接解决问题，如果没有该API，则退而求其次的使用`Object.defineProperty`拦截某个property来进行自己想要的修改。
+
+
+而`__metadata`则是使用了`Reflect.metadata`来操作元数据：
+``` js
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+```
+
 
 ### 为什么decorator只能用于类，不能用于函数
 
