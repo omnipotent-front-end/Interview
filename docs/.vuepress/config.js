@@ -28,6 +28,7 @@ module.exports = {
         {
           title: "Web工程",
           children: [
+            "/web/fed.md",
             "/web/safe.md"
           ]
         }

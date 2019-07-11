@@ -169,3 +169,59 @@ Nodejs源码的整体架构如下：
 
 ---
 
+## 应用
+
+### setImmediate和setTimeout有什么区别？
+
+如果你把这两个函数放入一个 I/O 循环内调用，setImmediate 总是被优先调用
+``` js
+// timeout_vs_immediate.js
+const fs = require('fs');
+
+fs.readFile(__filename, () => {
+  setTimeout(() => {
+    console.log('timeout');
+  }, 0);
+  setImmediate(() => {
+    console.log('immediate');
+  });
+});
+```
+
+结果为：
+``` bash
+$ node timeout_vs_immediate.js
+immediate
+timeout
+
+$ node timeout_vs_immediate.js
+immediate
+timeout
+```
+
+
+
+使用 setImmediate() 而不是 setTimeout() 的主要优点是 **setImmediate() 在任何计时器（如果在 I/O 周期内）都将始终执行，而不依赖于存在多少个计时器。**
+
+---
+
+### process.nextTick和setImmediate的区别是什么？
+
+process.nextTick() 在同一个阶段立即执行。
+
+setImmediate() 在下一个迭代或 ‘tick’ 上触发事件循环。
+
+一个可以形象对比的图：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190711142337.png"/>
+
+### 什么情况下需要用到process.nextTick?
+
+某些代码的执行可能先于它们所需要的条件完成之前，所以将这些需要先置条件的代码放入到一个回调函数中，然后放入到下一个事件循环的顶层。那么这些代码就不会被立刻执行了，而是在下一轮事件启动之前等待，启动后在进行执行。
+
+比如：
+
+在一次循环区间内无法满足需求的大量操作，比如操作大量数据导致mongo内存溢出：https://stackoverflow.com/questions/23672873/maximum-call-stack-size-exceeded-on-insert-10000-documents
+
+又或者是事件触发和监听：https://stackoverflow.com/questions/8112914/what-are-the-proper-use-cases-for-process-nexttick-in-node-js
+
