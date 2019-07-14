@@ -62,3 +62,23 @@ css方面：
 - CSS3 硬件加速（GPU加速），使用css3硬件加速，可以让transform、opacity、filters这些动画不会引起回流重绘 。但是对于动画的其它属性，比如background-color这些，还是会引起回流重绘的，不过它还是可以提升这些动画的性能。
 
 
+## 表单相关
+
+### input如何处理中文输入？
+
+elementui是通过compositionstart & compositionend做的中文输入处理：
+相关代码：
+``` html
+<input ref="input"
+    @compositionstart="handleComposition"
+    @compositionupdate="handleComposition"
+    @compositionend="handleComposition"
+>
+```
+这3个方法是原生的方法，这里简单介绍下，官方定义如下
+compositionstart 事件触发于一段文字的输入之前（类似于 keydown 事件，但是该事件仅在若干可见字符的输入之前，而这些可见字符的输入可能需要一连串的键盘操作、语音识别或者点击输入法的备选词）
+
+简单来说就是切换中文输入法时在打拼音时(此时input内还没有填入真正的内容)，**会首先触发compositionstart**，然后每打一个拼音字母，**触发compositionupdate**，最后将输入好的中文填入input中时**触发compositionend**。
+
+触发compositionstart时，文本框会填入 “虚拟文本”（待确认文本），同时触发input事件；在触发compositionend时，就是填入实际内容后（已确认文本）,所以这里如果不想触发input事件的话就得设置一个bool变量来控制。
+

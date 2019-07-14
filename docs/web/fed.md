@@ -99,3 +99,23 @@ mapDispatchToProps 把UI组件的事件映射到 dispatch 方法
 
 [realworld](https://github.com/FunnyLiu/react-redux-realworld-example-app/blob/master/src/components/Article/CommentInput.js#L58)
 
+
+---
+
+## 数据收集
+
+### 前端数据埋点时，为什么使用1*1像素的透明gif图片而不是接口？
+
+为什么用图片不用接口或者js、css，是因为：
+- 没有跨域问题
+- 不会阻塞页面的加载
+
+为什么用gif，是因为：
+GIF的最低合法体积最小（最小的BMP文件需要74个字节，PNG需要67个字节，而合法的GIF，只需要43个字节）
+
+至于信息，可以用encode后放在url上给后端解析。
+
+参考：
+
+[为什么前端监控要用GIF打点](https://mp.weixin.qq.com/s/v6R2w26qZkEilXY0mPUBCw?utm_source=tuicool&utm_medium=referral)
+

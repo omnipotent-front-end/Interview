@@ -2,6 +2,43 @@
 
 ## 应用
 
+### 为什么子组件不能修改父组件传入的props？
+
+首先从设计原则上来说，为了**保证数据的单向流动**，便于对数据进行追踪，避免数据混乱。
+
+其次从代码实现上来说，**每当父组件属性值修改时，该值都将被覆盖**。
+
+至于Vue如何限制并警告，就是通过Object.defineProperty这个API来拦截该属性的修改。
+
+参考地址：
+
+[一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/60)
+
+### 为什么Vuex的mutation和Redux的reducer只能用纯函数而不能用异步的？
+
+**异步操作是成功还是失败不可预测，什么时候进行异步操作也不可预测**；当异步操作成功或失败时，如果不 commit(mutation) 或者 dispatch(action)，Vuex 和 Redux 就不能捕获到异步的结果从而进行相应的操作。
+
+要在reducer中加入异步的操作，如果你只是单纯想执行异步操作，不会等待异步的返回，那么在reducer中执行的意义是什么。如果想把异步操作的结果反应在state中，首先整个应用的状态将变的不可预测，违背Redux的设计原则。
+
+参考地址：
+
+[一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/65)
+
+### 父子组件间生命周期执行顺序是怎么样的？
+
+加载渲染过程
+**父beforeCreate->父created->父beforeMount->子beforeCreate->子created**->子beforeMount->**子mounted->父mounted**
+
+子组件更新过程
+父beforeUpdate->子beforeUpdate->子updated->父updated
+
+父组件更新过程
+父beforeUpdate->父updated
+
+销毁过程
+父beforeDestroy->子beforeDestroy->**子destroyed->父destroyed**
+
+
 ## 原理
 
 ### Vue2.x中的virtual DOM到底是什么？如何实现的？
@@ -117,3 +154,17 @@ oldCh和newCh各有两个头尾的变量StartIdx和EndIdx，它们的2个变量�
 Vue.use 接受一个 plugin 参数，并且维护了一个 _installedPlugins 数组，它存储所有注册过的 plugin；接着又会判断 plugin 有没有定义 install 方法，如果有的话则调用该方法，并且该方法执行的第一个参数是 Vue；最后把 plugin 存储到 installedPlugins 中。
 
 可以看到 Vue 提供的插件注册机制很简单，每个插件都需要实现一个静态的 install 方法，当我们执行 Vue.use 注册插件的时候，就会执行这个 install 方法，并且在这个 install 方法的第一个参数我们可以拿到 Vue 对象，这样的好处就是作为插件的编写方不需要再额外去import Vue 了。
+
+### Vue的响声式用Proxy和Object.defineProperty有什么区别？
+
+Object.defineProperty有如下缺陷：
+
+- 无法监听数组变化，vue之所以可以监听部分数组变化，是hack过去的。
+- 只能劫持对象的属性，因此我们需要对每个对象的每个属性进行遍历，如果属性值也是对象那么需要深度遍历
+
+而Proxy不仅可以代理对象，还可以代理数组。还可以代理动态增加的属性。
+
+这也是为什么Vue3会基于Proxy的原因。
+
+
+

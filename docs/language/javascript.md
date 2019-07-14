@@ -9,6 +9,23 @@
 在ES6中，全局对象的属性和全局变量脱钩，但是为了保持兼容性，旧的不变，所以var、function声明的全局变量依然可以在window对象上看到，而let、const声明的全局变量在window对象上看不到
 
 
+### call和apply有什么区别？哪个性能更好？
+
+call和apply就是为了动态地改变this的指向，两者的区别在于call是将参数一个个的传入，而apply是将参数以数组的形式传入。
+
+``` js
+func.call(this, arg1, arg2);
+func.apply(this, [arg1, arg2])
+```
+
+ES6加入了扩展运算符后，不再需要apply：
+``` js
+let params = [1,2,3,4]
+xx.call(obj, ...params)
+```
+
+call的性能比apply要好,可以参考[call和apply的性能对比](https://github.com/noneven/__/issues/6)
+
 ### Map和Object的区别是什么？
 
 Objects 和 Maps 类似的是，它们都允许你按键存取一个值、删除键、检测一个键是否绑定了值。因此（并且也没有其他内建的替代方式了）过去我们一直都把对象当成 Maps 使用。
@@ -38,87 +55,6 @@ WeakMap 中，每个键对自己所引用对象的引用都是弱引用，在没
 ### WeakMap的使用场景是？
 
 和DOM进行关联，某些库会维护一个自定义对象，来关联DOM元素，并且其映射关系会存储在内部对象缓存中。如果一个DOM元素已经不复存在于网页中，库就需要清除对该DOM的引用，避免内存泄漏。使用WeakMap来追踪DOM元素，当DOM并不存在了，WeakMap将被自动销毁。
-
-### 任务队列机制
-
-尝试写出以下代码的结果：
-``` js
-//请写出输出内容
-async function async1() {
-    console.log('async1 start');
-    await async2();
-    console.log('async1 end');
-}
-async function async2() {
-    console.log('async2');
-}
-
-console.log('script start');
-
-setTimeout(function() {
-    console.log('setTimeout');
-}, 0)
-
-async1();
-
-new Promise(function(resolve) {
-    console.log('promise1');
-    resolve();
-}).then(function() {
-    console.log('promise2');
-});
-console.log('script end');
-```
-
-答案为:
-``` js
-/*
-script start
-async1 start
-async2
-promise1
-script end
-async1 end
-promise2
-setTimeout
-*/
-```
-
-首先需要理解js中有同步和异步任务。
-
-同步任务都在主线程上执行，形成一个执行栈，遇到异步任务时则加入不同的任务队列。
-
-异步任务分为宏任务和微任务。
-
-宏任务一般是：包括script(整体代码)、setTimeout、setInterval、I/O、UI交互事件、postMessage、MessageChannel、setImmediate(Node.js 环境)
-
-微任务：原生Promise(有些实现的promise将then方法放到了宏任务中)、process.nextTick、Object.observe(已废弃)、 MutationObserver 记住就行了。
-
-**在当前的微任务没有执行完成时，是不会执行下一个宏任务的。**
-
-**Promise**中的异步体现在then和catch中，所以**写在Promise中的代码是被当做同步任务立即执行的**。
-
-对于async/await来说，**await是一个让出线程的标志。await后面的表达式会先执行一遍，将await后面的代码加入到microtask中，然后就会跳出整个async函数来执行后面的代码。**
-所以说：
-``` js
-async function async1() {
-  console.log('async1 start');
-  await async2();
-  console.log('async1 end');
-}
-//等价于
-
-async function async1() {
-  console.log('async1 start');
-  Promise.resolve(async2()).then(() => {
-    console.log('async1 end');
-  })
-}
-```
-
-现在可以理解上面的结果了吧。
-
----
 
 ### js异步编程方法和各种的优缺点
 
@@ -156,7 +92,6 @@ async function test() {
 }
 
 ```
-
 ---
 
 ### 如何实现decorator
@@ -321,3 +256,137 @@ var readOnly;
 ```
 
 明白了吧。
+
+
+## 原理
+
+### 任务队列机制
+
+尝试写出以下代码的结果：
+``` js
+//请写出输出内容
+async function async1() {
+    console.log('async1 start');
+    await async2();
+    console.log('async1 end');
+}
+async function async2() {
+    console.log('async2');
+}
+
+console.log('script start');
+
+setTimeout(function() {
+    console.log('setTimeout');
+}, 0)
+
+async1();
+
+new Promise(function(resolve) {
+    console.log('promise1');
+    resolve();
+}).then(function() {
+    console.log('promise2');
+});
+console.log('script end');
+```
+
+答案为:
+``` js
+/*
+script start
+async1 start
+async2
+promise1
+script end
+async1 end
+promise2
+setTimeout
+*/
+```
+
+首先需要理解js中有同步和异步任务。
+
+同步任务都在主线程上执行，形成一个执行栈，遇到异步任务时则加入不同的任务队列。
+
+异步任务分为宏任务和微任务。
+
+宏任务一般是：包括script(整体代码)、setTimeout、setInterval、I/O、UI交互事件、postMessage、MessageChannel、setImmediate(Node.js 环境)
+
+微任务：原生Promise(有些实现的promise将then方法放到了宏任务中)、process.nextTick、Object.observe(已废弃)、 MutationObserver 记住就行了。
+
+**在当前的微任务没有执行完成时，是不会执行下一个宏任务的。**
+
+**Promise**中的异步体现在then和catch中，所以**写在Promise中的代码是被当做同步任务立即执行的**。
+
+对于async/await来说，**await是一个让出线程的标志。await后面的表达式会先执行一遍，将await后面的代码加入到microtask中，然后就会跳出整个async函数来执行后面的代码。**
+所以说：
+``` js
+async function async1() {
+  console.log('async1 start');
+  await async2();
+  console.log('async1 end');
+}
+//等价于
+
+async function async1() {
+  console.log('async1 start');
+  Promise.resolve(async2()).then(() => {
+    console.log('async1 end');
+  })
+}
+```
+
+现在可以理解上面的结果了吧。
+
+---
+
+## 编码
+
+
+### 如何实现一个sleep(1000)?麻烦用各自异步方式实现
+
+4种方式
+``` js
+//Promise
+const sleep = time => {
+  return new Promise(resolve => setTimeout(resolve,time))
+}
+sleep(1000).then(()=>{
+  console.log(1)
+})
+
+//Generator
+function* sleepGenerator(time) {
+  yield new Promise(function(resolve,reject){
+    setTimeout(resolve,time);
+  })
+}
+sleepGenerator(1000).next().value.then(()=>{console.log(1)})
+
+//async
+function sleep(time) {
+  return new Promise(resolve => setTimeout(resolve,time))
+}
+async function output() {
+  let out = await sleep(1000);
+  console.log(1);
+  return out;
+}
+output();
+
+//callback
+function sleep(callback,time) {
+  if(typeof callback === 'function')
+    setTimeout(callback,time)
+}
+
+function output(){
+  console.log(1);
+}
+sleep(output,1000);
+```
+
+参考地址：
+
+[一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/63)
