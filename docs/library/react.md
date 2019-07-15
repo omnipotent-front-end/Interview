@@ -296,3 +296,9 @@ commit阶段是一气呵成的，如下流程：
 
 2、所有更新都commit到DOM树上了
 
+### React在批量处理事件时，是否需要开发者手动进行事件代理？为什么？
+
+不需要，因为React自己内部已经做了处理，将所有在JSX上绑定的事件都集中代理到了document上。具体可以参考[官网](https://zh-hans.reactjs.org/docs/events.html)。
+
+这样的好处在于，在底层封装一套event，跨端跨浏览器保持统一的API风格。
+
