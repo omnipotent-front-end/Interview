@@ -172,7 +172,7 @@ Nodejs源码的整体架构如下：
 
 主要作用就是**以master-worker模式启动多个应用实例**，来解决js代码执行在单线程中的脆弱问题。pm2，egg-cluster均基于此实现。
 
-### 为什么cluster的fork，不会出现端口号冲突？
+### 为什么cluster的fork，不会出现端口号冲突？ 
 
 端口仅由master进程中的内部TCP服务器监听了一次。
 
