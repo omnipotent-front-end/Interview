@@ -41,6 +41,22 @@ session ID，记录有本次的握手存在，再次发送信息时，客户端�
 
 [配置SSL，方法及须知原理](https://blog.csdn.net/dadadeganhuo/article/details/80265808)
 
+
+### 想办法在https的网站下进行http的请求？
+
+```
+<script> 均默认阻止
+XMLHttpRequest 阻止
+<a> 不会产生混合内容
+<img> 仍会加载混合内容图像，但也会向用户显示警告
+```
+
+或者加上
+``` html
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+```
+
+
 ## TCP
 
 ### 如何理解三次握手和四次挥手？

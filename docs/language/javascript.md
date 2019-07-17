@@ -26,6 +26,30 @@ xx.call(obj, ...params)
 
 call的性能比apply要好,可以参考[call和apply的性能对比](https://github.com/noneven/__/issues/6)
 
+
+### 0.1+0.2等于多少？为什么？怎么解决这种问题？
+
+0.30000000000000004，JavaScript遵循 IEEE 754 规范。
+
+在JavaScript中，所有的Number都是以64-bit的双精度浮点数存储的；
+双精度的浮点数在这64位上划分为3段，而这3段也就确定了一个浮点数的值，64bit的划分是“1-11-52”的模式，具体来说：
+
+1.就是1位最高位（最左边那一位）表示符号位，0表示正，1表示负；
+
+2.11位表示指数部分；
+
+3.52位表示尾数部分，也就是有效域部分
+
+解决方案：
+
+[bignumber](https://github.com/MikeMcl/bignumber.js)
+
+[BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt): JavaScript 中的任意精度整数(新提案)
+
+[参考](https://github.com/airuikun/Weekly-FE-Interview/issues/27)
+
+
+
 ### Map和Object的区别是什么？
 
 Objects 和 Maps 类似的是，它们都允许你按键存取一个值、删除键、检测一个键是否绑定了值。因此（并且也没有其他内建的替代方式了）过去我们一直都把对象当成 Maps 使用。
@@ -257,6 +281,71 @@ var readOnly;
 
 明白了吧。
 
+---
+
+## 性能相关
+
+### 大量DOM操作，应该如何优化？
+
+最简单的，使用document，fragment
+
+``` js
+var fragment = document.createDocumentFragment();
+    fragment.appendChild(elem);
+```
+
+如果是需要diff，比对替换，则需要Virtualdom；如果还是遇到性能瓶颈，则需要类似React的Fiber一样，通过requestIdleCallback和requestAnimationFrame来进一步通过任务调度的方式来优化。
+
+### 浏览器端大数据问题，两万个小球记住信息，进行最优检索和存储？
+
+如果你仅仅只是答用数组对象存储了2万个小球信息，然后用for循环去遍历进行索引，那是远远不够的。
+
+这题要往深一点走，用特殊的数据结构和算法进行存储和索引。
+
+然后进行存储和速度的一个权衡和对比，最终给出你认为的最优解。
+
+我提供几个思路：
+
+用ArrayBuffer实现极致存储
+
+哈夫曼编码 + 字典查询树实现更优索引
+
+用bit-map实现大数据筛查
+
+用hash索引实现简单快捷的检索
+
+用IndexedDB实现动态存储扩充浏览器端虚拟容量
+
+用iframe的漏洞实现浏览器端localStorage无限存储，实现2千万小球信息存储
+
+[参考地址](https://github.com/airuikun/Weekly-FE-Interview/issues/16)
+
+### 两万个小球，做流畅的动画效果？
+
+这题考察对大数据的动画显示优化，当然方法有很多种。
+
+但是你有没有用到浏览器的高级api？
+
+你还有没有用到浏览器的专门针对动画的引擎？
+
+或者你对3D的实践和优化，都可以给面试官展示出来。
+
+提供几个思路：
+
+使用GPU硬件加速
+
+使用webGL
+
+使用assembly辅助计算，然后在浏览器端控制动画帧频
+
+用web worker实现javascript多线程，分块处理小球
+
+用单链表树算法和携程机制，实现任务动态分割和任务暂停、恢复、回滚，动态渲染和处理小球
+
+
+
+
+---
 
 ## 原理
 
@@ -390,3 +479,59 @@ sleep(output,1000);
 参考地址：
 
 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/63)
+
+
+### 遍历dom树
+
+``` js
+function traversal(node) {
+    //对node的处理
+    if (node && node.nodeType === 1) {
+        console.log(node.tagName);
+    }
+    var i = 0,
+        childNodes = node.childNodes,
+        item;
+    for (; i < childNodes.length; i++) {
+        item = childNodes[i];
+        if (item.nodeType === 1) {
+            //递归先序遍历子节点
+            traversal(item);
+        }
+    }
+}
+```
+
+
+参考地址：
+
+[如何遍历一个dom树](https://github.com/airuikun/Weekly-FE-Interview/issues/4)
+
+
+### 如何实现一个new
+
+1、创建一个空对象，并且 this 变量引用该对象，// let obj = new Object()
+
+2、继承了函数的原型。// obj.__proto = Con.prototype
+
+3、属性和方法被加入到 this 引用的对象中。并执行了该函数func // let result = Con.apply(obj, arguments)
+
+4、新创建的对象由 this 所引用，并且最后隐式的返回 this 。
+
+
+``` js
+function create() {
+    // 创建一个空的对象
+    let obj = new Object()
+    // 获得构造函数
+    let Con = [].shift.call(arguments)
+    // 链接到原型
+    obj.__proto__ = Con.prototype
+    // 绑定 this，执行构造函数
+    let result = Con.apply(obj, arguments)
+    // 确保 new 出来的是个对象
+    return typeof result === 'object' ? result : obj
+}
+```
+
+es6之后更加复杂了，[参考](https://www.ecma-international.org/ecma-262/6.0/#sec-new-operator)。

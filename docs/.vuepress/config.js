@@ -23,6 +23,7 @@ module.exports = {
           children: [
             "/library/babel.md",
             "/library/nest.md",
+            "/library/nginx.md",
             "/library/pm2.md",
             "/library/react.md",
             "/library/vue.md",
