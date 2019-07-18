@@ -38,6 +38,25 @@
 销毁过程
 父beforeDestroy->子beforeDestroy->**子destroyed->父destroyed**
 
+### Vue.nextTick()有什么用？使用场景是？如何实现的？
+
+官方文档的解释是：**为了在数据变化之后等待 Vue 完成更新 DOM ，可以在数据变化之后立即使用 Vue.nextTick(callback) 。这样回调函数在 DOM 更新完成后就会调用。**
+
+所以说在这么几个场景下，要用到：
+
+- 在Vue生命周期的**created()钩子函数进行的DOM操作**一定要放在Vue.nextTick()的回调函数中
+- 在数据变化后要执行的某个操作，而这个操作需要使用随数据改变而改变的DOM结构的时候，这个操作都应该放进Vue.nextTick()的回调函数中。
+
+至于nextTick是如何实现的？首先需要理解[js的任务队列机制](/language/javascript.html#任务队列机制)，每一次执行的主线程，就是一个tick。
+
+在Vue中，nextTick中声明了microTimerFunc 和 macroTimerFunc 2 个变量，它们分别对应的是 micro task 的函数和 macro task 的函数。**对于 macro task 的实现，优先检测是否支持原生 setImmediate，这是一个高版本 IE 和 Edge 才支持的特性，不支持的话再去检测是否支持原生的 MessageChannel，如果也不支持的话就会降级为 setTimeout 0**；而**对于 micro task 的实现，则检测浏览器是否原生支持 Promise，不支持的话直接指向 macro task 的实现**。
+
+nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数组，最后一次性地根据 useMacroTask 条件执行 macroTimerFunc 或者是 microTimerFunc，**useMacroTask条件的判断依据就是传入的回调函数中是否有操作state的行为，如果有就认为ture**。
+
+
+
+
+[参考](https://ustbhuangyi.github.io/vue-analysis/reactive/next-tick.html#vue-%E7%9A%84%E5%AE%9E%E7%8E%B0)
 
 ## 原理
 

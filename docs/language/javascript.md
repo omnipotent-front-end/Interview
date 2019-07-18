@@ -8,6 +8,15 @@
 
 在ES6中，全局对象的属性和全局变量脱钩，但是为了保持兼容性，旧的不变，所以var、function声明的全局变量依然可以在window对象上看到，而let、const声明的全局变量在window对象上看不到
 
+### 说说对bind,apply,call的理解？
+
+apply、call 和 bind 都是为了**改变某个函数运行时的上下文**而存在的，其实就是为了**改变所调用的函数体内部 this 的指向**。
+
+bind方法只是替换了所调用方法的this指向，并不会主动去执行这个方法，而是**返回一个全新的函数**；
+
+而apply和call方法是即改变了this指向，又立即执行。**区别在于call是将参数一个个的传入，而apply是将参数以数组的形式传入**。
+
+
 
 ### call和apply有什么区别？哪个性能更好？
 
@@ -24,7 +33,7 @@ let params = [1,2,3,4]
 xx.call(obj, ...params)
 ```
 
-call的性能比apply要好,可以参考[call和apply的性能对比](https://github.com/noneven/__/issues/6)
+**call的性能比apply要好**,可以参考[call和apply的性能对比](https://github.com/noneven/__/issues/6)
 
 
 ### 0.1+0.2等于多少？为什么？怎么解决这种问题？
@@ -48,6 +57,55 @@ call的性能比apply要好,可以参考[call和apply的性能对比](https://gi
 
 [参考](https://github.com/airuikun/Weekly-FE-Interview/issues/27)
 
+### for-in 和 for-of的区别？
+
+**for...in循环出的是key，for...of循环出的是value**。
+
+但是：
+
+for...of语句在**可迭代对象**(包括 **Array, Map, Set, String, TypedArray，arguments 对象等等**)上创建一个迭代循环，对每个不同属性的属性值,调用一个自定义的有执行语句的迭代挂钩.
+
+也就是说，**for of只可以循环可迭代对象的可迭代属性**，不可迭代属性在循环中被忽略了。
+
+
+
+
+### 对象属性的可枚举性是什么意思？会影响哪些操作？
+
+对象属性可分为可枚举和不可枚举，区别在于enumerable的值。
+Object对象的**propertyIsEnumerable**()方法可以判断此对象是否包含某个属性，并且这个属性是否可枚举。
+
+以下几种操作会被影响：
+
+- for...in
+- Object.keys()
+- JSON.stringify()
+
+他们只会返回可被枚举的值。
+
+可以通过object.defineProperty来指定其是否可被枚举
+``` js
+Object.defineProperty(kxy, "sex", {
+    value: "female",
+    enumerable: false
+});
+```
+
+[参考](https://www.cnblogs.com/kongxy/p/4618173.html)
+
+### 遍历对象有哪些方式？
+
+- for in
+- Object.keys()遍历key
+- Object.values()遍历值
+- Object.entries()遍历key和值
+- Reflect.ownKeys(obj)遍历key
+
+### 遍历数组有哪些方式？
+
+- forEach
+- for in
+- for of 数组对象也可以，例如Dom nodelist
 
 
 ### Map和Object的区别是什么？
@@ -428,6 +486,40 @@ async function async1() {
 
 现在可以理解上面的结果了吧。
 
+### 模块依赖管理import，import from 和require等的区别？
+
+首先import和export是ES module的标准语法。
+先介绍import 和 import from的区别：
+
+import语句会执行所加载的模块，而如果export的很多，只import其中一部分的话，比如：
+
+``` js
+export { onlyOne }
+```
+
+
+
+``` js
+import { onlyOne } from 'path/to/module'
+```
+
+则可以进一步优化文件打包，这也是各个打包工具所谓的tree-shaking。
+
+
+而require则是nodejs中的依赖的方式，这种也叫CommonJS，会有一套完成的查找模块的顺序。
+**require和es的import的区别在于**：
+
+1. CommonJS 模块输出的是一个**值的拷贝**，ES6 模块输出的是**值的引用**。
+CommonJS 模块输出的是**值的拷贝**，也就是说，一旦输出一个值，模块内部的变化就影响不到这个值。
+ES6 模块的运行机制与 CommonJS 不一样。JS 引擎对脚本静态分析的时候，遇到模块加载命令import，就会生成一个**只读引用**。等到脚本真正执行时，再根据这个只读引用，到被加载的那个模块里面去取值。换句话说，ES6 的import有点像 Unix 系统的“符号连接”，原始值变了，import加载的值也会跟着变。因此，ES6 模块是动态引用，并且不会缓存值，模块里面的变量绑定其所在的模块。
+
+2. CommonJS 模块是**运行时加载**，ES6 模块是编译时输出接口。
+运行时加载: CommonJS 模块就是对象；即**在输入时是先加载整个模块，生成一个对象，然后再从这个对象上面读取方法，这种加载称为“运行时加载”**。
+编译时加载: ES6 模块不是对象，而是通过 export 命令显式指定输出的代码，import时采用静态命令的形式。即在import时可以指定加载某个输出值，而不是加载整个模块，这种加载称为“编译时加载”。
+
+CommonJS 加载的是一个对象（即module.exports属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
+
+
 ---
 
 ## 编码
@@ -535,3 +627,252 @@ function create() {
 ```
 
 es6之后更加复杂了，[参考](https://www.ecma-international.org/ecma-262/6.0/#sec-new-operator)。
+
+### 如何实现bind？
+
+先看看bind有哪些特点。
+
+第一个就是，**bind方法会返回一个函数**：
+``` js
+var foo = {
+    value: 1
+};
+ 
+function bar() {
+    console.log(this.value);
+}
+ 
+// 返回了一个函数
+var bindFoo = bar.bind(foo);
+ 
+bindFoo(); // 1
+```
+故而实现为：
+
+``` js
+Function.prototype.bind2 = function (context) {
+    var self = this;
+    return function () {
+        self.apply(context);
+    }
+ 
+}
+```
+
+第二个特点，**bind方法可以传入参数**：
+
+``` js
+var foo = {
+    value: 1
+};
+ 
+function bar(name, age) {
+    console.log(this.value);
+    console.log(name);
+    console.log(age);
+ 
+}
+ 
+var bindFoo = bar.bind(foo, 'daisy');
+bindFoo('18');
+// 1
+// daisy
+// 18
+```
+故而实现为：
+
+``` js
+// 第二版
+Function.prototype.bind2 = function (context) {
+ 
+    var self = this;
+    // 获取bind2函数从第二个参数到最后一个参数
+    var args = Array.prototype.slice.call(arguments, 1);
+ 
+    return function () {
+        // 这个时候的arguments是指bind返回的函数传入的参数，也就是上面例子中的18
+        var bindArgs = Array.prototype.slice.call(arguments);
+        self.apply(context, args.concat(bindArgs));
+    }
+ 
+}
+```
+
+bind还有一个最复杂的特点，就是**当 bind 返回的函数作为构造函数的时候，bind 时指定的 this 值会失效，但传入的参数依然生效**：
+
+``` js
+var value = 2;
+ 
+var foo = {
+    value: 1
+};
+ 
+function bar(name, age) {
+    this.habit = 'shopping';
+    console.log(this.value);
+    console.log(name);
+    console.log(age);
+}
+ 
+bar.prototype.friend = 'kevin';
+ 
+var bindFoo = bar.bind(foo, 'daisy');
+ 
+var obj = new bindFoo('18');
+// undefined
+// daisy
+// 18
+console.log(obj.habit);
+console.log(obj.friend);
+// shopping
+// kevin
+```
+
+可以看到value取不到，这是因为this已经由于new操作而指向了obj。
+故而实现为：
+
+``` js
+Function.prototype.bind2 = function (context) {
+ 
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+ 
+    var fNOP = function () {};
+ 
+    var fbound = function () {
+        var bindArgs = Array.prototype.slice.call(arguments);
+        self.apply(this instanceof self ? this : context, args.concat(bindArgs));
+    }
+    //使用空函数进行中转
+    fNOP.prototype = this.prototype;
+    fbound.prototype = new fNOP();
+    return fbound;
+ 
+}
+
+```
+当然，第三种就考虑的较为全面，也比较复杂。一般情况下理解第二种就可以了。
+
+### 如何实现深拷贝？
+
+首先明白深拷贝和浅拷贝的区别。**浅克隆之所以被称为浅克隆，是因为对象只会被克隆最外部的一层,至于更深层的对象,则依然是通过引用指向同一块堆内存**.
+Object.assign()实现的是浅复制。
+
+生产环境最好使用[lodash的cloneDeep](https://lodash.com/docs/4.17.11#cloneDeep。),
+其基于[结构化克隆算法](https://developer.mozilla.org/zh-CN/docs/Web/Guide/API/DOM/The_structured_clone_algorithm)
+
+如果只是简单的兼容数组和对象，可以采用如下：
+
+``` js
+const deepClone = obj => {
+  let clone = Object.assign({}, obj);
+  Object.keys(clone).forEach(
+    key => (clone[key] = typeof obj[key] === 'object' ? deepClone(obj[key]) : obj[key])
+  );
+  return Array.isArray(obj) && obj.length
+    ? (clone.length = obj.length) && Array.from(clone)
+    : Array.isArray(obj)
+      ? Array.from(obj)
+      : clone;
+};
+
+const a = { foo: 'bar', obj: { a: 1, b: 2 } };
+const b = deepClone(a); // a !== b, a.obj !== b.obj
+```
+
+如果要兼容Buffer对象、Promise、Set、Map、正则、Date等等，还是算了。
+
+### 如何简单的拷贝一些不同数据类型的值
+针对不同的数据类型，有一些不同的拷贝方案。
+
+#### 对于数组
+
+使用for循环和push
+``` js
+var arr = [1,2,3,4,5]；//只适应单层数组结构
+var arr2 = copyArr(arr)
+function copyArr(arr) {
+    let res = []
+    for (let i = 0; i < arr.length; i++) {
+     res.push(arr[i])
+    }
+    return res
+}
+```
+
+使用slice：
+
+``` js
+var arr = [1,2,3,4,5] //只适应单层数组结构
+var arr2 = arr.slice(0)
+console.log(arr)   //(5) [1, 2, 5, 4, 5]
+console.log(arr2)  //(5) [1, 2, 5, 4, 5]
+```
+
+使用concat：
+
+``` js
+var arr = [1,2,3,4,5] //只适应单层数组结构
+var arr2 = arr.concat()
+console.log(arr)   //(5) [1, 2, 5, 4, 5]
+console.log(arr2)  //(5) [1, 2, 5, 4, 5]
+```
+
+使用扩展运算符
+
+``` js
+var arr = [1,2,3,4,5] //只适应单层数组结构
+var [ ...arr2 ] = arr
+console.log(arr)   //(5) [1, 2, 5, 4, 5]
+console.log(arr2)  //(5) [1, 2, 5, 4, 5]
+
+```
+
+
+#### 对于对象
+
+for循环实现
+
+``` js
+ //如果包含属性值是数组，无法深层拷贝数组里面的数据
+var obj = {
+  name: 'jingjing',
+  sex: 'girl',
+  old: '18'
+}
+var obj2 = copyObj(obj)
+function copyObj(obj) {
+  let res = {}
+  for (var key in obj) {
+    res[key] = obj[key]
+  }
+  return res
+}
+```
+
+json转一转，注意函数类型会丢失。
+
+``` js
+var obj = {
+  name: 'jingjing',
+  sex: 'girl',
+  old: '18'
+}
+var obj2 = JSON.parse(JSON.stringify(obj))
+```
+
+扩展运算符
+``` js
+//如果包含的属性值是数组，无法深层拷贝数组里面的数据
+var obj = {
+  name: 'jingjing',
+  sex: 'girl',
+  old: '18'
+}
+var { ...obj2 } = obj
+obj.old = '22'
+console.log(obj)  //{name: "jingjing", sex: "girl", old: "22"}
+console.log(obj2) //{name: "jingjing", sex: "girl", old: "18"}
+```
+
+[参考](https://segmentfault.com/a/1190000012150942)
