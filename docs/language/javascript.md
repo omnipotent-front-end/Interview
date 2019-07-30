@@ -876,3 +876,123 @@ console.log(obj2) //{name: "jingjing", sex: "girl", old: "18"}
 ```
 
 [参考](https://segmentfault.com/a/1190000012150942)
+
+
+
+### 二维数组转一维有哪些实现方式？
+
+1.遍历
+
+``` js
+var arr = [
+    ['h', 'e', 'l', 'l', 'o'],
+    ['m', 'y'],
+    ['w', 'o', 'r', 'l', 'd'],
+    ['!']
+];
+var result = [];
+for (var r = 0; r < arr.length; r++) {
+    for (var c = 0; c < arr[r].length; c++) {
+        result.push(arr[r][c]);
+    }
+}
+console.log(result); //=>[ 'h', 'e', 'l', 'l', 'o', 'm', 'y', 'w', 'o', 'r', 'l', 'd', '!' ]
+```
+
+2.concat
+
+``` js
+var arr = [
+    ['h', 'e', 'l', 'l', 'o'],
+    ['m', 'y'],
+    ['w', 'o', 'r', 'l', 'd'],
+    ['!']
+];
+var result = [];
+for (var r = 0, result = []; r < arr.length; r++) {
+    result = result.concat(arr[r]);
+}
+console.log(result); //=>[ 'h', 'e', 'l', 'l', 'o', 'm', 'y', 'w', 'o', 'r', 'l', 'd', '!' ]
+```
+
+3.apply+concat
+利用apply和concat一行代码就够了。
+``` js
+var arr = [
+    ['h', 'e', 'l', 'l', 'o'],
+    ['m', 'y'],
+    ['w', 'o', 'r', 'l', 'd'],
+    ['!']
+];
+var result = Array.prototype.concat.apply([], arr);
+console.log(result); //=>[ 'h', 'e', 'l', 'l', 'o', 'm', 'y', 'w', 'o', 'r', 'l', 'd', '!' ]
+```
+
+4.join+split
+
+``` js
+var arr = [
+    ['h', 'e', 'l', 'l', 'o'],
+    ['m', 'y'],
+    ['w', 'o', 'r', 'l', 'd'],
+    ['!']
+];
+
+var result = arr.join().split(",");
+
+console.log(result);
+```
+
+5.reduce+concat
+
+``` js
+var arr = [
+    ['h', 'e', 'l', 'l', 'o'],
+    ['m', 'y'],
+    ['w', 'o', 'r', 'l', 'd'],
+    ['!']
+];
+var result = arr.reduce((prev,curr)=>{
+  return prev.concat(curr)
+})
+console.log(result)
+```
+
+6.使用展开运算符+concat
+
+``` js
+var arr = [
+    ['h', 'e', 'l', 'l', 'o'],
+    ['m', 'y'],
+    ['w', 'o', 'r', 'l', 'd'],
+    ['!']
+];
+var result = [].concat(...arr)
+console.log(result)
+```
+
+[参考](https://juejin.im/entry/5847c1600ce46300578d99bf)
+
+[Javascript多维数组扁平化](http://www.jstips.co/zh_cn/javascript/flattening-multidimensional-arrays-in-javascript/)
+
+
+### 多维数组转一维
+
+在上面提到的几种办法中，加入递归并对数组类型进行判断
+``` js
+const flatten = arr => {
+  return arr.reduce((flat, next) => {
+    console.log(flat, next); // flat:初始值或累加的值 next:当前值
+    return flat.concat(Array.isArray(next) ? flatten(next) : next);
+    // 判断当前元素是否为数组 决定是否递归 将值返回到下次循环
+  }, []);
+};
+// 运行示例：
+let nestedArr = [1, 2, [3, 4, [5, [6, 7]]]]; // 四维数组 展开
+console.log(flatten(nestedArr)); // [1,2,3,4,5,6,7]
+
+```
+
+参考：
+
+[多维数组展开 | effect · Issue #159 · OBKoro1/web_accumulate](https://github.com/OBKoro1/web_accumulate/issues/159)
