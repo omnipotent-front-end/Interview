@@ -138,6 +138,27 @@ WeakMap 中，每个键对自己所引用对象的引用都是弱引用，在没
 
 和DOM进行关联，某些库会维护一个自定义对象，来关联DOM元素，并且其映射关系会存储在内部对象缓存中。如果一个DOM元素已经不复存在于网页中，库就需要清除对该DOM的引用，避免内存泄漏。使用WeakMap来追踪DOM元素，当DOM并不存在了，WeakMap将被自动销毁。
 
+
+
+### requestAnimationFrame了解吗？有使用过吗？说一下使用场景。
+
+requestAnimationFrame是浏览器用于定时循环操作的一个接口，类似于setTimeout，主要用途是按帧对网页进行重绘。
+与 setTimeout 相比，rAF 最大的优势是 **由系统来决定回调函数的执行时机。这样就不会引起丢帧现象，也不会导致动画出现卡顿的问题**。
+
+使用场景多在于动画，比如说滑动页面顶部:
+
+```js
+const scrollToTop = () => {
+  const c = document.documentElement.scrollTop || document.body.scrollTop;
+  if (c > 0) {
+    window.requestAnimationFrame(scrollToTop);
+    window.scrollTo(0, c - c / 8);
+  }
+};
+```
+也可以用于任务调度，如果React的Fiber就是基于requestAnimationFrame和requestIdleCallback的。
+
+
 ### js异步编程方法和各种的优缺点
 
 发展历程：
