@@ -182,6 +182,39 @@ Nodejs源码的整体架构如下：
 
 [通过源码解析Node.js中的cluster模块的主要功能实现](https://cnodejs.org/topic/56e84480833b7c8a0492e20c)
 
+
+### Node中对异步IO的工作原理。
+
+首先理解：[对操作系统异步i-o操作的理解？](/cp/os.html#%E5%AF%B9%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%BC%82%E6%AD%A5i-o%E6%93%8D%E4%BD%9C%E7%9A%84%E7%90%86%E8%A7%A3%EF%BC%9F)，其中提到，在Linux平台下，暂不支持理想的异步IO模型。
+
+所幸的是，**libev** 的作者 Marc Alexander Lehmann 重新实现了一个**异步 I/O 的库：libeio**。libeio 实质依然是**采用线程池与阻塞 I/O 模拟出来的异步 I/O**。
+
+Windows 有一种独有的内核异步 IO 方案：IOCP。IOCP 的思路是真正的异步 I/O 方案，调用异步方法，然后等待 I/O 完成通知。IOCP 内部依旧是通过线程实现，不同在于这些线程由系统内核接手管理。IOCP 的异步模型与 Node.js 的异步调用模型已经十分近似。
+
+以上两种方案则正是 Node.js 选择的异步 I/O 方案。由于 Windows 平台和 *nix 平台的差异，Node.js 提供了 libuv 来作为抽象封装层，使得所有平台兼容性的判断都由这一层次来完成，保证上层的 Node.js 与下层的 libeio/libev 及 IOCP 之间各自独立。Nodejs的整体架构参见：[整体架构](/language/node.html#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84)
+
+
+
+
+参考：
+
+[深入浅出Node.js（五）：初探Node.js的异步I/O实现](https://www.infoq.cn/article/nodejs-asynchronous-io/)
+
+
+### libev底层的线程池原理
+
+首先理解：[node中对异步io的工作原理。](/language/node.html#node%E4%B8%AD%E5%AF%B9%E5%BC%82%E6%AD%A5io%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E3%80%82)
+
+本质就是**每个io在libev层面都是有单独线程来做的**。默认线程池大小为4，最大可以设置为128，并且使用一个队列来管理对线程池的访问 – 结果是，如果你有5个长时间运行的DB查询全部同时进行，其中一个(和任何其他依赖线程池的异步动作)将等待这些查询在开始之前完成。可以自己设置线程池大小。
+
+
+
+参考：
+
+[Node.js 异步原理-线程池 - 奇乐汪汪汪 - SegmentFault 思否](https://segmentfault.com/a/1190000019111942)
+
+[node.js – 什么时候使用线程池？ - 代码日志](https://codeday.me/bug/20170804/51540.html)
+
 ---
 
 ## 应用
@@ -240,3 +273,93 @@ setImmediate() 在下一个迭代或 ‘tick’ 上触发事件循环。
 
 又或者是事件触发和监听：https://stackoverflow.com/questions/8112914/what-are-the-proper-use-cases-for-process-nexttick-in-node-js
 
+### 遇到过Nodejs中的内存泄漏吗？怎么排查呢？怎么避免呢？
+
+Node.js 使用 V8 作为 JavaScript 的执行引擎，所以**讨论 Node.js 的 GC 情况就等于在讨论 V8 的 GC**。在 V8 中一个对象的内存是否被释放，是看程序中是否还有地方持有该对象的引用。[谈谈v8中的gc策略](/cp/browser.html#谈谈v8中的gc策略)
+
+
+**内存泄漏的几种情况**
+
+一、全局变量
+``` js
+a = 10;
+//未声明对象。
+
+global.b = 11;
+//全局变量引用
+```
+这种比较简单的原因，全局变量直接挂在 root 对象上，不会被清除掉。
+
+二、闭包
+``` js
+function out() {
+  const bigData = new Buffer(100);
+  inner = function () {
+    void bigData;
+  }
+}
+```
+闭包会引用到父级函数中的变量，如果闭包未释放，就会导致内存泄漏。上面例子是 inner 直接挂在了 root 上，从而导致内存泄漏（bigData 不会释放）。
+
+需要注意的是，这里举得例子只是简单的将引用挂在全局对象上，实际的业务情况可能是挂在某个可以从 root 追溯到的对象上导致的。
+
+
+三、事件监听
+
+Node.js 的事件监听也可能出现的内存泄漏。例如**对同一个事件重复监听**，忘记移除（removeListener），将造成内存泄漏。这种情况很容易在复用对象上添加事件时出现，所以事件重复监听可能收到如下警告：
+
+(node:2752) Warning: Possible EventEmitter memory leak detected。11 haha listeners added。Use emitter。setMaxListeners() to increase limit
+
+例如，Node.js 中 Agent 的 keepAlive 为 true 时，可能造成的内存泄漏。当 Agent keepAlive 为 true 的时候，将会复用之前使用过的 socket，如果在 socket 上添加事件监听，忘记清除的话，因为 socket 的复用，将导致事件重复监听从而产生内存泄漏。
+
+原理上与前一个添加事件监听的时候忘了清除是一样的。在使用 Node.js 的 http 模块时，不通过 keepAlive 复用是没有问题的，复用了以后就会可能产生内存泄漏。所以，你需要了解添加事件监听的对象的生命周期，并注意自行移除。
+
+
+**如何排查内存泄漏**呢？和浏览器端一样，使用chromedevtools进行heapdump快照，对比。
+
+**如何避免内存泄漏**呢？
+
+ESLint 检测代码检查非期望的全局变量。
+
+使用闭包的时候，得知道闭包了什么对象，还有引用闭包的对象何时清除闭包。最好可以避免写出复杂的闭包，因为复杂的闭包引起的内存泄漏，如果没有打印内存快照的话，是很难看出来的。
+
+绑定事件的时候，一定得在恰当的时候清除事件。在编写一个类的时候，推荐使用 init 函数对类的事件监听进行绑定和资源申请，然后 destroy 函数对事件和占用资源进行释放。
+
+
+参考：
+
+[如何分析 Node.js 中的内存泄漏](https://zhuanlan.zhihu.com/p/25736931)
+
+### Buffer模块做什么的？对于初始化的buffer，可以增加长度吗？
+
+[Buffer](https://nodejs.org/api/buffer.html#buffer_class_method_buffer_from_array)的官方介绍。在[TypedArray](https://interactive-examples.mdn.mozilla.net/pages/js/typedarray-constructor.html)出现前，javascript并没有能够处理二进制的能力。但是在处理像TCP流或文件流时，必须使用到二进制数据。
+
+故而Node增加了一个Buffer模块，用来创建一个专门存放二进制数据的缓存区，主要用于操作字节，处理二进制数据。
+
+**Buffer的长度一旦确定了，就不能再变化了**。
+
+Buffer是一个典型的javascript与C++结合的模块，与性能有关的用C++来实现，javascript 负责衔接和提供接口。**Buffer所占的内存不是V8分配的，是独立于V8堆内存之外的内存，通过C++层面实现内存申请、javascript 分配内存**。值得一提的是，每当我们使用Buffer.alloc(size)请求一个Buffer内存时，**Buffer会以8KB为界限来判断分配的是大对象还是小对象，小对象存入剩余内存池，不够再申请一个8KB的内存池**；**大对象直接采用C++层面申请的内存**。因此，对于一个大尺寸对象，申请一个大内存比申请众多小内存池快很多。
+
+
+
+参考：
+
+[Node.js Buffer(缓冲区)](https://juejin.im/post/5b5a85b4e51d45162679d20a)
+
+[认识node核心模块--从Buffer、Stream到fs](https://juejin.im/post/5a07bdfc51882531bb6c4ad0)
+
+### Nodejs为什么不适合CPU密集型操作？如果遇到了，需要怎么处理呢？
+
+首先理解[事件驱动](/language/node.html#%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8)和[libev底层的线程池原理](/language/node.html#libev%E5%BA%95%E5%B1%82%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8E%9F%E7%90%86)。
+
+如果遇到CPU密集型，libuv中线程会阻塞，导致eventloop无法返回。加上node是单线程，[nodejs单线程的优缺点](/language/node.html#nodejs%E5%8D%95%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9)，默认只能使用一个CPU。
+
+解决方案：
+
+- 使用子进程，child_process.fork()
+- 使用其他服务来完成比如c
+- 使用node12的[Worker Threads](https://nodejs.org/api/worker_threads.html)，通过子线程来完成
+
+参考：
+
+[Node.js软肋之CPU密集型任务](https://www.infoq.cn/article/nodejs-weakness-cpu-intensive-tasks)

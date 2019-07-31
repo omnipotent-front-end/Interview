@@ -2,15 +2,13 @@ module.exports = {
   title: "无所不能的前端--十万个为什么",
   description: "Hello world",
   themeConfig: {
-    nav:[
-      {text:'awesome-url',link:'https://brizer.github.io/urls/zh/'}
-    ],
+    nav: [{ text: "awesome-url", link: "https://brizer.github.io/urls/zh/" }],
     sidebarDepth: 2,
     sidebar: {
       "": [
         {
           title: "计算机基础",
-          children: ["/cp/network", "/cp/soft"]
+          children: ["/cp/browser", "/cp/network", "/cp/os", "/cp/soft"]
         },
         {
           title: "编程语言",
