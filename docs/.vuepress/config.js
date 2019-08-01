@@ -23,6 +23,7 @@ module.exports = {
           title: "库",
           children: [
             "/library/babel.md",
+            "/library/egg.md",
             "/library/nest.md",
             "/library/nginx.md",
             "/library/pm2.md",
