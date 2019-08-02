@@ -649,130 +649,65 @@ function create() {
 
 es6之后更加复杂了，[参考](https://www.ecma-international.org/ecma-262/6.0/#sec-new-operator)。
 
+### 如何实现call
+
+``` js
+// 将要改变this指向的方法挂到目标this上执行并返回
+Function.prototype.mycall = function (context) {
+  if (typeof this !== 'function') {
+    throw new TypeError('not funciton')
+  }
+  context = context || window
+  context.fn = this
+  let arg = [...arguments].slice(1)
+  let result = context.fn(...arg)
+  delete context.fn
+  return result
+}
+```
+
+### 如何实现apply
+
+首先了解：[call和apply有什么区别？哪个性能更好？](/language/javascript.html#call%E5%92%8Capply%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F%E5%93%AA%E4%B8%AA%E6%80%A7%E8%83%BD%E6%9B%B4%E5%A5%BD%EF%BC%9F)
+
+``` js
+Function.prototype.myapply = function (context) {
+  if (typeof this !== 'function') {
+    throw new TypeError('not funciton')
+  }
+  context = context || window
+  context.fn = this
+  let result
+  if (arguments[1]) {
+    result = context.fn(...arguments[1])
+  } else {
+    result = context.fn()
+  }
+  delete context.fn
+  return result
+}
+```
+
 ### 如何实现bind？
 
-先看看bind有哪些特点。
-
-第一个就是，**bind方法会返回一个函数**：
 ``` js
-var foo = {
-    value: 1
-};
- 
-function bar() {
-    console.log(this.value);
-}
- 
-// 返回了一个函数
-var bindFoo = bar.bind(foo);
- 
-bindFoo(); // 1
-```
-故而实现为：
-
-``` js
-Function.prototype.bind2 = function (context) {
-    var self = this;
-    return function () {
-        self.apply(context);
+Function.prototype.mybind = function (context) {
+  if (typeof this !== 'function') {
+    throw new TypeError('Error')
+  }
+  let _this = this
+  let arg = [...arguments].slice(1)
+  return function F() {
+    // 处理函数使用new的情况
+    if (this instanceof F) {
+      return new _this(...arg, ...arguments)
+    } else {
+      return _this.apply(context, arg.concat(...arguments))
     }
- 
-}
-```
-
-第二个特点，**bind方法可以传入参数**：
-
-``` js
-var foo = {
-    value: 1
-};
- 
-function bar(name, age) {
-    console.log(this.value);
-    console.log(name);
-    console.log(age);
- 
-}
- 
-var bindFoo = bar.bind(foo, 'daisy');
-bindFoo('18');
-// 1
-// daisy
-// 18
-```
-故而实现为：
-
-``` js
-// 第二版
-Function.prototype.bind2 = function (context) {
- 
-    var self = this;
-    // 获取bind2函数从第二个参数到最后一个参数
-    var args = Array.prototype.slice.call(arguments, 1);
- 
-    return function () {
-        // 这个时候的arguments是指bind返回的函数传入的参数，也就是上面例子中的18
-        var bindArgs = Array.prototype.slice.call(arguments);
-        self.apply(context, args.concat(bindArgs));
-    }
- 
-}
-```
-
-bind还有一个最复杂的特点，就是**当 bind 返回的函数作为构造函数的时候，bind 时指定的 this 值会失效，但传入的参数依然生效**：
-
-``` js
-var value = 2;
- 
-var foo = {
-    value: 1
-};
- 
-function bar(name, age) {
-    this.habit = 'shopping';
-    console.log(this.value);
-    console.log(name);
-    console.log(age);
-}
- 
-bar.prototype.friend = 'kevin';
- 
-var bindFoo = bar.bind(foo, 'daisy');
- 
-var obj = new bindFoo('18');
-// undefined
-// daisy
-// 18
-console.log(obj.habit);
-console.log(obj.friend);
-// shopping
-// kevin
-```
-
-可以看到value取不到，这是因为this已经由于new操作而指向了obj。
-故而实现为：
-
-``` js
-Function.prototype.bind2 = function (context) {
- 
-    var self = this;
-    var args = Array.prototype.slice.call(arguments, 1);
- 
-    var fNOP = function () {};
- 
-    var fbound = function () {
-        var bindArgs = Array.prototype.slice.call(arguments);
-        self.apply(this instanceof self ? this : context, args.concat(bindArgs));
-    }
-    //使用空函数进行中转
-    fNOP.prototype = this.prototype;
-    fbound.prototype = new fNOP();
-    return fbound;
- 
+  }
 }
 
 ```
-当然，第三种就考虑的较为全面，也比较复杂。一般情况下理解第二种就可以了。
 
 ### 如何实现深拷贝？
 
@@ -896,6 +831,11 @@ console.log(obj)  //{name: "jingjing", sex: "girl", old: "22"}
 console.log(obj2) //{name: "jingjing", sex: "girl", old: "18"}
 ```
 
+Object.assign
+``` js
+let copy2 = Object.assign({}, {x:1})
+```
+
 [参考](https://segmentfault.com/a/1190000012150942)
 
 
@@ -1017,3 +957,248 @@ console.log(flatten(nestedArr)); // [1,2,3,4,5,6,7]
 参考：
 
 [多维数组展开 | effect · Issue #159 · OBKoro1/web_accumulate](https://github.com/OBKoro1/web_accumulate/issues/159)
+
+
+### 实现一个简单的eventbus
+
+通过class的方式：
+
+``` js
+// 组件通信，一个触发与监听的过程
+class EventEmitter {
+  constructor () {
+    // 存储事件
+    this.events = this.events || new Map()
+  }
+  // 监听事件
+  addListener (type, fn) {
+    if (!this.events.get(type)) {
+      this.events.set(type, fn)
+    }
+  }
+  // 触发事件
+  emit (type) {
+    let handle = this.events.get(type)
+    handle.apply(this, [...arguments].slice(1))
+  }
+}
+
+// 测试
+let emitter = new EventEmitter()
+// 监听事件
+emitter.addListener('ages', age => {
+  console.log(age)
+})
+// 触发事件
+emitter.emit('ages', 18)  // 18
+```
+
+通过函数的方式：
+
+``` js
+const createEventHub = () => ({
+  hub: Object.create(null),
+  emit(event, data) {
+    (this.hub[event] || []).forEach(handler => handler(data));
+  },
+  on(event, handler) {
+    if (!this.hub[event]) this.hub[event] = [];
+    this.hub[event].push(handler);
+  },
+  off(event, handler) {
+    const i = (this.hub[event] || []).findIndex(h => h === handler);
+    if (i > -1) this.hub[event].splice(i, 1);
+  }
+});
+
+//使用
+const handler = data => console.log(data);
+const hub = createEventHub();
+let increment = 0;
+
+// Subscribe: listen for different types of events
+hub.on('message', handler);
+hub.on('message', () => console.log('Message event fired'));
+hub.on('increment', () => increment++);
+
+// Publish: emit events to invoke all handlers subscribed to them, passing the data to them as an argument
+hub.emit('message', 'hello world'); // logs 'hello world' and 'Message event fired'
+hub.emit('message', { hello: 'world' }); // logs the object and 'Message event fired'
+hub.emit('increment'); // `increment` variable is now 1
+
+// Unsubscribe: stop a specific handler from listening to the 'message' event
+hub.off('message', handler);
+```
+
+### 简单实现Object.create
+
+``` js
+function create(obj) {
+  function F() {}
+  F.prototype = obj
+  return new F()
+}
+```
+
+
+### 基于Object.defineProperty实现双向绑定
+
+``` js
+var inputNode = document.querySelector('#input');
+var showNode = document.querySelector('#show');
+//定义一个没有原型链的空对象
+var model = new Object(null);
+Object.defineProperty(model,'name',{
+  //当属性被修改时
+  set:function(value){
+    user = value;
+    showNode.innerHTML = value;
+  },
+  //当属性被访问时
+  get:function(){
+    return user
+  }
+})
+
+function modelChange(){
+  model['name'] = inputNode.value;
+}
+
+inputNode.addEventListener('keyup',modelChange);
+```
+
+### 基于Proxy实现双向绑定
+
+为什么用Proxy更好，可以参考：[vue的响声式用proxy和object-defineproperty有什么区别？](/library/vue.html#vue%E7%9A%84%E5%93%8D%E5%A3%B0%E5%BC%8F%E7%94%A8proxy%E5%92%8Cobject-defineproperty%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
+
+``` js
+var inputNode = document.querySelector('#input');
+var showNode = document.querySelector('#show');
+
+const obj = {};
+
+const newObj = new Proxy(obj, {
+  get: function(target, key, receiver) {
+    console.log(`getting ${key}!`);
+    return Reflect.get(target, key, receiver);
+  },
+  set: function(target, key, value, receiver) {
+    console.log(target, key, value, receiver);
+    if (key === 'text') {
+      inputNode.value = value;
+      showNode.innerHTML = value;
+    }
+    return Reflect.set(target, key, value, receiver);
+  },
+});
+
+input.addEventListener('keyup', function(e) {
+  newObj.text = e.target.value;
+});
+```
+
+### 闭包实现计数器
+
+``` js
+const add = (function () {
+    let counter = 0;
+    return function () {
+      console.log(counter)
+      return counter += 1;
+    }
+})();//这里var add已经是执行过后的函数了，var add=function(){..}
+
+add();//执行匿名子函数
+add(); 
+add();
+
+```
+
+### 函数节流
+
+不做封装的简陋版：
+
+``` js
+var throttle;
+
+
+v._$addEvent(document, 'scroll', function () {
+    if(throttle){
+        return;
+    }
+
+    throttle = setTimeout(function () {
+        loadModule();
+
+        throttle = clearTimeout(throttle);
+    }, 300);
+});
+```
+
+通过闭包的封装版：
+
+``` js
+//节流函数
+function throttle (fn, delay) {
+  // 利用闭包保存时间
+  let prev = Date.now()
+  return function () {
+    let context = this
+    let arg = arguments
+    let now = Date.now()
+    if (now - prev >= delay) {
+      fn.apply(context, arg)
+      prev = Date.now()
+    }
+  }
+}
+
+function fn () {
+  console.log('节流')
+}
+addEventListener('scroll', throttle(fn, 1000))
+```
+
+### 函数防抖
+
+不做封装的简陋版：
+
+``` js
+var isclick= true;
+function click(){
+    if(isclick){
+        isclick= false;
+        //下面添加需要执行的事件
+            ...
+ 
+        //定时器
+        setTimeout(function(){ 
+            isclick = true;
+        }, 500);
+    }
+}
+```
+
+通过闭包的封装版：
+
+``` js
+
+function debounce (fn, delay) {
+  // 利用闭包保存定时器
+  let timer = null
+  return function () {
+    let context = this
+    let arg = arguments
+    // 在规定时间内再次触发会先清除定时器后再重设定时器
+    clearTimeout(timer)
+    timer = setTimeout(function () {
+      fn.apply(context, arg)
+    }, delay)
+  }
+}
+
+function fn () {
+  console.log('防抖')
+}
+addEventListener('scroll', debounce(fn, 1000))
+```

@@ -159,6 +159,101 @@ GIF的最低合法体积最小（最小的BMP文件需要74个字节，PNG需要
 
 ---
 
+## 通信相关
+
+### 跨浏览器Tab通信有哪些解决方案？
+
+1. window.open配合句柄postmessage
+
+缺点是只能与自己打开的页面完成通讯，应用面相对较窄；但优点是在跨域场景中依然可以使用该方案。
+
+``` js
+// parent.html
+const childPage = window.open('child.html', 'child')
+
+childPage.onload = () => {
+	childPage.postMessage('hello', location.origin)
+}
+
+// child.html
+window.onmessage = evt => {
+	// evt.data
+}
+
+```
+
+2. localStorage
+
+API简单直观，兼容性好，除了跨域场景下需要配合其他方案(如iframe跨域postmessage)，无其他缺点
+
+``` js
+// A.html
+localStorage.setItem('message', 'hello')
+
+// B.html
+window.onstorage = evt => {
+  // evt.key, evt.oldValue, evt.newValue
+}
+```
+
+3. BroadcastChannel
+
+和localStorage方案没特别区别，**都是同域、API简单**，BroadcastChannel方案兼容性差些（chrome > 58），但**比localStorage方案生命周期短（不会持久化），相对干净些**。
+
+``` js
+// A.html
+const channel = new BroadcastChannel('tabs')
+channel.onmessage = evt => {
+	// evt.data
+}
+
+// B.html
+const channel = new BroadcastChannel('tabs')
+channel.postMessage('hello')
+```
+
+4. SharedWorker
+
+SharedWorker本身并不是为了解决通讯需求的，它的设计初衷应该是类似总控，将一些通用逻辑放在SharedWorker中处理。不过因为也能实现通讯。相较于其他方案没有优势，此外，API复杂而且调试不方便。
+
+``` js
+// A.html
+var sharedworker = new SharedWorker('worker.js')
+sharedworker.port.start()
+sharedworker.port.onmessage = evt => {
+	// evt.data
+}
+
+// B.html
+var sharedworker = new SharedWorker('worker.js')
+sharedworker.port.start()
+sharedworker.port.postMessage('hello')
+
+// worker.js
+const ports = []
+onconnect = e => {
+	const port = e.ports[0]
+	ports.push(port)
+	port.onmessage = evt => {
+		ports.filter(v => v!== port) // 此处为了贴近其他方案的实现，剔除自己
+		.forEach(p => p.postMessage(evt.data))
+	}
+}
+
+```
+
+5. 服务端支持
+
+socket、cookie等等
+
+
+
+参考：
+
+[跨页面通信的各种姿势 - 掘金](https://juejin.im/post/59bb7080518825396f4f5177)
+
+---
+
 ## 应用服务方面
 
 ### 十万条数据插入数据库，怎么去优化和处理高并发情况下的DB插入

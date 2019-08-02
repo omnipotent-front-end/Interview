@@ -363,3 +363,33 @@ Buffer是一个典型的javascript与C++结合的模块，与性能有关的用C
 参考：
 
 [Node.js软肋之CPU密集型任务](https://www.infoq.cn/article/nodejs-weakness-cpu-intensive-tasks)
+
+
+### node应用的单进程和多进程模型有什么优缺点？
+
+首先理解[nodejs单线程的优缺点](/language/node.html#nodejs%E5%8D%95%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9)，一个健壮的node应用是需要守护进程的。[守护进程是什么？node中如何实现？](/language/node.html#%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9Fnode%E4%B8%AD%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%EF%BC%9F)。
+
+一些工具如PM2，和egg均提供了相应的功能：
+
+[pm2的fork模式和cluster模式的有什么区别？](/library/pm2.html#pm2%E7%9A%84fork%E6%A8%A1%E5%BC%8F%E5%92%8Ccluster%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
+
+[egg-cluster和pm2有什么区别？](/library/egg.html#egg-cluster%E5%92%8Cpm2%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
+
+简单来说多进程的优点如下：
+
+1. 充分利用CPU和服务器性能
+2. 提供平衡重启的机会
+
+缺点也有：
+
+1. 增加了服务器损耗
+2. 多进程共同操作文件资源时出现冲突，需要额外解决方案，这也是egg推出agent模型
+
+参考：
+
+[探索 PM2 Cluster 模式下 Log4js 日志丢失 - 呆恋小喵的学习之旅 - SegmentFault 思否](https://segmentfault.com/a/1190000016127574)
+
+[Logs not working when app is ran in cluster mode · Issue #3215 · Unitech/pm2](https://github.com/Unitech/pm2/issues/3215)
+
+[log4js+pm2 在cluster模式下，不发输出日志问题，求解答 - CNode技术社区](https://cnodejs.org/topic/5aa90887f5dfc27d7ad987ce)
+
