@@ -269,9 +269,12 @@ setImmediate() 在下一个迭代或 ‘tick’ 上触发事件循环。
 
 比如：
 
-在一次循环区间内无法满足需求的大量操作，比如操作大量数据导致mongo内存溢出：https://stackoverflow.com/questions/23672873/maximum-call-stack-size-exceeded-on-insert-10000-documents
+在一次循环区间内无法满足需求的大量操作，比如[操作大量数据导致mongo内存溢出](https://stackoverflow.com/questions/23672873/maximum-call-stack-size-exceeded-on-insert-10000-documents)
 
-又或者是事件触发和监听：https://stackoverflow.com/questions/8112914/what-are-the-proper-use-cases-for-process-nexttick-in-node-js
+又或者是[事件触发和监听](https://stackoverflow.com/questions/8112914/what-are-the-proper-use-cases-for-process-nexttick-in-node-js)。
+
+
+Node源码内也有大量用到，比如说[实现util-callbackify和util-promisify](/language/node.html#%E5%AE%9E%E7%8E%B0util-callbackify%E5%92%8Cutil-promisify)中的util.callbackify。
 
 ### 遇到过Nodejs中的内存泄漏吗？怎么排查呢？怎么避免呢？
 
@@ -393,3 +396,85 @@ Buffer是一个典型的javascript与C++结合的模块，与性能有关的用C
 
 [log4js+pm2 在cluster模式下，不发输出日志问题，求解答 - CNode技术社区](https://cnodejs.org/topic/5aa90887f5dfc27d7ad987ce)
 
+### node中回调模式和promise如何互转？
+
+通过util模块的两个方法`util.callbackify`和`util.promisify`:
+
+``` js
+const fs = require('fs');
+const util = require('util');
+
+const readFilePromsise = util.promisify(fs.readFile); // promise
+const readFileCallback = util.callbackify(readFilePromise); // callback
+
+```
+
+
+参考：
+
+[你可能不知道的 Node.js util 模块 - 知乎](https://zhuanlan.zhihu.com/p/75532713?utm_source=wechat_session&utm_medium=social&utm_oi=41809770184704&from=singlemessage&isappinstalled=0&wechatShare=1&s_r=0)
+
+
+---
+
+## 编码
+
+### 实现util.callbackify和util.promisify?
+
+首先理解其用法：[node中回调模式和promise如何互转？](/language/node.html#node%E4%B8%AD%E5%9B%9E%E8%B0%83%E6%A8%A1%E5%BC%8F%E5%92%8Cpromise%E5%A6%82%E4%BD%95%E4%BA%92%E8%BD%AC%EF%BC%9F)
+
+针对promisify：
+
+promisify执行完后返回的是一个新的函数，新的函数的执行结果是一个promise，新函数内部会调用original原有的方法并且会自动追加error-first类型的callback，**根据original的执行结果判断是resolve还是reject**，简易版本的代码如下：
+
+``` js
+function promisify(original) {
+  function fn(...args) {
+
+    return new Promise((resolve, reject) => {
+      original.call(this, ...args, (err, ...values) => {
+        if (err) {
+          return reject(err);
+        } else {
+          resolve(values);
+        }
+      });
+    });
+  }
+  return fn
+}
+```
+
+针对callbackify：
+
+调用原始函数original通过then方法，在同一阶段process.nextTick调用callback方法，简化版本如下：
+
+``` js
+function callbackifyOnRejected(reason, cb) {
+  if (!reason) {
+    const newReason = new ERR_FALSY_VALUE_REJECTION();
+    newReason.reason = reason;
+    reason = newReason;
+    Error.captureStackTrace(reason, callbackifyOnRejected);
+  }
+  return cb(reason);
+}
+
+function callbackify(original) {
+  function callbackified(...args) {
+    const maybeCb = args.pop();
+    const cb = (...args) => { Reflect.apply(maybeCb, this, args); };
+    Reflect.apply(original, this, args)
+      .then((ret) => process.nextTick(cb, null, ret),
+            (rej) => process.nextTick(callbackifyOnRejected, rej, cb));
+  }
+  return callbackified;
+}
+
+```
+
+
+
+参考：
+
+[Node.js util模块解读 - 彩色代码 - SegmentFault 思否](https://segmentfault.com/a/1190000015115159)

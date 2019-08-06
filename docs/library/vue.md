@@ -187,3 +187,9 @@ Object.defineProperty有如下缺陷：
 
 
 
+### 为什么Vue的模板必须要有一个根元素？
+
+这个问题可以参考[github上尤雨溪自己的回答](https://github.com/vuejs/vue/issues/7088#issuecomment-348252040)。
+也就是现有diff算法的限制导致的。而React在16.2推出的[React v16.2.0: Improved Support for Fragments – React Blog](https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html)，其实是在重写diff算法的同时进行了支持。
+
+至于Vue的diff算法具体逻辑，可以参考[vue中的key有什么用？为什么会优化diff算法的速度？](/library/vue.html#vue%E4%B8%AD%E7%9A%84key%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E4%BC%98%E5%8C%96diff%E7%AE%97%E6%B3%95%E7%9A%84%E9%80%9F%E5%BA%A6%EF%BC%9F)

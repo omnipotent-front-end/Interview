@@ -28,6 +28,7 @@ module.exports = {
             "/library/nginx.md",
             "/library/pm2.md",
             "/library/react.md",
+            "/library/typescript.md",
             "/library/vue.md",
             "/library/webpack.md"
           ]

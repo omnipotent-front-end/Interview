@@ -360,6 +360,38 @@ var readOnly;
 
 明白了吧。
 
+
+### Object.create(null)和{}有什么区别？
+
+首先了解[简单实现object-create](/language/javascript.html#%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0object-create)。通过Object.create(null)创建的对象是没有原型的：
+
+``` js
+console.log(Object.create({}).toString);   // function toString() { [native code] }
+console.log(Object.create(null).toString); // undefined
+```
+
+所以说在赋值默认值时更加适合，比如说node源码中的这一段：
+
+``` js
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = Object.assign(Object.create(null), {
+  special: 'cyan',
+  number: 'yellow',
+  bigint: 'yellow',
+  boolean: 'yellow',
+  undefined: 'grey',
+  null: 'bold',
+  string: 'green',
+  symbol: 'green',
+  date: 'magenta',
+  // "name": intentionally not styling
+  regexp: 'red',
+  module: 'underline'
+});
+
+```
+
+
 ---
 
 ## 性能相关
