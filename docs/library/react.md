@@ -1,6 +1,6 @@
 # React
 
-## Web
+## 应用
 
 ### 使用JSX时有那些基本技巧？
 #### 传递多参数
@@ -71,8 +71,18 @@ if-else
 <ul>{[<li>first</li>, <li>second</li>]}</ul>
 ```
 
+### 为什么要使用Hooks，解决了class什么问题？
+
+class组件经历了`React.createClass`，`React.Component`,也经历了constructor的super，bind this到class filed的坑。
+
+生命周期的设计也越来越复杂多变，**为了复用生命周期的逻辑，class组件是通过HOC来完成**。但是HOC的滥用会带来额外的维护性，和不可理解性。
+
+而hooks的扁平处理可以完美解决这些问题。
 
 
+参考：
+
+[Why React Hooks? - YouTube](https://www.youtube.com/embed/eX_L39UvZes)
 
 ### React Hooks的原理
 
