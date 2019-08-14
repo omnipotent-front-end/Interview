@@ -2,6 +2,7 @@ module.exports = {
   title: "无所不能的前端--十万个为什么",
   description: "Hello world",
   themeConfig: {
+    repo: 'omnipotent-front-end/Interview',
     nav: [{ text: "awesome-url", link: "https://brizer.github.io/urls/zh/" }],
     sidebarDepth: 2,
     sidebar: {

@@ -133,3 +133,76 @@ padding: 0 90px;
 ```
 
 
+### 用css实现一个持续的动画效果
+
+``` css
+animation:mymove 5s infinite;
+@keyframes mymove {
+    from {top:0px;}
+    to {top:200px;}
+}
+
+```
+
+考察的点：
+
+值 | 描述 
+------------ | ------------- 
+animation-name|	规定需要绑定到选择器的 keyframe 名称。
+animation-duration|	规定完成动画所花费的时间，以秒或毫秒计。
+animation-timing-function|	规定动画的速度曲线。
+animation-delay|	规定在动画开始之前的延迟。
+animation-iteration-count|	规定动画应该播放的次数。
+animation-direction	| 规定是否应该轮流反向播放动画。
+
+
+### 一列固定宽度，一列自适应
+
+flex布局：
+
+
+``` html
+<style>
+body{
+    display: flex;
+}
+.left{
+    background-color: rebeccapurple;
+    height: 200px;
+    flex: 1;
+}
+.right{
+    background-color: red;
+    height: 200px;
+    width: 100px;
+}
+</style>
+<body>
+    <div class="left"></div>
+    <div class="right"></div>
+</body>
+```
+
+float配合margin：
+
+``` html
+<style>
+div {
+    height: 200px;
+}
+.left {
+    float: right;
+    width: 200px;
+    background-color: rebeccapurple;
+}
+.right {
+    margin-right: 200px;
+    background-color: red;
+}
+</style>
+<body>
+    <div class="left"></div>
+    <div class="right"></div>
+</body>
+```
+

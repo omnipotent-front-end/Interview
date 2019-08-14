@@ -741,6 +741,33 @@ Function.prototype.mybind = function (context) {
 
 ```
 
+
+### 如何实现curry？
+
+``` js
+function curry(fn){
+  var args = [...arguments].slice(1);
+  return function(){
+    var finalArgs = args.concat(...arguments);
+    return fn.apply(null,finalArgs);
+  }
+}
+
+
+//使用方法如下：
+function add(num1,num2){
+  return num1+num2;
+}
+var curriedAdd = curry(add,5);
+document.write(curriedAdd(3)+"<br>");//8
+var curriedAddB = curry(add,5,10);
+document.write(curriedAddB()+"<br>");//15
+//可以看到参数灵活多变
+
+```
+
+
+
 ### 如何实现深拷贝？
 
 首先明白深拷贝和浅拷贝的区别。**浅克隆之所以被称为浅克隆，是因为对象只会被克隆最外部的一层,至于更深层的对象,则依然是通过引用指向同一块堆内存**.
@@ -991,6 +1018,76 @@ console.log(flatten(nestedArr)); // [1,2,3,4,5,6,7]
 [多维数组展开 | effect · Issue #159 · OBKoro1/web_accumulate](https://github.com/OBKoro1/web_accumulate/issues/159)
 
 
+### 数组去重
+
+``` js
+// 数组去重，要求时间复杂度O(nlogn) 空间复杂度O(1)
+function uniqueArray(list) {
+  // 1 1 2 2 3 4
+  // 当然你可以自己写快排等nlogn的算法
+  list.sort();
+  // 剩下的代码和leetcode26题一摸一样
+
+  const size = list.length;
+  let slowP = 0;
+  for (let fastP = 0; fastP < size; fastP++) {
+    if (list[fastP] !== list[slowP]) {
+      slowP++;
+      list[slowP] = list[fastP];
+    }
+  }
+  return list.slice(0, slowP + 1);
+}
+
+console.log(uniqueArray([1, 1, 2, 2, 3, 4]));
+console.log(uniqueArray([1, 1, 6, 7, 9, 9, 8, 2, 2]));
+console.log(uniqueArray(["a", "c", "b", "z", "A", "K", "d", "D", "a"]));
+
+```
+
+使用Set
+
+``` js
+[...new Set([1,2,3,1,'a',1,'a'])]
+```
+
+
+
+### 简单实现继承
+
+子类原型指向父类的新实例，子类的constructor指向自己。
+
+``` js
+
+function extend(A, B) {
+  function f() {}
+  f.prototype = B.prototype;
+  A.prototype = new f();
+  A.prototype.constructor = A;
+}
+
+function A(name) {
+  this.name = name;
+}
+function B(name) {
+  this.name = name;
+}
+extend(A, B);
+B.prototype.say = function() {
+  console.log("b say");
+};
+A.prototype.eat = function() {
+  console.log("a eat");
+};
+
+const a = new A("a name");
+
+console.log(a.name);//a name
+a.say();//b say
+a.eat();//a eat
+
+```
+
 ### 实现一个简单的eventbus
 
 通过class的方式：
@@ -1233,4 +1330,112 @@ function fn () {
   console.log('防抖')
 }
 addEventListener('scroll', debounce(fn, 1000))
+```
+
+### 使用位运算实现加法
+
+递归，先异或、然后与运算，并左移，直到某一个数全为0，得出结果。
+
+``` js
+function twoSum(a, b) {
+  if (a === 0) return b;
+  if (b === 0) return a;
+  const res = a ^ b;
+
+  return twoSum(res, (a & b) << 1);
+}
+
+// test
+
+a = twoSum("" + Math.pow(2, 20), "" + Math.pow(2, 20));
+
+console.log(a === Math.pow(2, 21));
+```
+
+
+参考：
+
+[大前端面试宝典 - 图解前端](https://lucifer.ren/fe-interview/#/./topics/algorthimn/bitTwoSum)
+
+
+### 解析url中的参数
+
+``` js
+// 给定key，求解href中的value，如果有多个，返回数组。如果没有返回null
+function getUrlParams(key, href) {
+  const query = href.split("?");
+  if (query.length <= 1) return null;
+  // a=1&b=2&a=3
+  const pairs = query[1].split("&");
+  const res = pairs
+    .filter(pair => {
+      const [k] = pair.split("=");
+      if (k === key) return true;
+      return false;
+    })
+    .map(pair => {
+      const [, v] = pair.split("=");
+      return v;
+    });
+  if (res.length === 0) return null;
+  if (res.length === 1) return res[0];
+  return res;
+}
+
+const a = getUrlParams("a", "http://lucifer.ren?a=1&b=2&a=3");
+const b = getUrlParams("b", "http://lucifer.ren?a=1&b=2&a=3");
+const c = getUrlParams("c", "http://lucifer.ren?a=1&b=2&a=3");
+
+console.log(a);//[1,3]
+console.log(b);//2
+console.log(c);//null
+
+```
+
+### 实现字符串反转
+
+``` js
+function reverseString(str) {
+  if (str.length === 1) return str;
+
+  return reverseString(str.slice(1)) + str[0];
+}
+
+console.log(reverseString("abc"));
+console.log(reverseString("abca"));
+console.log(reverseString("8cchds7"));
+
+```
+
+### 实现无限循环动画
+
+主要使用`requestAnimationFrame`。
+
+也可以参考css版：[用css实现一个持续的动画效果](/language/css.html#%E7%94%A8css%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E6%8C%81%E7%BB%AD%E7%9A%84%E5%8A%A8%E7%94%BB%E6%95%88%E6%9E%9C)
+
+``` js
+//兼容性处理
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame    ||
+          function(callback){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+
+var e = document.getElementById("e");
+var flag = true;
+var left = 0;
+
+function render() {
+    left == 0 ? flag = true : left == 100 ? flag = false : '';
+    flag ? e.style.left = ` ${left++}px` :
+        e.style.left = ` ${left--}px`;
+}
+
+(function animloop() {
+    render();
+    requestAnimFrame(animloop);
+})();
 ```
