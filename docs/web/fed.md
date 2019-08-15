@@ -321,6 +321,88 @@ socket、cookie等等
 
 ---
 
+## 移动适配
+
+### 移动端高清屏解决方案是什么样子？
+
+- 移动端适配：flexible
+
+原理就是在不同机型下给body挂不同字体大小，页面样式通过rem对应来完成。
+
+- 多倍图
+
+视口不缩放：使用@2x两倍图
+
+视口缩放：根据不同的dpr，加载不同尺寸的图片（图片处理服务器）
+
+- 1px边框问题
+
+多种解决方案，参考[codepen](https://codepen.io/brizer/pen/bGbEyZv)
+
+使用box-shadow
+``` css
+-webkit-box-shadow:0 1px 1px -1px rgba(0, 0, 0, 0.5);
+```
+
+缺点：颜色不便控制，太淡，有虚边
+
+使用background-image
+``` css
+background-image:
+  linear-gradient(180deg, red, red 50%, transparent 50%),
+  linear-gradient(270deg, red, red 50%, transparent 50%),
+  linear-gradient(0deg, red, red 50%, transparent 50%),
+  linear-gradient(90deg, red, red 50%, transparent 50%);
+  background-size: 100% 1px,1px 100% ,100% 1px, 1px 100%;
+  background-repeat: no-repeat;
+  background-position: top, right top,  bottom, left top;
+```
+缺点：不能实现圆角1px效果，css需要做兼容处理
+
+使用border-image
+
+``` css
+border-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAECAYAAABP2FU6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5JREFUeNpiPnH8zH/G////MzAxAAHTyRNn/wMEGABpvQm9g9TJ1QAAAABJRU5ErkJggg==") 2 0 stretch;
+border-width:0px 0px 1px;
+```
+
+缺点：边框颜色不便修改
+
+伪类:after & transform: scale(0.5)
+
+``` css
+.box4
+  position relative
+  &:after
+    content ''
+    display block
+    position absolute
+    top -50%
+    left -50%
+    bottom -50%
+    right -50%
+    border 1px solid red
+    -webkit-transform scale(0.5)
+    transform scale(0.5)
+```
+
+缺点：占用了伪类，容易和原样式冲突
+
+使用0.5px适配ios8以上的iPhone机型
+
+``` css
+@media (-webkit-min-device-pixel-ratio:2){
+ .box5 {border-width:.5px}
+}
+```
+缺点：只适用于ios8+以上的iOS系统，安卓机不支持0.5px
+
+参考：
+
+[移动端高清屏适配方案 - 前端 - 掘金](https://juejin.im/entry/585b653061ff4b0058026ca4)
+
+---
+
 ## 应用服务方面
 
 ### 十万条数据插入数据库，怎么去优化和处理高并发情况下的DB插入
