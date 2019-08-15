@@ -1,5 +1,21 @@
 # Webpack
 
+---
+
+## 应用
+
+### loader和plugin有什么区别？具体举一些常用的和其作用。
+
+- loader 用于对模块的源代码进行转换。loader 可以使你在 import 或"加载"模块时**预处理文件**。因此，loader 类似于其他构建工具中“任务(task)”，并提供了处理前端构建步骤的强大方法。loader 可以将文件从不同的语言（如 TypeScript）转换为 JavaScript，或将内联图像转换为 data URL。loader 甚至允许你直接在 JavaScript 模块中 import CSS文件！ 因为 webpack 本身只能处理 JavaScript，如果要处理其他类型的文件，就需要使用 loader 进行转换，**loader 本身就是一个函数，接受源文件为参数，返回转换的结果**。
+
+- Plugin 是用来扩展 Webpack 功能的，通过在**构建流程里注入钩子实现**，它给 Webpack 带来了很大的灵活性。 通过plugin（插件）webpack可以实 loader 所不能完成的复杂功能，使用 plugin 丰富的自定义 API 以及生命周期事件，可以控制 webpack 打包流程的每个环节，实现对 webpack 的自定义功能扩展。
+
+
+常用的及作用可以参考：[Webpack | Awesome-url](https://brizer.github.io/urls/zh/webpack_zh.html)
+
+
+---
+
 ## 原理
 
 ### webpack热替换的原理是什么？
@@ -27,5 +43,44 @@
 
 
 
+### 整体工作流程是什么样子的？
 
+
+核心概念：
+- entry 一个可执行模块或库的入口文件。
+- chunk **多个文件组成的一个代码块**，例如把一个可执行模块和它所有依赖的模块组合和一个 chunk 这体现了webpack的打包机制。
+- loader **文件转换器**，例如把es6转换为es5，scss转换为css。
+- plugin 插件，用于扩展webpack的功能，**在webpack构建生命周期的节点上加入扩展hook为webpack加入功能**。
+
+
+构建流程：
+
+从启动webpack构建到输出结果经历了一系列过程，它们是：
+
+1、解析webpack配置参数，合并从shell传入和webpack.config.js文件里配置的参数，生产最后的配置结果。
+
+2、注册所有配置的插件，好让插件监听webpack构建生命周期的事件节点，以做出对应的反应。
+
+3、从配置的entry入口文件开始解析文件构建AST语法树，找出每个文件所依赖的文件，递归下去。
+
+4、在解析文件递归的过程中根据文件类型和loader配置找出合适的loader用来对文件进行转换。
+
+5、递归完后得到每个文件的最终结果，根据entry配置生成代码块chunk。
+
+6、输出所有chunk到文件系统。
+
+需要注意的是，在构建生命周期中有一系列插件在合适的时机做了合适的事情，比如UglifyJsPlugin会在loader转换递归完后对结果再使用UglifyJs压缩覆盖之前的结果。
+
+如图：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190815092046.png"/>
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190815092115.png"/>
+
+
+参考：
+
+[webpack系列之一总览 · Issue #36 · DDFE/DDFE-blog](https://github.com/DDFE/DDFE-blog/issues/36)
+
+[Webpack揭秘——走向高阶前端的必经之路 - 腾讯Web前端 IMWeb 团队社区 | blog | 团队博客](https://imweb.io/topic/5baca58079ddc80f36592f1a)
 
