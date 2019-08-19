@@ -39,6 +39,27 @@ Flex 布局是轴线布局，只能指定"项目"针对轴线的位置，可以�
 
 通过postcss，autoprefix，browserslist来在构建的阶段通过分析语法树，自动加到前缀中。
 
+### position有哪些取值？
+
+relative,static,absolute,sticky,fixed,initial,inherit,unset。
+
+### initial、inherit 和 unset是什么意思？
+
+initial 关键字用于设置 CSS 属性为它的默认值，可作用于任何 CSS 样式。
+
+inherit 用来控制继承，每一个 CSS 属性都有一个特性就是，这个属性必然是默认继承的 (inherited: Yes) 或者是默认不继承的 (inherited: no)。
+
+unset是关键字 initial 和 inherit 的组合。
+
+什么意思呢？也就是当我们给一个 CSS 属性设置了 unset 的话：
+
+如果该属性是默认继承属性，该值等同于 inherit；
+如果该属性是非继承属性，该值等同于 initial
+
+参考：
+
+[谈谈 CSS 关键字 initial、inherit 和 unset - 最骚的就是你 - 博客园](https://www.cnblogs.com/libin-1/p/6734751.html)
+
 
 
 ## 编码

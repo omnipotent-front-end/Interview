@@ -70,6 +70,8 @@ V8 使用了不同的垃圾回收算法 Scavenge、Mark-Sweep、Mark-Compact。�
 
 [Node.js内存管理和V8垃圾回收机制](https://zhuanlan.zhihu.com/p/72380507?utm_source=wechat_session&utm_medium=social&utm_oi=41809770184704&from=singlemessage&isappinstalled=0&wechatShare=1&s_r=0)
 
+[引擎V8推出“并发标记”，可节省60%-70%的GC时间 - 前端 - 掘金](https://juejin.im/entry/5b1fa706e51d4506a14dd041)
+
 
 ### 谈谈浏览器加载的逻辑
 

@@ -185,7 +185,7 @@ Object.defineProperty有如下缺陷：
 
 这也是为什么Vue3会基于Proxy的原因。
 
-
+如果要自己实现，可以参考：[基于object-defineproperty实现双向绑定](/language/javascript.html#%E5%9F%BA%E4%BA%8Eobject-defineproperty%E5%AE%9E%E7%8E%B0%E5%8F%8C%E5%90%91%E7%BB%91%E5%AE%9A)和[基于proxy实现双向绑定](/language/javascript.html#%E5%9F%BA%E4%BA%8Eproxy%E5%AE%9E%E7%8E%B0%E5%8F%8C%E5%90%91%E7%BB%91%E5%AE%9A)。
 
 ### 为什么Vue的模板必须要有一个根元素？
 

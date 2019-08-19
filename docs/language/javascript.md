@@ -75,11 +75,234 @@ Object.prototype.toString.call(undefined);  //  "[object Undefined]"
 
 [JS数据类型分类和判断 - 掘金](https://juejin.im/post/5b2b0a6051882574de4f3d96)
 
+### toString和valueOf有什么区别？
+
+- valueOf(): 返回**最适合该对象类型的原始值**；
+- toString(): 将该对象的原始值**以字符串形式**返回。
+
+这两个方法一般是交由JS去隐式调用，以满足不同的运算情况。在数值运算里，会优先调用valueOf()，如a + b；
+
+在字符串运算里，会优先调用toString()，如alert(c)
+
+看一个例子：
+
+
+``` js
+var x = {
+    toString: function () { return "foo"; },
+    valueOf: function () { return 42; }
+};
+
+alert(x); // foo
+"x=" + x; // "x=42"
+x + "=x"; // "42=x"
+x + "1"; // 421
+x + 1; // 43
+["x=", x].join(""); // "x=foo"
+```
+
+
+最后给个对比：
+
+``` js
+//再看看valueOf()方法的结果
+const a = 3;
+const b = '3';
+const c = true;
+const d = {test:'123',example:123}
+const e = function(){console.log('example');}
+const f = ['test','example'];
+const g = [];
+const h = '';
+const i = {};
+const j = /\d/g;
+
+
+console.log(a.valueOf());// 3
+console.log(b.valueOf());// "3"
+console.log(c.valueOf());// true
+console.log(d.valueOf());// {test:'123',example:123}
+console.log(e.valueOf());// function(){console.log('example');}
+console.log(f.valueOf());// ['test','example']
+console.log(g.valueOf());// []
+console.log(h.valueOf());// ''
+console.log(i.valueOf());// {}
+console.log(j.valueOf());// /\d/g
+
+console.log(a.toString());// "3"
+console.log(b.toString());// "3"
+console.log(c.toString());// 'true'
+console.log(d.toString());// '[object Object]'
+console.log(e.toString());// 'function(){console.log('example');}'
+console.log(f.toString());// 'test','example'
+console.log(g.toString());// ''
+console.log(h.toString());// ''
+console.log(i.toString());// '[object Object]'
+console.log(j.toString());// '/\d/g'
+```
+
+参考：
+
+[valueOf() vs. toString() in Javascript - Stack Overflow](https://stackoverflow.com/questions/2485632/valueof-vs-tostring-in-javascript)
+
+[js中toString和valueOf的区别？ - 知乎](https://www.zhihu.com/question/24262399)
 
 
 ### 'hello' 和 new String('hello')有什么区别？
 
 String是值类型，Object是引用类型。值类型存储在栈中，引用类型存储在堆中。`'hello'`是String，而`new String('hello')`是个Object。
+
+
+### js中的==和+背后的类型操作，以及一些常见判断。
+
+
+在使用 == 进行判断时，隐式转换的内部机制，判断步骤如下：
+
+- 两个操作数类型一样的情况：
+
+  - 如果两个操作数是同类基本类型值，则直接比较
+
+  - 如果两个操作数是同类引用类型值，则比较内存地址
+
+- 两个操作数类型不一样的情况：
+
+  - 如果有一个操作数是布尔值，则将这个**布尔值转换为数字**再进行比较。
+  - 如果有一个操作数是字符串，另一个操作数是数字，则将**字符串转换成数字**再进行比较
+  - 如果有一个操作数是**引用类型的值，则调用该实例的 valueOf 方法，如果得到的值不是基本类型的值，再调用该实例的 toString 方法**，用得到的基本类型的值按照前面的规则进行匹配对比。
+
+valueOf和toString的区别参考：[tostring和valueof有什么区别？](/language/javascript.html#tostring%E5%92%8Cvalueof%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
+
+特殊情况为：
+
+1、null == undefined 判断为 true
+
+2、null 和 undefined 无法转换为基本类型值
+
+3、NaN != NaN 判断为 true，事实上，NaN 更像一个特例，谁都不等于
+
+
+使用 + 进行判断时
+
+- 两个操作数都为数字时直接运行加法操作
+- 其他情况下，会优先调用valueOf 方法，经过转换之后的任一个为字符串，则会优先进行字符串连接；否则转为数字类型，进行数字运算。
+
+使用除 + 号以外的四则运算符判断时
+
+- 直接进行数学运算，行就行，不行就直接 NaN，简单粗暴。
+
+下面是一些常见类型转换题汇总：
+
+第一题：
+``` js
+console.log([] == ![])//true
+```
+流程如下：
+
+``` js
+// 尝试判断，!运算符的优先级大于 ==，所以实际上这里还涉及到!的运算。
+[] == ![]
+// 将右边 ![] 进行转换
+[] == false
+// 隐式转换布尔值为数字
+[] == 0
+// 转换左边的 []，调用 [] 实例的 valueOf 方法
+[] == 0
+// valueOf 方法返回的不是基本类型值，再次调用 toString 方法
+'' == 0
+// 隐式转换字符串为数字
+0 == 0
+// 返回结果
+true
+```
+
+第二题：
+
+``` js
+console.log({} == !{})//false
+```
+
+流程为:
+
+``` js
+// 尝试判断，!运算符的优先级大于 ==，所以实际上这里还涉及到!的运算。
+{} == !{}
+// 将右边 !{} 进行转换 
+{} == false
+// 隐式转换布尔值为数字
+{} == 0
+// 转换左边的 {}，调用 {} 实例的 valueOf 方法
+{} == 0
+// valueOf 方法返回的不是基本类型值，再次调用 toString 方法
+'[object Object]' == 0
+// 隐式转换字符串为数字
+1 == 0
+// 返回结果
+false
+
+```
+
+第三题
+
+``` js
+console.log(1 + '1')//'11'
+```
+流程为：
+``` js
+// 进行valueOf判断后发现第二个1为字符串，从而进行字符串拼接
+'1'+'1'
+// 返回结果
+'11'
+```
+
+第四题
+
+``` js
+console.log(true + true)//2 
+```
+
+流程为：
+
+``` js
+// 首先valueOf，还是true，则转为数字类型
+1 + 1
+//返回结果
+2
+```
+
+第五题
+
+``` js
+console.log(4 + [])//'4'
+```
+
+流程为：
+
+``` js
+// 进行valueOf
+4 + ''
+//有字符串，所以转字符串拼接
+
+'4'+ ''
+
+//返回结果
+'4'
+```
+
+其余简单题
+
+``` js
+console.log(4 + {})//'4[object Object]'
+console.log(4 + [1])//'41'
+console.log(4 + [1, 2, 3, 4] )//'41,2,3,4'
+console.log('a' + + 'b')//'aNaN'
+```
+
+
+参考：
+
+[[基础] JavaScript 类型转换及面试题 - 掘金](https://juejin.im/post/5c3c4d84f265da6142741c9f)
+
+
 
 ### let在全局作用域声明的变量在window上吗？
 
@@ -1479,20 +1702,18 @@ add();
 不做封装的简陋版：
 
 ``` js
-var throttle;
-
-
-v._$addEvent(document, 'scroll', function () {
+let throttle;
+window.addEventListener('scroll', () => {
     if(throttle){
         return;
     }
 
     throttle = setTimeout(function () {
-        loadModule();
+        console.warn('节流')
 
         throttle = clearTimeout(throttle);
     }, 300);
-});
+},false);
 ```
 
 通过闭包的封装版：
@@ -1516,27 +1737,27 @@ function throttle (fn, delay) {
 function fn () {
   console.log('节流')
 }
-addEventListener('scroll', throttle(fn, 1000))
+addEventListener('scroll', throttle(fn, 300))
 ```
+
+应用场景：
+
+- 滑动时不要触发多次；
 
 ### 函数防抖
 
-不做封装的简陋版：
+和节流的区别在于，在规定时间内再次执行的话，会清除定时器再重设定时器，也就是说**只有最后一次之后指定时间后，才会执行到真正的fn**。
 
+不做封装的简陋版：
 ``` js
-var isclick= true;
-function click(){
-    if(isclick){
-        isclick= false;
-        //下面添加需要执行的事件
-            ...
- 
-        //定时器
-        setTimeout(function(){ 
-            isclick = true;
-        }, 500);
-    }
-}
+let throttle;
+window.addEventListener('scroll', () => {
+    // 在规定时间内再次触发会先清除定时器后再重设定时器
+    throttle = clearTimeout(throttle);
+    throttle = setTimeout(function () {
+        console.warn('防抖')      
+    }, 300);
+},false);
 ```
 
 通过闭包的封装版：
@@ -1562,6 +1783,12 @@ function fn () {
 }
 addEventListener('scroll', debounce(fn, 1000))
 ```
+
+应用场景：
+
+- 表单输入框校验最后输入完才执行校验函数；
+- 频繁点赞取消，最后只发一次接口；
+- 电梯最后一个进门的人之后延时关门；
 
 ### 使用位运算实现加法
 
@@ -1637,6 +1864,30 @@ console.log(reverseString("abca"));
 console.log(reverseString("8cchds7"));
 
 ```
+
+### 千位分隔
+
+一串整数转换成千位分隔形式，例如10000000000，转换成10,000,000,000。
+
+思路为：**把每三位数字前面的那个空""匹配出来，并替换成千位分隔符，第一位要除外**。
+
+代码为：
+
+``` js
+var str = "100000000000",
+    reg = /(?=(\B\d{3})+$)/g;
+console.log(str.replace(reg, ","));
+```
+
+其中`(?=p)`为**零宽正向先行断言**，要求接下来的字符都与p匹配，但不能包括匹配p的那些字符。用来匹配到每三位数前面的`""`。
+
+`\B`为匹配非单词边界的位置。用来排查第一个在满足3的倍速位时加上了`,`符合。
+
+参考：
+
+[把一串数字表示成千位分隔形式——JS正则表达式的应用 - 掘金](https://juejin.im/post/5abb5b01f265da237f1e5a92)
+
+
 
 ### 实现无限循环动画
 
