@@ -1,6 +1,19 @@
 # 浏览器相关
 
-## 浏览器缓存
+
+## 应用
+
+
+### 移动端浏览器点击事件触发顺序
+
+touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->mousedown --> mouseup --> click -->touchend
+
+
+---
+
+
+
+## 原理
 
 ### 请求时浏览器缓存 from memory cache 和 from disk cache 的区别是什么？
 
@@ -18,8 +31,6 @@
 参考地址：
 [深入理解浏览器的缓存机制](https://www.jianshu.com/p/54cc04190252)
 
-
-## 垃圾回收
 
 ### 谈谈V8中的GC策略
 
@@ -55,9 +66,152 @@ V8 使用了不同的垃圾回收算法 Scavenge、Mark-Sweep、Mark-Compact。�
 
 
 
+参考：
 
+[Node.js内存管理和V8垃圾回收机制](https://zhuanlan.zhihu.com/p/72380507?utm_source=wechat_session&utm_medium=social&utm_oi=41809770184704&from=singlemessage&isappinstalled=0&wechatShare=1&s_r=0)
+
+
+### 谈谈浏览器加载的逻辑
+
+当浏览器获得一个html文件时，会”自上而下“加载，并在加载过程中进行解析渲染。 
+
+加载过程中遇到外部css文件，浏览器另外发出一个请求，来获取css文件。 
+
+遇到图片资源，浏览器也会另外发出一个请求，来获取图片资源。
+
+**css/图片这些异步请求，并不会影响html文档进行加载**。
+
+但是**当文档加载过程中遇到js文件，html文档会挂起渲染（加载解析渲染同步）的线程，不仅要等待文档中js文件加载完毕，还要等待解析执行完毕，才可以恢复html文档的渲染线程**。
+
+一个**不太严谨但方便记忆的口诀：JS 全阻塞，CSS 半阻塞JS**
+
+- JS会阻塞后续 DOM 解析以及其它资源(如 CSS，JS 或图片资源)的加载。
+- CSS不阻塞DOM的加载和解析（它只阻塞DOM的渲染呈现。这里谈加载），不会阻塞其它资源(如图片)的加载，但是会阻塞 后续JS 文件的执行（原因之一是，js执行代码可能会依赖到css样式。css只阻塞执行而不阻塞js的加载）。
+- 鉴于上面的特性，当css后面存在js的时候，css会间接地阻塞js后面资源的加载（css阻塞js，js阻塞其他资源 ）。
+- 现代浏览器会进行 prefetch 优化，浏览器在获得 html 文档之后会对页面上引用的资源进行提前下载 。       
+
+外联js文件使用defer属性和asyn可以达到异步非阻塞加载的效果，**由于现代浏览器都存在 prefetch，所以 defer, async 可能并没有太多的用途**，可以作为了解扩展知识，仅仅将脚本文件放到 body 底部(但还是在</body>之前)就可以起到很不错的优化效果（遵循先解析再渲染再执行script这个顺序）。当把js放在最后的时候，其实浏览器将自动忽略</body>标签，从而自动在最后的最后补上</body>。
+
+
+### 谈谈浏览器解析过程
+
+1、浏览器通过请求的 URL 进行域名解析，向服务器发起请求，接收文件（HTML、CSS、JS、Images等等）。
+
+2、HTML 文件加载后，开始构建 DOM Tree（DOM树）
+
+3、CSS 样式文件加载后，开始解析和构建 CSS Rule Tree
+
+4、Javascript 脚本文件加载后， 通过 DOM API 和 CSSOM API 来操作 DOM Tree 和 CSS Rule Tree
+
+
+### 谈谈浏览器渲染过程
+
+
+浏览器采用流式布局模型（Flow Based Layout）
+
+浏览器会把HTML解析成DOM，把CSS解析成CSSOM，**DOM和CSSOM合并就产生了渲染树（Render Tree）**。
+
+有了RenderTree，我们就知道了所有节点的样式，然后计算他们在页面上的大小和位置，最后把节点绘制到页面上。
+
+由于浏览器使用流式布局，对Render Tree的计算通常只需要遍历一次就可以完成，但table及其内部元素除外，他们可能需要多次计算，通常要花3倍于同等元素的时间，这也是**为什么要避免使用table布局**的原因之一。
+
+
+### 重排和重绘是什么？
+
+由于**节点的几何属性发生改变或者由于样式发生改变**而**不会影响布局**的，称为**重绘**，例如outline, visibility, color、background-color等，重绘的代价是高昂的，因为浏览器必须验证DOM树上其他节点元素的可见性。
+
+**重排**是布局或者几何属性需要改变。重排是影响浏览器性能的关键因素，因为其变化涉及到部分页面（或是整个页面）的布局更新。一个元素的重排可能会导致了其所有子元素以及DOM中紧随其后的节点、祖先节点元素的随后的重排。
+
+**重排必定会发生重绘，重绘不一定会引发重排。**
+
+### 如何避免重排和重绘？
+
+js方面：
+
+现代浏览器做了一定的优化，通过队列机制来批量更新布局，浏览器会把修改操作放在队列中，至少一个帧（即16.6ms）才会清空队列，但当你获取布局信息的时候，队列中可能有会影响这些属性或方法返回值的操作，即使没有，浏览器也会强制清空队列，触发重排与重绘来确保返回正确的值。
+
+主要包括以下属性或方法：
+
+offsetTop、offsetLeft、offsetWidth、offsetHeight
+scrollTop、scrollLeft、scrollWidth、scrollHeight
+clientTop、clientLeft、clientWidth、clientHeight
+
+width、height
+
+getComputedStyle()
+
+
+所以，我们应该**避免频繁的使用上述的属性，他们都会强制渲染刷新队列**。
+
+
+css方面：
+
+- 使用 transform 替代 top
+
+- 使用 visibility 替换 display: none ，因为前者只会引起重绘，后者会引发回流（改变了布局
+
+- 避免使用table布局，可能很小的一个小改动会造成整个 table 的重新布局。
+
+- 尽可能在DOM树的最末端改变class，回流是不可避免的，但可以减少其影响。尽可能在DOM树的最末端改变class，可以限制了回流的范围，使其影响尽可能少的节点。
+
+- 避免设置多层内联样式，CSS 选择符从右往左匹配查找，避免节点层级过多。
+
+- 将动画效果应用到position属性为absolute或fixed的元素上，避免影响其他元素的布局，这样只是一个重绘，而不是回流，同时，控制动画速度可以选择 requestAnimationFrame，详见探讨 requestAnimationFrame。
+
+- 避免使用CSS表达式，可能会引发回流。
+
+- 将频繁重绘或者回流的节点设置为图层，图层能够阻止该节点的渲染行为影响别的节点，例如will-change、video、iframe等标签，浏览器会自动将该节点变为图层。
+
+- CSS3 硬件加速（GPU加速），使用css3硬件加速，可以让transform、opacity、filters这些动画不会引起回流重绘 。但是对于动画的其它属性，比如background-color这些，还是会引起回流重绘的，不过它还是可以提升这些动画的性能。
+
+
+
+### 浏览器中输入url到页面呈现到底发生了什么？
+
+总体分为以下几个步骤：
+
+1、DNS解析
+
+2、TCP连接
+
+3、发送HTTP请求
+
+4、服务器处理请求并返回HTTP报文
+
+5、浏览器解析渲染页面
+
+6、连接结束
+
+
+
+DNS解析参考：[简单说下dns解析的过程](/cp/network.html#%E7%AE%80%E5%8D%95%E8%AF%B4%E4%B8%8Bdns%E8%A7%A3%E6%9E%90%E7%9A%84%E8%BF%87%E7%A8%8B)
+
+TCP连接参考：[如何理解三次握手和四次挥手？](/cp/network.html#%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%92%8C%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%9F)
+
+HTTP参考：[https的握手过程是什么样子的？](/cp/network.html#https%E7%9A%84%E6%8F%A1%E6%89%8B%E8%BF%87%E7%A8%8B%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%B7%E5%AD%90%E7%9A%84%EF%BC%9F)
+
+浏览器加载渲染参考：[谈谈浏览器加载的逻辑](/cp/browser.html#%E8%B0%88%E8%B0%88%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8A%A0%E8%BD%BD%E7%9A%84%E9%80%BB%E8%BE%91)
+
+
+### 浏览器的事件流模型是什么样子的？为什么一般在冒泡阶段处理事件？如何在冒泡阶段处理？
+
+模型为：
+
+捕获-》目标-》冒泡
+
+在冒泡阶段处理的原因是：
+
+1、兼容性：
+
+对于绑定事件，ie低版本的浏览器是用attachEvent，而高版本ie和标准浏览器用的是addEventListener，**attachEvent不能指定绑定事件发生在捕获阶段还是冒泡阶段，它只能将事件绑定到冒泡阶段**，但是并不意味这低版本的ie没有事件捕获，它也是先发生事件捕获，再发生事件冒泡，只不过这个过程无法通过程序控制。
+
+2、为事件代理(委托)提供条件，即事件代理依赖事件冒泡。
+
+通过addEventListener的第三个参数来决定，为true则是捕获，为false或默认都是冒泡。
 
 
 参考：
 
-[Node.js内存管理和V8垃圾回收机制](https://zhuanlan.zhihu.com/p/72380507?utm_source=wechat_session&utm_medium=social&utm_oi=41809770184704&from=singlemessage&isappinstalled=0&wechatShare=1&s_r=0)
+[浏览器事件模型中捕获阶段、目标阶段、冒泡阶段实例详解 - 本期节目 - SegmentFault 思否](https://segmentfault.com/a/1190000003482372)
+
+[浏览器事件有哪些过程? 为什么一般在冒泡阶段，而不是在捕获阶段注册监听? · Issue #11 · maoxiaoke/one-day-one-puzzle](https://github.com/maoxiaoke/one-day-one-puzzle/issues/11)

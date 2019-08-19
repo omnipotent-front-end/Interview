@@ -401,6 +401,78 @@ border-width:0px 0px 1px;
 
 [移动端高清屏适配方案 - 前端 - 掘金](https://juejin.im/entry/585b653061ff4b0058026ca4)
 
+
+### 移动web为什么有300ms延迟，怎么解决？
+
+300ms的原因在于：由于移动端会有**双击缩放**的这个操作，因此浏览器在**click之后要等待300ms，看用户有没有下一次点击**，也就是这次操作是不是双击。
+
+解决方案：
+
+1、禁用缩放
+
+由于是缩放导致的延迟判断逻辑，所以在meta中声明禁止缩放，浏览器就可以放弃这段识别逻辑了。
+
+``` html
+<meta name="viewport" content="user-scalable=no">
+<meta name="viewport" content="initial-scale=1,maximum-scale=1">
+```
+
+2、touch-action
+
+`touch-action`这个CSS属性。这个属性指**定了相应元素上能够触发的用户代理（也就是浏览器）的默认行为**。如果将该属性值设置为`touch-action: none`，那么表示在该元素上的操作**不会触发用户代理的任何默认行为**，就无需进行300ms的延迟判断，可惜目前safari还不支持。
+
+3、第三方库手动判断
+
+比如fastclick，实现原理是在**检测到touchend事件的时候，会通过DOM自定义事件立即出发模拟一个click事件，并把浏览器在300ms之后的click事件阻止掉**。
+
+
+参考：
+
+[移动端300ms点击延迟和点击穿透 - 掘金](https://juejin.im/post/5b3cc9836fb9a04f9a5cb0e0)
+
+### 什么是点透问题，如何解决呢？
+
+先理解了[移动web为什么有300ms延迟，怎么解决？](/web/fed.html#%E7%A7%BB%E5%8A%A8web%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89300ms%E5%BB%B6%E8%BF%9F%EF%BC%8C%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3%EF%BC%9F)，既然click点击有300ms的延迟，那对于触摸屏，我们直接监听touchstart事件不就好了吗？
+
+使用touchstart去代替click事件有两个不好的地方。
+
+第一：touchstart是手指触摸屏幕就触发，有时候用户只是想滑动屏幕，却触发了touchstart事件，这不是我们想要的结果；
+
+第二：使用touchstart事件在某些场景下可能会出现点击穿透的现象。
+
+
+点透就是说：
+
+假如页面上有两个元素A和B。B元素在A元素之上。我们在B元素的touchstart事件上注册了一个回调函数，该回调函数的作用是隐藏B元素。我们发现，当我们点击B元素，B元素被隐藏了，随后，A元素触发了click事件。
+
+这是因为在移动端浏览器，事件执行的顺序是touchstart > click。**而click事件有300ms的延迟**，当touchstart事件把B元素隐藏之后，隔了300ms，浏览器触发了click事件，但是**此时B元素不见了，所以该事件被派发到了A元素身上**。如果A元素是一个链接，那此时页面就会意外地跳转。
+
+参考：[移动端浏览器点击事件触发顺序](/cp/browser.html#%E7%A7%BB%E5%8A%A8%E7%AB%AF%E6%B5%8F%E8%A7%88%E5%99%A8%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6%E8%A7%A6%E5%8F%91%E9%A1%BA%E5%BA%8F)。
+移动浏览器事件触发顺序为：
+
+touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->mousedown --> mouseup --> click -->touchend
+
+解决方案：
+
+1、只用touch
+
+最简单的解决方案，完美解决点击穿透问题**把页面内所有click全部换成touch事件（touchstart、’touchend’、’tap’）**，需要特别注意a标签，**a标签的href也是click**，需要去掉换成js控制的跳转，或者直接改成span + tap控制跳转。如果要求不高，不在乎滑走或者滑进来触发事件的话，span + touchend就可以了，毕竟tap需要引入第三方库。
+
+2、只用click
+
+会带来300ms延迟，页面内任何一个自定义交互都将增加300毫秒延迟。
+不用touch就不会存在touch之后300ms触发click的问题，如果交互性要求不高可以这么做。
+
+3、使用第三方库
+
+比如fastclick，实现原理是在**检测到touchend事件的时候，会通过DOM自定义事件立即出发模拟一个click事件，并把浏览器在300ms之后的click事件阻止掉**。
+
+参考：
+
+[移动端300ms点击延迟和点击穿透 - 掘金](https://juejin.im/post/5b3cc9836fb9a04f9a5cb0e0)
+
+
+
 ---
 
 ## 应用服务方面
@@ -474,3 +546,56 @@ AWS Lambda自动运行足够的微服务实例来处理请求。只需要根据�
 
 [如何部署微服务](https://zhuanlan.zhihu.com/p/43832944)
 
+
+### Node应用如何容灾？
+
+1.动态降频
+wormhole主要消耗性能的地方就在模板引擎渲染这部分，在并发访问量大的情况下，频繁的模板渲染会导致系统负载急剧飙升，导致响应延迟。判断是否到达阀值，然后不走服务端渲染，全部客户端渲染。
+
+2.CDN兜底
+动态降频能够保证大部分情况下的快速响应；但是，如果集群全部宕机，则也无能为了。所以需要通过CDN来兜底。
+
+3.限流
+
+在应用层计数，超过阀值直接限流
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190816135521.png"/>
+
+4.多进程模型
+
+是否采用多进程可以综合考虑：[node应用的单进程和多进程模型有什么优缺点？](/language/node.html#node%E5%BA%94%E7%94%A8%E7%9A%84%E5%8D%95%E8%BF%9B%E7%A8%8B%E5%92%8C%E5%A4%9A%E8%BF%9B%E7%A8%8B%E6%A8%A1%E5%9E%8B%E6%9C%89%E4%BB%80%E4%B9%88%E4%BC%98%E7%BC%BA%E7%82%B9%EF%BC%9F)。如果部署方式为虚拟机，可以考虑用多进程模型充分利用CPU数量；如果部署方式为docker配k8s，建议单进程，把稳定性保障交给k8s。部署方式的区别：[有哪些应用服务的部署方式？分别有什么优缺点？](/web/fed.html#%E6%9C%89%E5%93%AA%E4%BA%9B%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E7%9A%84%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F%EF%BC%9F%E5%88%86%E5%88%AB%E6%9C%89%E4%BB%80%E4%B9%88%E4%BC%98%E7%BC%BA%E7%82%B9%EF%BC%9F)
+
+5.多集群部署
+
+健康检查，要求每个节点实现一个健康检查的 http 接口，然后 Nginx Server 会定时地轮训这个 URL 来做检查，当返回的 status_code 非 200 时，认为节点宕机，不再导流到这台 Node 服务器。
+
+6.各种监控
+
+异常监控、性能报警等等。
+
+
+参考：
+
+[天猫双11前端分享系列(二)：天猫双11页面服务容灾方案大揭秘 · Issue #26 · tmallfe/tmallfe.github.io](https://github.com/tmallfe/tmallfe.github.io/issues/26)
+
+---
+
+## 其他
+
+### 服务端渲染和同构的原理是什么？
+
+这里以react的框架next为例。
+
+**getInitialProps()能够在服务的运行，也能够在client运行**。当页面第一次加载时，服务器收到请求，getInitialProps()会执行，getInitialProps()返回的数据，会序列化后添加到 `window.__NEXT_DATA__.props`上，写入HTML源码里，类似于`<script>window.__NEXT_DATA__={props:{xxx}}</script>`。
+
+这样服务端的getInitialProps()就**实现了把数据传送给了客户端**。
+
+客户端的收到了HTML源码，有了数据，想做什么都可以。比如可以拿着`window.__NEXT_DATA__.props`的数据来**初始化React组件的props属性**。
+
+具体过程如下：
+当页面是用户通过超链接跳转过去，而不是用户输入网址或刷新来访问的，这时候是纯客户端的行为，没有HTTP请求发出去。用户如果通过超链接跳转回这个页面，客户端的getInitialProps()开始起作用了，它会自动读取HTML源码里 window.__NEXT_DATA__.props里的数据并作为React组件的props。
+
+
+### 怎么实现草稿，多终端同步，以及冲突问题（todo）
+
+### 分析一下移动端日历，PC端日历以及桌面日历的一些不同和需要注意的地方(todo)

@@ -92,6 +92,45 @@ XMLHttpRequest 阻止
 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
 ```
 
+### get和post有什么区别？越底层越好。
+
+- GET在浏览器回退时是无害的，而POST会再次提交请求。
+
+- GET产生的URL地址可以被Bookmark，而POST不可以。
+
+- GET请求会被浏览器主动cache，而POST不会，除非手动设置。
+
+- GET请求只能进行url编码，而POST支持多种编码方式。
+
+- GET请求参数会被完整保留在浏览器历史记录里，而POST中的参数不会被保留。
+
+- GET请求在URL中传送的参数是有长度限制的，而POST么有。
+
+- 对参数的数据类型，GET只接受ASCII字符，而POST没有限制。
+
+- GET比POST更不安全，因为参数直接暴露在URL上，所以不能用来传递敏感信息。
+
+- GET参数通过URL传递，POST放在Request body中。
+
+- **GET产生一个TCP数据包；POST产生两个TCP数据包**。
+
+对于GET方式的请求，浏览器会把http header和data一并发送出去，服务器响应200（返回数据）；
+
+而对于POST，浏览器先发送header，服务器响应100 continue，浏览器再发送data，服务器响应200 ok（返回数据）。
+
+当然每个浏览器实现不一致，但是这是标准规范。
+
+
+
+参考：
+
+[99%的人理解错 HTTP 中 GET 与 POST 的区别 - OSCHINA](https://www.oschina.net/news/77354/http-get-post-different)
+
+### http状态码之304
+
+参考[http有哪些常用的head，说一下各自的作用？](/cp/network.html#http%E6%9C%89%E5%93%AA%E4%BA%9B%E5%B8%B8%E7%94%A8%E7%9A%84head%EF%BC%8C%E8%AF%B4%E4%B8%80%E4%B8%8B%E5%90%84%E8%87%AA%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9F)中的304缓存来说。
+
+
 
 ## TCP
 
@@ -110,4 +149,25 @@ XMLHttpRequest 阻止
 如果在相同网段直接先查询arp缓存，如果找到目标ip的mac地址，直接发送出去。 如果缓存中查不到，则从相同网段的网卡发arp问目标ip的mac地址，拿到mac地址后发送出去。
 
 如果不在主机的网段里，会查询默认网关ip，接着查询arp缓存，是否有网关的mac地址记录，如果有，填充该mac地址，发送出去， 如果没有，发arp问网关的mac地址，得到结果，发送出去。
+
+### 简单说下DNS解析的过程
+
+DNS解析的过程就是一个网址到IP地址的转换。
+
+DNS解析是一个递归查询的过程。流程图如下：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190816094319.png"/>
+
+
+上述图片是查找www.google.com的IP地址过程。首先在本地域名服务器中查询IP地址，如果没有找到的情况下，**本地域名服务器会向根域名服务器**发送一个请求，如果根域名服务器也不存在该域名时，**本地域名会向com顶级域名服务器发送一个请求**，依次类推下去。直到最后**本地域名服务器得到google的IP地址并把它缓存到本地**，供下次查询使用。从上述过程中，可以看出网址的解析是一个从右向左的过程: `com -> google.com -> www.google.com`。但是你是否发现少了点什么，根域名服务器的解析过程呢？事实上，真正的网址是`www.google.com.`，并不是我多打了一个.，这个.对应的就是根域名服务器，默认情况下所有的网址的最后一位都是.，既然是默认情况下，为了方便用户，通常都会省略，浏览器在请求DNS的时候会自动加上，**所有网址真正的解析过程为: `. -> .com -> google.com. -> www.google.com.`。**
+
+为了加快查找速度，会有**DNS缓存**：
+
+DNS存在着多级缓存，从离浏览器的距离排序的话，有以下几种: **浏览器缓存，系统缓存，路由器缓存，IPS服务器缓存，根域名服务器缓存，顶级域名服务器缓存，主域名服务器缓存**。
+- 在你的chrome浏览器中输入:chrome://dns/，你可以看到chrome浏览器的DNS缓存。
+- 系统缓存主要存在/etc/hosts(Linux系统)中:
+
+为了避免全部指向同一机器，会使用**DNS负载均衡**：
+
+DNS可以返回一个合适的机器的IP给用户，例如可以根据每台机器的负载量，该机器离用户地理位置的距离等等，这种过程就是**DNS负载均衡，又叫做DNS重定向**。大家耳熟能详的**CDN(Content Delivery Network)就是利用DNS的重定向技术**，DNS服务器会返回一个跟用户最接近的点的IP地址给用户，CDN节点的服务器负责响应用户的请求，提供所需的内容。
 

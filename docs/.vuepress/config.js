@@ -9,7 +9,7 @@ module.exports = {
       "": [
         {
           title: "计算机基础",
-          children: ["/cp/browser", "/cp/network", "/cp/os", "/cp/soft"]
+          children: ["/cp/algorithm","/cp/browser", "/cp/network", "/cp/os", "/cp/soft"]
         },
         {
           title: "编程语言",

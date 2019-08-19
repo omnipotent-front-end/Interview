@@ -193,3 +193,27 @@ Object.defineProperty有如下缺陷：
 也就是现有diff算法的限制导致的。而React在16.2推出的[React v16.2.0: Improved Support for Fragments – React Blog](https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html)，其实是在重写diff算法的同时进行了支持。
 
 至于Vue的diff算法具体逻辑，可以参考[vue中的key有什么用？为什么会优化diff算法的速度？](/library/vue.html#vue%E4%B8%AD%E7%9A%84key%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E4%BC%98%E5%8C%96diff%E7%AE%97%E6%B3%95%E7%9A%84%E9%80%9F%E5%BA%A6%EF%BC%9F)
+
+### Vue是如何实现事件系统的？
+
+Vue中的事件有Dom事件和Vue事件（自定义事件）两种，所以可将事件的绑定总结为一下几种类型：
+
+- 类型一：在模板中通过v-on指令绑定的Dom事件
+- 类型二：在模板中通过v-on指令绑定的自定义事件
+- 类型三：在vue options中通过events绑定的自定义事件
+- 类型四：通过$on方法绑定的自定义事件
+
+Vue中为DOM元素绑定事件是采用DOM2级事件的处理方式，也就是addEventListener，因为Vue服务的是IE9以上的现代浏览器，他们也都是支持DOM2级事件。
+
+而自定义事件是为组件间通信设计，自定义事件提供了 $on、$off、$once、$emit、$broadcast、$dispatch 几个 api，非常简洁。
+
+首先提两个vm的私有变量，**vm._events 和 vm._eventCount**。**每个vm实例所有的自定义事件都将存储在 vm._events，而 vm._eventsCount 存储的是执行事件广播后子组件触发自定义事件处理程序的数量**，这是为了事件广播优化而来的，如果 vm._eventsCount[event] 数量为零，当事件广播时则可断定子组件没有该事件的监听器，就没必要向子组件层层捕获该事件监听器了。
+
+
+
+
+参考：
+
+[Vue源码解读-方法与事件绑定 | 滴滴商业FED](https://defed.github.io/Vue%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB-%E6%96%B9%E6%B3%95%E4%B8%8E%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A/)
+
+[Vue 的事件系统 - 前端 - 掘金](https://juejin.im/entry/577ce6b88ac2470061c2fcce)

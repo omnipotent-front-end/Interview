@@ -2,6 +2,85 @@
 
 ## 语言基础
 
+### javascript有哪些数据类型，如何判断？
+
+javascript 中有七种数据类型，其中有六种简单数据类型，一种复杂数据类型。
+
+六种简单数据类型
+- String
+- Number
+- Boolean
+- Null
+- Undefined
+- Symbol (ECMAScript 6 新定义)
+
+复杂数据类型
+
+Object 是唯一的复杂数据类型。 Object Array Function 这些引用类型值最终都可以归结为 Object 复杂数据类型。
+
+判断方法有如下几种：
+
+1、typeof 是用来**检测变量数据类型**的操作符。
+
+对一个值使用 typeof 操作符可能会返回下列某个字符串
+
+- "undefined" --- 如果这个值未定义
+- "string" --- 如果这个值是字符串
+- "boolean" --- 如果这个值是布尔类型值
+- "number" --- 如果这个值是数值
+- "object" --- 如果这个值是对象或者 null
+- "function" --- 如果这个值是函数
+
+这个函数其实是非常不安全的，`typeof []` 和 `typeof null` 都是是会返回 'object'的。
+
+2、instanceof
+
+测试一个对象在其原型链中**是否存在一个构造函数的 prototype 属性**。
+
+``` js
+var arr = [1, 2, 3];
+arr instanceof Array;   // true
+```
+
+instanceof 却不能安全的判断 Object 类型，因为 Array 构造函数是继承自 Object 对象的，因此在 arr 变量上是**可以访问到 Object 的 prototype 属性**的。
+
+
+3、Object.prototype.toString.call(variable)
+
+用这个方法来判断变量类型目前是最可靠的了，它总能返回正确的值。
+
+该方法返回 "[object type]", 其中type是对象类型。
+
+``` js
+Object.prototype.toString.call(null);  //  "[object Null]"
+
+Object.prototype.toString.call([]);  //  "[object Array]"
+
+Object.prototype.toString.call({});  //  "[object Object]"
+
+Object.prototype.toString.call(123);  //  "[object Number]"
+
+Object.prototype.toString.call('123');  //  "[object String]"
+
+Object.prototype.toString.call(false);  //  "[object Boolean]"
+
+Object.prototype.toString.call(undefined);  //  "[object Undefined]"
+
+```
+
+
+参考：
+
+[Javascript 判断变量类型的陷阱 与 正确的处理方式 - 前端 - 掘金](https://juejin.im/entry/5964a1c15188250d8b65ef5f)
+
+[JS数据类型分类和判断 - 掘金](https://juejin.im/post/5b2b0a6051882574de4f3d96)
+
+
+
+### 'hello' 和 new String('hello')有什么区别？
+
+String是值类型，Object是引用类型。值类型存储在栈中，引用类型存储在堆中。`'hello'`是String，而`new String('hello')`是个Object。
+
 ### let在全局作用域声明的变量在window上吗？
 
 在ES5中，全局变量直接挂载到全局对象的属性上，所以能在window上看到var声明的变量
@@ -51,11 +130,150 @@ xx.call(obj, ...params)
 
 解决方案：
 
-[bignumber](https://github.com/MikeMcl/bignumber.js)
+使用成熟的数学计算第三方库：[NodeJS | Awesome-url](https://brizer.github.io/urls/zh/node_modules_zh.html#%E6%95%B0%E5%AD%A6%E8%AE%A1%E7%AE%97)
 
-[BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt): JavaScript 中的任意精度整数(新提案)
+基本思路就是**转成字符串，确定位数，先放大，运算后再缩小**。给一个加法的demo：
 
-[参考](https://github.com/airuikun/Weekly-FE-Interview/issues/27)
+``` js
+
+/**
+ ** 加法函数，用来得到精确的加法结果
+ ** 说明：javascript的加法结果会有误差，在两个浮点数相加的时候会比较明显。这个函数返回较为精确的加法结果。
+ ** 调用：accAdd(arg1,arg2)
+ ** 返回值：arg1加上arg2的精确结果
+ **/
+function accAdd(arg1, arg2) {
+    var r1, r2, m, c;
+    try {
+        r1 = arg1.toString().split(".")[1].length;
+    }
+    catch (e) {
+        r1 = 0;
+    }
+    try {
+        r2 = arg2.toString().split(".")[1].length;
+    }
+    catch (e) {
+        r2 = 0;
+    }
+    c = Math.abs(r1 - r2);
+    m = Math.pow(10, Math.max(r1, r2));
+    if (c > 0) {
+        var cm = Math.pow(10, c);
+        if (r1 > r2) {
+            arg1 = Number(arg1.toString().replace(".", ""));
+            arg2 = Number(arg2.toString().replace(".", "")) * cm;
+        } else {
+            arg1 = Number(arg1.toString().replace(".", "")) * cm;
+            arg2 = Number(arg2.toString().replace(".", ""));
+        }
+    } else {
+        arg1 = Number(arg1.toString().replace(".", ""));
+        arg2 = Number(arg2.toString().replace(".", ""));
+    }
+    return (arg1 + arg2) / m;
+}
+
+//给Number类型增加一个add方法，调用起来更加方便。
+Number.prototype.add = function (arg) {
+    return accAdd(arg, this);
+};
+
+```
+
+### 说一下原型链，对象，构造函数之间的一些联系？prototype和__proto__有什么区别？
+
+ES把对象定义为：“无序属性的集合，其属性可以包含基本值，对象和函数”。严格来讲，这就相当于说**对象是一组没有特定顺序的值**。
+
+ES中的构造函数可以**用来创建特定类型的对象，用来在创建对象时初始化对象**。它的特点是，一般为大写字母开头，**使用new操作符来实例化对象**，比如：
+
+``` js
+function Person() {
+
+}
+var person = new Person();
+person.name = 'Kevin';
+console.log(person.name) // Kevin
+```
+
+Person就是构造函数，person就是对象。
+
+每一个JavaScript对象(null除外)在创建的时候就会与之关联另一个对象，**这个对象就是我们所说的原型**，每一个对象都会从原型"继承"属性。
+
+每个函数都有一个 prototype。 Person.prototype 是一个对象，并且有两个属性，
+一个是constructor指向其构造函数Person，
+一个是 `__proto__` 属性：是一个对象，指向上一层的原型。
+
+**`__proto__` 和 prototype的关系是 `__proto__` 是prototype的属性**。
+
+每一个JavaScript**对象(除了 null )都具有的一个属性，叫`__proto__`，这个属性会指向该对象的原型**。
+
+
+``` js
+function Person() {
+
+}
+
+var person = new Person();
+class Child extends Person {
+  
+}
+var person2 = new Child()
+
+console.log(Person.prototype.__proto__ == Object.prototype)//true
+console.log(Person.prototype == Object.prototype) //false
+console.log(person.__proto__ == Person.prototype) //true
+console.log(Person.prototype.constructor == Person) //true
+console.log(Object.getPrototypeOf(person) === Person.prototype) //true
+console.log(Object.prototype.__proto__) //null
+
+console.log(Child.prototype.__proto__ == Person.prototype) //true
+console.log(Child.prototype.__proto__ == Object.prototype) //false
+console.log(person2.__proto__ == Child.prototype) //true
+```
+
+所有的对象会一层层往上找原型，最终点是Object，而Object的上一层原型就是null了。
+
+
+
+
+
+参考：
+
+[JavaScript深入之从原型到原型链 · Issue #2 · mqyqingfeng/Blog](https://github.com/mqyqingfeng/Blog/issues/2)
+
+[原型，原型链，对象，构造函数之间的联系。 - 泰阳的博客 - CSDN博客](https://blog.csdn.net/qq_39795538/article/details/81836497)
+
+
+### event.target和event.currentTarget有什么区别？
+
+**currentTarget始终是监听事件者，而target是事件的真正发出者**。
+
+``` html
+<div id='a'>
+  <div id='b'>
+    xx
+  </div>
+</div>
+
+<script>
+var a = document.getElementById('a'),
+    b = document.getElementById('b');    
+function handler (e) {
+    console.log(e.target);
+    console.log(e.currentTarget);
+}
+a.addEventListener('click', handler, false);
+</script>
+```
+
+点击B的dom时输出为b，a；点击A的dom时输出a，a。
+
+参考：
+
+[深入理解e.target与e.currentTarget - 掘金](https://juejin.im/post/59f16ffaf265da43085d4108)
+
+
 
 ### for-in 和 for-of的区别？
 
@@ -157,6 +375,7 @@ const scrollToTop = () => {
 };
 ```
 也可以用于任务调度，如果React的Fiber就是基于requestAnimationFrame和requestIdleCallback的。
+
 
 
 ### js异步编程方法和各种的优缺点
@@ -766,6 +985,9 @@ document.write(curriedAddB()+"<br>");//15
 
 ```
 
+### js的api中哪些用的了curry？
+
+函数的bind方法，数组的reduce方法。
 
 
 ### 如何实现深拷贝？
@@ -1051,9 +1273,18 @@ console.log(uniqueArray(["a", "c", "b", "z", "A", "K", "d", "D", "a"]));
 [...new Set([1,2,3,1,'a',1,'a'])]
 ```
 
+使用filter和indexOf配合索引判断：
 
+``` js
+[1,2,3,1,'a',1,'a'].filter(function(ele,index,array){
+    return index===array.indexOf(ele)
+})
+
+```
 
 ### 简单实现继承
+
+对prototype、constructor不了解的先理解：[说一下原型链，对象，构造函数之间的一些联系？prototype和-proto-有什么区别？](/language/javascript.html#%E8%AF%B4%E4%B8%80%E4%B8%8B%E5%8E%9F%E5%9E%8B%E9%93%BE%EF%BC%8C%E5%AF%B9%E8%B1%A1%EF%BC%8C%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B9%8B%E9%97%B4%E7%9A%84%E4%B8%80%E4%BA%9B%E8%81%94%E7%B3%BB%EF%BC%9Fprototype%E5%92%8C-proto-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
 
 子类原型指向父类的新实例，子类的constructor指向自己。
 

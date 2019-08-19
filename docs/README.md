@@ -10,3 +10,6 @@
 [面试分享：2018阿里巴巴前端面试总结(题目+答案) - 前端 - 掘金](https://juejin.im/entry/5a968ba56fb9a06340524128)
 
 [前端面试分享: 两年经验社招-阿里巴巴 - README - SegmentFault 思否](https://segmentfault.com/a/1190000013538920)
+
+[面试分享：一年经验初探阿里巴巴前端社招 · Issue #22 · jawil/blog](https://github.com/jawil/blog/issues/22)
+

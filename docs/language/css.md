@@ -1,6 +1,6 @@
 # Css
 
-## 布局
+## 应用
 
 ### 如何理解BFC？
 
@@ -34,6 +34,11 @@ Flex 布局是轴线布局，只能指定"项目"针对轴线的位置，可以�
 参考地址：
 
 [一些需要用心去记住的css面试点](https://github.com/glitchboyl/blog/issues/6)
+
+### 如果使用了flex，grid等新特性，怎么解决浏览器兼容性？
+
+通过postcss，autoprefix，browserslist来在构建的阶段通过分析语法树，自动加到前缀中。
+
 
 
 ## 编码

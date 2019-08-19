@@ -14,6 +14,11 @@
 常用的及作用可以参考：[Webpack | Awesome-url](https://brizer.github.io/urls/zh/webpack_zh.html)
 
 
+### loader和plugin的执行顺序是怎么样的？
+
+loader的执行顺序是从后往前的，而plugin是作用于webpack整个生命周期，通过hook来决定执行顺序的，所以每一个都不一样。
+
+
 ---
 
 ## 原理
