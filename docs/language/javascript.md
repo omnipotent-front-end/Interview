@@ -421,38 +421,51 @@ console.log(person.name) // Kevin
 
 Person就是构造函数，person就是对象。
 
-每一个JavaScript对象(null除外)在创建的时候就会与之关联另一个对象，**这个对象就是我们所说的原型**，每一个对象都会从原型"继承"属性。
+对于对象而言，每个JS对象一定对应一个原型对象，并从原型对象继承属性和方法。**对象`__proto__`属性**的值就是它所对应的原型对象。对象的`__proto__`指向自己构造函数的prototype。所以对象的原型链就是`obj.__proto__.proto__....`。
 
-每个函数都有一个 prototype。 Person.prototype 是一个对象，并且有两个属性，
+对于函数而言，只有函数才有prototype属性，Person.prototype 是一个对象，并且有两个属性，
 一个是constructor指向其构造函数Person，
 一个是 `__proto__` 属性：是一个对象，指向上一层的原型。
 
-**`__proto__` 和 prototype的关系是 `__proto__` 是prototype的属性**。
+原型链的尽头是`Object.prototype`。所有对象均从`Object.prototype`继承属性。
 
-每一个JavaScript**对象(除了 null )都具有的一个属性，叫`__proto__`，这个属性会指向该对象的原型**。
+`Function.prototype`和`Function.__proto__`为同一对象。**Object/Array/String等等构造函数本质上和Function一样，均继承于`Function.prototype`。**
+
+`Function.prototype`直接继承`Object.prototype`。
+
+这里的Object和Function有点鸡和蛋的问题，总结：先有`Object.prototype`（原型链顶端），`Function.prototype`继承`Object.prototype`而产生，最后，**Function和Object和其它构造函数继承`Function.prototype`而产生**。
+
+属性查找时，先在对象自己上找，找不到才会一步步根据原型链往上找。
 
 
 ``` js
 function Person() {
-
+  this.age = 15;
 }
-
+Person.prototype.age = 20;
 var person = new Person();
 class Child extends Person {
   
 }
 var person2 = new Child()
-
+console.log('////////////////////')
+console.log(person.age)//15
 console.log(Person.prototype.__proto__ == Object.prototype)//true
 console.log(Person.prototype == Object.prototype) //false
+console.log(Person.__proto__ == Function.prototype) //true
 console.log(person.__proto__ == Person.prototype) //true
 console.log(Person.prototype.constructor == Person) //true
 console.log(Object.getPrototypeOf(person) === Person.prototype) //true
 console.log(Object.prototype.__proto__) //null
+console.log(Object.__proto__ == Function.prototype) //true
+console.log(Function.prototype.__proto__ == Object.prototype)//true
+console.log(Function.prototype == Function.__proto__)//true
 
 console.log(Child.prototype.__proto__ == Person.prototype) //true
 console.log(Child.prototype.__proto__ == Object.prototype) //false
+console.log(Child.__proto__ == Person) //true
 console.log(person2.__proto__ == Child.prototype) //true
+console.log(person2.__proto__.__proto__ == Person.prototype)//true
 ```
 
 所有的对象会一层层往上找原型，最终点是Object，而Object的上一层原型就是null了。
@@ -1019,6 +1032,28 @@ CommonJS 加载的是一个对象（即module.exports属性），该对象只有
 
 ## 编码
 
+### 对于this,prototype理解
+
+答案是什么：
+
+
+``` js
+
+function a() {
+    this.b = 3
+}
+a.prototype.b = 7;
+var t = new a();
+var b = 2;
+a();
+console.log(t.b);//3
+console.log(b);//3
+```
+
+属性查找顺序先找实例再找原型。
+
+构造函数不用new的方式直接用会有问题。this指向window。
+
 
 ### 如何实现一个sleep(1000)?麻烦用各自异步方式实现
 
@@ -1205,6 +1240,11 @@ document.write(curriedAdd(3)+"<br>");//8
 var curriedAddB = curry(add,5,10);
 document.write(curriedAddB()+"<br>");//15
 //可以看到参数灵活多变
+
+```
+
+``` js
+const curry = (fn, arr = []) => fn.length === arr.length ? fn(...arr) : (...args) => curry(fn, [...arr, ...args]);
 
 ```
 
