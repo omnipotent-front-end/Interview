@@ -25,6 +25,7 @@ module.exports = {
           children: [
             "/library/babel.md",
             "/library/egg.md",
+            "/library/express.md",
             "/library/nest.md",
             "/library/nginx.md",
             "/library/pm2.md",
