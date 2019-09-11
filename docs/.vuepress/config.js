@@ -26,6 +26,7 @@ module.exports = {
             "/library/babel.md",
             "/library/egg.md",
             "/library/express.md",
+            "/library/koa.md",
             "/library/nest.md",
             "/library/nginx.md",
             "/library/pm2.md",

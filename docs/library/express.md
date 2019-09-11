@@ -1,5 +1,20 @@
 # express
 
+## 应用
+
+### express中间件怎么对响应进行拦截
+
+首先了解express和koa关于洋葱模型的问题。[koa的洋葱模型是怎么理解的？](/library/koa.html#koa%E7%9A%84%E6%B4%8B%E8%91%B1%E6%A8%A1%E5%9E%8B%E6%98%AF%E6%80%8E%E4%B9%88%E7%90%86%E8%A7%A3%E7%9A%84%EF%BC%9F)
+
+会发现express的中间件是很难处理response的。
+
+但是社区也提供了相关插件：
+
+- [express-interceptor](https://github.com/axiomzen/express-interceptor) - Express的响应拦截器(弥补非洋葱模型)
+- [express-mung](https://github.com/richardschneider/express-mung) - Express的响应转化器(弥补非洋葱模型)
+
+原理就是切片，重写res.end/res.write/res.json等相关方法。
+
 ## 原理
 
 ### 有没有看过express源码？大致怎么工作的？
