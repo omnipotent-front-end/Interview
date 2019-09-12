@@ -167,6 +167,92 @@ Nodejs源码的整体架构如下：
 
 4、主线程不断重复上面的第三步。
 
+### 一次EventLoop的具体阶段
+
+首先了解[事件驱动](/language/node.html#%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8)，和[任务队列机制](/language/javascript.html#%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97%E6%9C%BA%E5%88%B6)。
+
+``` bash
+   ┌───────────────────────┐
+┌─>│        timers         │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+│  │     I/O callbacks     │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+│  │     idle, prepare     │
+│  └──────────┬────────────┘      ┌───────────────┐
+│  ┌──────────┴────────────┐      │   incoming:   │
+│  │         poll          │<─────┤  connections, │
+│  └──────────┬────────────┘      │   data, etc.  │
+│  ┌──────────┴────────────┐      └───────────────┘
+│  │        check          │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+└──┤    close callbacks    │
+   └───────────────────────┘
+
+```
+
+事件循环必须跑完这六个阶段才算一个轮回。
+
+每个阶段都有一个回调函数FIFO（先进先出）队列。
+EL进入一个阶段会执行里面所有的操作，然后执行回调函数，直到队列消耗尽，或是回调函数执行数量达到最大限制。
+清理nextTickQueue/microtasks 之后进入下一个阶段。
+
+#### timers(定时器)
+
+这个阶段执行setTimeout()和setInterval()设定的回调。
+
+一个timer指定一个下限时间而不是准确时间，在达到这个下限时间后执行回调。在指定时间过后，timers会尽可能早地执行回调，但系统调度或者其它回调的执行可能会延迟它们。
+
+注意：技术上来说，poll 阶段控制 timers 什么时候执行。
+
+注意：这个下限时间有个范围：[1, 2147483647]，如果设定的时间不在这个范围，将被设置为1。
+
+#### I/O callbacks(I/O回调) 
+
+ 执行被推迟到下一个iteration的 I/O 回调。
+
+举个例子, 如果一个TCP socket在尝试连接时收到 ECONNREFUSED 错误, 一些 *nix 系统会等待报告该错误. 这些操作会被添加到队列并在 I/O callbacks 阶段执行。
+
+
+#### idle(空转), prepare
+
+此阶段只在内部使用
+
+#### poll(轮询) 
+
+获取新的I/O事件；node会在适当条件下阻塞在这里。这个阶段执行几乎所有的回调，除了close回调，timer的回调，和setImmediate()的回调。
+
+poll 阶段有两个主要功能:
+
+1、执行下限时间已经达到的timers的回调，然后
+
+2、处理 poll 队列里的事件。
+
+#### check(检查) 
+
+执行setImmediate()设定的回调。
+
+这个阶段允许在 poll 阶段结束后立即执行回调。如果 poll 阶段空闲，并且有被setImmediate()设定的回调，event loop会转到 check 阶段而不是继续等待。
+
+setImmediate()实际上是一个特殊的timer，跑在event loop中一个独立的阶段。它使用libuv的API
+来设定在 poll 阶段结束后立即执行回调。
+
+
+
+#### close callbacks(关闭事件的回调)
+
+如果一个 socket 或 handle 被突然关掉（比如 socket.destroy()），close事件将在这个阶段被触发，否则将通过process.nextTick()触发。
+
+
+process.nextTick()会把回调塞入nextTickQueue，nextTickQueue将在当前操作完成后处理，不管目前处于event loop的哪个阶段。
+
+**process.nextTick()不管在任何时候调用，都会在所处的这个阶段最后**，在event loop进入下个阶段前，处理完所有nextTickQueue里的回调。
+
+参考：
+
+[浏览器和NodeJS中不同的Event Loop · Issue #234 · kaola-fed/blog](https://github.com/kaola-fed/blog/issues/234)
 
 ### cluster模块主要是做什么的？有哪些应用场景？
 

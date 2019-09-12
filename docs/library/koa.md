@@ -154,3 +154,11 @@ Context 上除了 Request 和 Response 两个对象之外，还有 Node.js 原�
 
 
 
+### bodyparser一般怎么做的？
+
+[koa-bodyparser源码分析](https://github.com/FunnyLiu/bodyparser/tree/readsource)
+
+koa-bodyparser依赖co-body依赖raw-body；express依赖body-parser依赖raw-body。
+
+而raw-body简单的说就是通过可读流stream的各种事件来读取数据。[stream.on('data)](https://github.com/stream-utils/raw-body/blob/master/index.js#L192)。req 实际上是个 stream，获取 body 的方法是基于注册 on data 事件实现的。
+

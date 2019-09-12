@@ -2,6 +2,36 @@
 
 ## HTTP
 
+### http的methods有哪些？
+
+可以参考[methods](https://github.com/jshttp/methods)中列出的一些。
+    'get',
+    'post',
+    'put',
+    'head',
+    'delete',
+    'options',
+    'trace',
+    'copy',
+    'lock',
+    'mkcol',
+    'move',
+    'purge',
+    'propfind',
+    'proppatch',
+    'unlock',
+    'report',
+    'mkactivity',
+    'checkout',
+    'merge',
+    'm-search',
+    'notify',
+    'subscribe',
+    'unsubscribe',
+    'patch',
+    'search',
+    'connect'
+
 ### http有哪些常用的head，说一下各自的作用？
 
 #### Expires
@@ -91,6 +121,12 @@ XMLHttpRequest 阻止
 ``` html
 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
 ```
+
+### 如果登陆的请求是https，而其它的请求是http的会出现什么问题？
+
+cookie会加密，可能导致其它请求无法通过身份验证。
+
+
 
 ### get和post有什么区别？越底层越好。
 

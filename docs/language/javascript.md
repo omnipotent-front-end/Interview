@@ -983,6 +983,8 @@ setTimeout
 
 微任务：原生 Promise(有些实现的 promise 将 then 方法放到了宏任务中)、process.nextTick、Object.observe(已废弃)、 MutationObserver 记住就行了。
 
+**一个EventLoop只有一个宏任务和一组微任务列表。**
+
 **在当前的微任务没有执行完成时，是不会执行下一个宏任务的。**
 
 **Promise**中的异步体现在 then 和 catch 中，所以**写在 Promise 中的代码是被当做同步任务立即执行的**。
@@ -1924,6 +1926,8 @@ function updateQueryStringParameter(uri, key, value) {
 ```
 
 ### 实现字符串反转
+
+一个最简单的递归应用：
 
 ```js
 function reverseString(str) {
