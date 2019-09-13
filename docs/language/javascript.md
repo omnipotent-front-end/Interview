@@ -501,6 +501,48 @@ for...of 语句在**可迭代对象**(包括 **Array, Map, Set, String, TypedArr
 
 也就是说，**for of 只可以循环可迭代对象的可迭代属性**，不可迭代属性在循环中被忽略了。
 
+### 如何让一个对象变得可迭代，可迭代的本质是什么？
+
+比方说如下代码会抛出TypeError，因为object是不可迭代的。
+
+``` js
+const obj = {x:1,y:2,z:3};
+const arr = [...obj];//TypeError
+```
+
+那我们如何修改使其成立呢？
+
+利用[iterable](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#The_iterable_protocol)，和[iterable协议](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#The_iterator_protocol)即可。
+一个可迭代对象的定义：
+
+``` js
+var myIterator = {
+    next: function() {
+        // ...
+    },
+    [Symbol.iterator]: function() { return this }
+};
+```
+
+所以我们如下改造即可：
+``` js
+const obj = {x:1,y:2,z:3};
+obj[Symbol.iterator] = function() {
+  return {
+    count:0,
+    next: function() {
+      if(this.count == 3){
+        return {value: this.count,done:true}
+      }else{
+        this.count +=1;
+        return {value:this.count,done:false}
+      }
+    }
+  }
+}
+const arr = [...obj];//1,2,3
+```
+
 ### 对象属性的可枚举性是什么意思？会影响哪些操作？
 
 对象属性可分为可枚举和不可枚举，区别在于 enumerable 的值。
