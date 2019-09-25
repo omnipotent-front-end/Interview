@@ -1106,6 +1106,15 @@ console.log(b); //3
 
 构造函数不用 new 的方式直接用会有问题。this 指向 window。
 
+### 两个变量交换值
+
+``` js
+let a = 1;
+let b = 2;
+[a, b] = [b, a];
+console.log(a,b)//2 1
+```
+
 ### 如何实现一个 sleep(1000)?麻烦用各自异步方式实现
 
 4 种方式
