@@ -847,6 +847,11 @@ var __metadata =
   };
 ```
 
+还有一些其他的实现库可以参考。
+
+如：[egg-shell-decorators源码分析](https://github.com/FunnyLiu/egg-shell-decorators/tree/readsource)。
+
+
 ### 为什么 decorator 只能用于类，不能用于函数
 
 函数是存在变量提升的问题的，而类则不存在。
