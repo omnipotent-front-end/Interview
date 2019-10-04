@@ -849,7 +849,7 @@ var __metadata =
 
 还有一些其他的实现库可以参考。
 
-如：[egg-shell-decorators源码分析](https://github.com/FunnyLiu/egg-shell-decorators/tree/readsource)。
+如：[egg-shell-decorators源码分析](https://github.com/FunnyLiu/egg-shell-decorators/tree/readsource)，以及 [基于reflect-metadata实现类装饰器、方法装饰器、属性装饰器和函数参数装饰器](https://github.com/FunnyLiu/typescript-decorators/tree/readsource)
 
 
 ### 为什么 decorator 只能用于类，不能用于函数
