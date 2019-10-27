@@ -463,6 +463,125 @@ console.log(person2.__proto__.__proto__ == Person.prototype); //true
 
 [原型，原型链，对象，构造函数之间的联系。 - 泰阳的博客 - CSDN 博客](https://blog.csdn.net/qq_39795538/article/details/81836497)
 
+### 闭包是什么？
+
+**闭包允许函数访问其引用环境中的变量**。广义上来说，**所有的js函数都可以称为闭包**，因为js函数在创建时保存了当前的词法环境。
+
+我们来看一个例子：
+
+``` js
+function makeCounter() {
+  let count = 0;
+  return function() {
+    return count++;
+  };
+}
+
+let counter1 = makeCounter();
+let counter2 = makeCounter();
+
+alert( counter1() ); // 0
+alert( counter1() ); // 1
+
+alert( counter2() ); // 0 （独立的）
+```
+
+注意[[Environment]] 属性。
+
+1、在脚本开始时，只存在全局词法环境
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20191025171654.png"/>
+
+所有的函数在『诞生』时都会根据创建它的词法环境获得隐藏的 [[Environment]] 属性。
+在这里，makeCounter 创建于全局词法环境，那么 [[Environment]] 中保留了它的一个引用。
+
+2、代码执行，`makeCounter()` 被执行。下图是当 `makeCounter()` 内执行第一行瞬间的快照：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20191025171819.png"/>
+
+在 `makeCounter()` 执行时，包含其变量和参数的词法环境被创建。
+
+词法环境中存储着两个东西：
+
+一个是环境记录，它保存着局部变量。在我们的例子中 count 是唯一的局部变量（当执行到 let count 这一行时出现）。
+
+另外一个是外部词法环境的引用，它被设置为函数的` [[Environment]]` 属性。这里 makeCounter 的` [[Environment]] `属性引用着全局词法环境。
+所以，现在我们有了两个词法环境：第一个是全局环境，第二个是 makeCounter 的词法环境，它拥有指向全局环境的引用。
+
+3、在 makeCounter() 的执行中，创建了一个小的嵌套函数。
+
+不管是使用函数声明或是函数表达式创建的函数都没关系，所有的函数都有 `[[Environment]]` 属性，该属性引用着所创建的词法环境。新的嵌套函数同样也拥有这个属性。
+
+我们新的嵌套函数的 `[[Environment]]` 的值就是 makeCounter() 的当前词法环境（创建的位置）。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20191025172129.png"/>
+
+请注意在这一步中，内部函数并没有被立即调用。 `function() { return count++; }` 内的代码还没有执行，我们要返回它。
+
+4、随着执行的进行，`makeCounter()` 调用完成，并且将结果（该嵌套函数）赋值给全局变量 counter。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20191025172304.png"/>
+
+这个函数中只有 `return count++` 这一行代码，当我们运行它时它会被执行。
+
+
+5、当 `counter()` 执行时，它会创建一个『空』的词法环境。它本身没有局部变量，但是 counter 有 `[[Environment]] `作为其外部引用，所以它可以访问前面创建的 `makeCounter()` 函数的变量。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20191025174259.png"/>
+
+如果它要访问一个变量，它首先会搜索它自身的词法环境（空），然后是前面创建的 `makeCounter()` 函数的词法环境，然后才是全局环境。
+
+当它搜索 `count `，它会在最近的外部词法环境 `makeCounter` 的变量中找到它。
+
+请注意这里的内存管理工作机制。虽然 `makeCounter()` 执行已经结束，但它的词法环境仍保存在内存中，因为这里仍然有一个嵌套函数的 `[[Environment]]` 在引用着它。
+
+通常，只要有一个函数会用到该词法环境对象，它就不会被清理。并且只有没有（函数）会用到时，才会被清除。
+
+
+但正如上面所说的，在 JavaScript 中函数都是天生的闭包。
+
+也就是说，他们会通过隐藏的` [[Environment]]` 属性记住创建它们的位置，所以它们都可以访问外部变量。
+
+在面试时，前端通常都会被问到『什么是闭包』，正确的答案应该是闭包的定义并且解释 JavaScript 中所有函数都是闭包，以及可能的关于` [[Environment]] `属性和词法环境原理的技术细节。
+
+参考：
+
+[闭包](https://zh.javascript.info/closure)
+
+
+### 闭包的使用场景是？
+
+1、保存变量优化性能
+
+比如有一个复杂的计算：
+
+``` js
+_module._$isSupportWebP = function(){
+    try{
+        return document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') == 0;
+    }catch(err){
+        return false;
+    }
+};
+```
+
+如果每次都去创建dom来判断，就会影响性能，此时将其闭包：
+
+``` js
+_module._$isSupportWebP = (function(){
+    var isWebP;
+    try{
+        isWebP =  document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') == 0;
+    }catch(err){
+        isWebP =  false;
+    }
+    return function(){
+        return isWebP;
+    }
+})();
+```
+
+
 ### event.target 和 event.currentTarget 有什么区别？
 
 **currentTarget 始终是监听事件者，而 target 是事件的真正发出者**。
