@@ -396,7 +396,7 @@ Number.prototype.add = function(arg) {
 };
 ```
 
-### 说一下原型链，对象，构造函数之间的一些联系？prototype 和**proto**有什么区别？
+### 说一下原型链，对象，构造函数之间的一些联系？prototype 和__proto__有什么区别？
 
 ES 把对象定义为：“无序属性的集合，其属性可以包含基本值，对象和函数”。严格来讲，这就相当于说**对象是一组没有特定顺序的值**。
 
@@ -411,11 +411,16 @@ console.log(person.name); // Kevin
 
 Person 就是构造函数，person 就是对象。
 
+在 JavaScript 中，对象有一个特殊的隐藏属性 `[[Prototype]]`（如规范中所命名的），其取值为 null 或者是**另一个对象的引用。该对象称为“原型”**。属性` [[Prototype]]` 是内部的而且隐藏的，但是设置它的方法却有很多种。
+其中之一是使用 `__proto__`。
+
 对于对象而言，每个 JS 对象一定对应一个原型对象，并从原型对象继承属性和方法。**对象`__proto__`属性**的值就是它所对应的原型对象。对象的`__proto__`指向自己构造函数的 prototype。所以对象的原型链就是`obj.__proto__.proto__....`。
 
 对于函数而言，只有函数才有 prototype 属性，Person.prototype 是一个对象，并且有两个属性，
-一个是 constructor 指向其构造函数 Person，
+一个是 **constructor 指向其构造函数 Person**，
 一个是 `__proto__` 属性：是一个对象，指向上一层的原型。
+
+JavaScript 本身并不能确保正确的 `"constructor"` 函数值，我们可以随意修改之。因此，为了确保正确的 `"constructor"`，我们可以选择添加/删除属性到默认 `"prototype"` 而不是将其整个覆盖。
 
 原型链的尽头是`Object.prototype`。所有对象均从`Object.prototype`继承属性。
 
