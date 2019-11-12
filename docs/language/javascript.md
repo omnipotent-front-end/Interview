@@ -334,6 +334,7 @@ xx.call(obj, ...params);
 
 **call 的性能比 apply 要好**,可以参考[call 和 apply 的性能对比](https://github.com/noneven/__/issues/6)
 
+
 ### 0.1+0.2 等于多少？为什么？怎么解决这种问题？
 
 0.30000000000000004，JavaScript 遵循 IEEE 754 规范。
@@ -1419,6 +1420,127 @@ Function.prototype.myapply = function(context) {
   delete context.fn;
   return result;
 };
+```
+
+### apply的使用场景有哪些？
+
+1、Vue插件加载
+
+插件必须实现install方法，且第一个参数的Vue对象本身
+
+``` js
+export function initUse (Vue: GlobalAPI) {
+  Vue.use = function (plugin: Function | Object) {
+    const installedPlugins = (this._installedPlugins || (this._installedPlugins = []))
+    if (installedPlugins.indexOf(plugin) > -1) {
+      return this
+    }
+
+    const args = toArray(arguments, 1)
+    args.unshift(this)
+    if (typeof plugin.install === 'function') {
+      // 调用入参的install方法。
+      plugin.install.apply(plugin, args)
+    } else if (typeof plugin === 'function') {
+      plugin.apply(null, args)
+    }
+    installedPlugins.push(plugin)
+    return this
+  }
+}
+```
+
+2、lodash.memoize
+
+使用apply将传入的方法拦截并执行。
+
+参考lodash下的memoize：
+
+``` js
+function memoize(func, resolver) {
+  // 函数类型检查
+  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  var memoized = function() {
+    var args = arguments,
+        key = resolver ? resolver.apply(this, args) : args[0],
+        cache = memoized.cache;
+    // 取缓存
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    // 关键，拦截func并执行
+    var result = func.apply(this, args);
+    // 将执行结果缓存起来
+    memoized.cache = cache.set(key, result) || cache;
+    return result;
+  };
+  // 使用MapCache.js或自定义cache
+  memoized.cache = new (memoize.Cache || MapCache);
+  return memoized;
+}
+```
+
+3、nej.aop
+
+紧接函数的aop方法
+
+参考nej:
+
+``` js
+/**
+ * AOP增强操作，增强操作接受一个输入参数包含以下信息
+ *
+ *  | 参数名称 | 参数类型  | 参数描述 |
+ *  | :--     | :--      | :-- |
+ *  | args    | Array    | 函数调用时实际输入参数，各增强操作中可以改变值后将影响至后续的操作 |
+ *  | value   | Variable | 输出结果 |
+ *  | stopped | Boolean  | 是否结束操作，终止后续操作 |
+ *
+ * @method external:Function#_$aop
+ * @param  {Function} arg0 - 前置操作，接受一个输入参数，见描述信息
+ * @param  {Function} arg1 - 后置操作，接受一个输入参数，见描述信息
+ * @return {Function}        增强后操作函数
+ */
+_extpro._$aop = function(_before,_after){
+    var _after = _after||_f,
+        _before = _before||_f,
+        _handler = this;
+    return function(){
+        var _event = {args:_r.slice.call(arguments,0)};
+        _before(_event);
+        if (!_event.stopped){
+            // handler就是this，函数自己，执行自己。
+            _event.value = _handler.apply(this,_event.args);
+            _after(_event);
+        }
+        return _event.value;
+    };
+};
+```
+
+4、curry
+
+实现函数curry化:
+
+``` js
+function curry(fn) {
+  var args = [...arguments].slice(1);
+  return function() {
+    var finalArgs = args.concat(...arguments);
+    return fn.apply(null, finalArgs);
+  };
+}
+
+//使用方法如下：
+function add(num1, num2) {
+  return num1 + num2;
+}
+var curriedAdd = curry(add, 5);
+document.write(curriedAdd(3) + "<br>"); //8
+var curriedAddB = curry(add, 5, 10);
+document.write(curriedAddB() + "<br>"); //15
 ```
 
 ### 如何实现 bind？
