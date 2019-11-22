@@ -41,6 +41,28 @@ egg的cluster相比pm2，代码有所简化，**在传统的Master-worker的基�
 
 试想如果现在是 4 个进程来做同样的事情，是不是就乱套了。所以，对于这一类后台运行的逻辑，我们希望将它们放到一个单独的进程上去执行，这个进程就叫 Agent Worker，简称 Agent。Agent 好比是 Master 给其他 Worker 请的一个『秘书』，它不对外提供服务，只给 App Worker 打工，专门处理一些公共事务。
 
+### 配置中的app.keys为什么要支持多个？
+
+在cookie加解密时，这里采用的是轮替密钥的方案。
+
+替密钥不会停用或销毁以前的密钥版本。以前的密钥版本将不再是主密钥版本，但仍可用于解密数据。
+
+keys 配置成一个字符串，可以按照逗号分隔配置多个 key。Cookie 在使用这个配置进行加解密时：
+
+加密和加签时只会使用第一个秘钥。
+
+解密和验签时会遍历 keys 进行解密。
+
+如果我们想要更新 Cookie 的秘钥，但是又不希望之前设置到用户浏览器上的 Cookie 失效，可以将新的秘钥配置到 keys 最前面，等过一段时间之后再删去不需要的秘钥即可。
+
+参考：
+
+[egg官方文档](https://eggjs.org/zh-cn/core/cookie-and-session.html#cookie-%E7%A7%98%E9%92%A5)
+
+[密钥轮替  |  Cloud KMS  |  Google Cloud](https://cloud.google.com/kms/docs/key-rotation)
+
+
+
 ---
 
 ## 原理

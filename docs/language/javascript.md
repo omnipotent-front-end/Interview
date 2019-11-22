@@ -1543,6 +1543,41 @@ var curriedAddB = curry(add, 5, 10);
 document.write(curriedAddB() + "<br>"); //15
 ```
 
+5、lodash的before和after
+
+``` js
+// 通过apply拦截函数
+function before(n, func) {
+  var result;
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  n = toInteger(n);
+  return function() {
+    if (--n > 0) {
+      result = func.apply(this, arguments);
+    }
+    if (n <= 1) {
+      func = undefined;
+    }
+    return result;
+  };
+}
+// after
+function after(n, func) {
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  n = toInteger(n);
+  return function() {
+    if (--n < 1) {
+      return func.apply(this, arguments);
+    }
+  };
+}
+
+```
+
 ### 如何实现 bind？
 
 ```js
