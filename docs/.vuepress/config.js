@@ -2,14 +2,20 @@ module.exports = {
   title: "无所不能的前端--十万个为什么",
   description: "Hello world",
   themeConfig: {
-    repo: 'omnipotent-front-end/Interview',
+    repo: "omnipotent-front-end/Interview",
     nav: [{ text: "awesome-url", link: "https://brizer.github.io/urls/zh/" }],
     sidebarDepth: 2,
     sidebar: {
       "": [
         {
           title: "计算机基础",
-          children: ["/cp/algorithm","/cp/browser", "/cp/network", "/cp/os", "/cp/soft"]
+          children: [
+            "/cp/algorithm",
+            "/cp/browser",
+            "/cp/network",
+            "/cp/os",
+            "/cp/soft"
+          ]
         },
         {
           title: "编程语言",
@@ -17,13 +23,15 @@ module.exports = {
             "/language/css",
             "/language/html",
             "/language/javascript",
-            "/language/node"
+            "/language/node",
+            "/language/shell"
           ]
         },
         {
           title: "库",
           children: [
             "/library/babel.md",
+            "/library/docker.md",
             "/library/egg.md",
             "/library/express.md",
             "/library/koa.md",
@@ -38,7 +46,12 @@ module.exports = {
         },
         {
           title: "Web工程",
-          children: ["/web/fed.md", "/web/safe.md"]
+          children: [
+            "/web/database.md",
+            "/web/deploy.md",
+            "/web/fed.md",
+            "/web/safe.md"
+          ]
         }
       ]
     }

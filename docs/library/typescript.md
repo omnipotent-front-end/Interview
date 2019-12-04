@@ -62,3 +62,53 @@ class Car implements Alarm, Light {
     }
 }
 ```
+
+
+###  object类型和{}类型有什么区别？
+
+object类型只能引用类型，即非bool, number, string, symbol。
+
+通过实例理解：
+
+```  js
+var o: object;
+o = { prop: 0 }; // OK
+o = []; // OK
+o = 42; // Error
+o = "string"; // Error
+o = false; // Error
+o = null; // Error
+o = undefined; // Error
+
+var p: {};
+p = { prop: 0 }; // OK
+p = []; // OK
+p = 42; // OK
+p = "string"; // OK
+p = false; // OK
+p = null; // Error
+p = undefined; // Error
+
+var q: { [key: string]: any };
+q = { prop: 0 }; // OK
+q = []; // OK
+q = 42; // Error
+q = "string"; // Error
+q = false; // Error
+q = null; // Error
+q = undefined; // Error
+
+var r: { [key: string]: string };
+r = { prop: 'string' }; // OK
+r = { prop: 0 }; // Error
+r = []; // Error
+r = 42; // Error
+r = "string"; // Error
+r = false; // Error
+r = null; // Error
+r = undefined; // Error
+```
+
+参考：
+
+[ecmascript 6 - Difference between 'object' and {} in TypeScript - Stack Overflow](https://stackoverflow.com/questions/49464634/difference-between-object-and-in-typescript)
