@@ -562,6 +562,27 @@ cpu/memory 可能爆了，出现异常不好定位调试，带权限接口与非
 具体过程如下：
 当页面是用户通过超链接跳转过去，而不是用户输入网址或刷新来访问的，这时候是纯客户端的行为，没有HTTP请求发出去。用户如果通过超链接跳转回这个页面，客户端的getInitialProps()开始起作用了，它会自动读取HTML源码里 window.__NEXT_DATA__.props里的数据并作为React组件的props。
 
+### 有没有了解过微前端，谈谈实现思路？
+
+微前端本身就是**集合大多数不同技术栈的前端项目**。
+
+做的好的有[single-spa](https://github.com/CanopyTax/single-spa)，通过**路由来激活不同的项目**，再接上**不同项目的自己的子路由系统**。但是并没有做应用隔离。
+
+阿里出品的[qiankun](https://github.com/umijs/qiankun)，路由方面依赖了single-spa，**应用隔离**使用了jsSandbox的思想。
+jsSandbox就是隔离js运行时环境，举个例子，我们可以对window创建一个全局代理：
+``` js
+const p = new Proxy(window,{});
+```
+然后让js 的执行上下文变成p:
+``` js
+(function(){}).bind(p);
+```
+这时候的p就是一个沙箱。
+
+参考：
+
+[网易严选企业级微前端解决方案与落地实践 - 知乎](https://zhuanlan.zhihu.com/p/97226980)
+
 
 ### 怎么实现草稿，多终端同步，以及冲突问题
 
