@@ -12,6 +12,7 @@ module.exports = {
           children: [
             "/cp/algorithm",
             "/cp/browser",
+            "/cp/compiler",
             "/cp/network",
             "/cp/os",
             "/cp/soft"

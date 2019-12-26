@@ -32,6 +32,40 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 [深入理解浏览器的缓存机制](https://www.jianshu.com/p/54cc04190252)
 
 
+### 简单说下V8引擎工作原理
+
+在为数不多 JavaScript 引擎中，V8 无疑是最流行的，Chrome 与 Node.js 都使用了 V8 引擎，Chrome 的市场占有率高达 60%，而 Node.js 是 JS 后端编程的事实标准。
+
+JavaScript 是一门动态类型语言，这会给编译器增加很大难度，因此专家们觉得它的性能很难提高，但是 V8 居然做到了，生成了非常高效的 machine code，这使得 JS 可以应用在各个领域，比如 Web、APP、桌面端、服务端以及 IOT。
+
+V8 由许多子模块构成，其中这 4 个模块是最重要的：
+
+*   [Parser](https://v8.dev/blog/scanner)：负责将 JavaScript 源码转换为 Abstract Syntax Tree (AST)
+*   [Ignition](https://v8.dev/docs/ignition)：interpreter，即解释器，负责将 AST 转换为 Bytecode，解释执行 Bytecode；同时收集 TurboFan 优化编译所需的信息，比如函数参数的类型；
+*   [TurboFan](https://v8.dev/docs/turbofan)：compiler，即编译器，利用 Ignitio 所收集的类型信息，将 Bytecode 转换为优化的机器代码；
+*   [Orinoco](https://v8.dev/blog/trash-talk)：garbage collector，[垃圾回收](https://blog.fundebug.com/2019/07/03/javascript-garbage-collection/)模块，负责将程序不再需要的内存空间回收；
+
+
+其编译过程如图：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20191220102229.png"/>
+
+简单地说，Parser 将 JS 源码转换为 AST，然后 Ignition 将 AST 转换为 Bytecode，最后 TurboFan 将 Bytecode 转换为经过优化的 Machine Code。
+
+*   如果函数没有被调用，则 V8 不会去编译它。
+*   如果函数只被调用 1 次，则 Ignition 将其编译 Bytecode 就直接解释执行了。TurboFan 不会进行优化编译，因为它需要 Ignition 收集函数执行时的类型信息。这就要求函数至少需要执行 1 次，TurboFan 才有可能进行优化编译。
+*   如果函数被调用多次，则它有可能会被识别为热点函数，且 Ignition 收集的类型信息证明可以进行优化编译的话，这时 TurboFan 则会将 Bytecode 编译为 Optimized Machine Code，以提高代码的执行性能。
+
+
+至于垃圾回收，可以参考[谈谈v8中的gc策略](/cp/browser.html#%E8%B0%88%E8%B0%88v8%E4%B8%AD%E7%9A%84gc%E7%AD%96%E7%95%A5)
+
+
+参考：
+
+[v8官网](https://v8.dev/)
+
+[JavaScript深入浅出第4课：V8引擎是如何工作的？](https://blog.fundebug.com/2019/07/16/how-does-v8-work/)
+
 ### 谈谈V8中的GC策略
 
 Nodejs和chrome都是基于V8引擎来渲染的，所以了解V8引擎是至关重要的。
