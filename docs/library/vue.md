@@ -60,6 +60,21 @@ nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数
 
 ## 原理
 
+### Vue框架本身的生命周期是什么样子的？
+
+一张图总结：
+
+![](https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200103155422.png)
+
+### virtual DOM有什么用？
+
+我们知道，Vue是数据驱动视图的，数据发生变化视图就要随之更新，在更新视图的时候难免要操作DOM,而操作真实DOM又是非常耗费性能的，这是因为浏览器的标准就把 DOM 设计的非常复杂，所以一个真正的 DOM 元素是非常庞大的。
+
+我们可以用JS模拟出一个DOM节点，称之为虚拟DOM节点。当数据发生变化时，我们对比变化前后的虚拟DOM节点，通过DOM-Diff算法计算出需要更新的地方，然后去更新需要更新的视图。
+
+这就是虚拟DOM产生的原因以及最大的用途。
+
+
 ### Vue2.x中的virtual DOM到底是什么？如何实现的？
 
 Vue的virtual DOM参考了开源库[snabbdom](https://github.com/snabbdom/snabbdom)的实现。
@@ -217,3 +232,33 @@ Vue中为DOM元素绑定事件是采用DOM2级事件的处理方式，也就是a
 [Vue源码解读-方法与事件绑定 | 滴滴商业FED](https://defed.github.io/Vue%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB-%E6%96%B9%E6%B3%95%E4%B8%8E%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A/)
 
 [Vue 的事件系统 - 前端 - 掘金](https://juejin.im/entry/577ce6b88ac2470061c2fcce)
+
+
+---
+
+
+### Vue中的keep-alive是怎么实现的？越具体越好。
+
+首先看下使用方法：
+
+``` html
+<!-- 失活的组件将会被缓存！-->
+<keep-alive>
+  <component v-bind:is="currentTabComponent"></component>
+</keep-alive>
+```
+
+include定义缓存白名单，keep-alive会缓存命中的组件；exclude定义缓存黑名单，被命中的组件将不会被缓存；max定义缓存组件上限，超出上限使用**LRU的策略**置换缓存数据。
+
+
+简单的说，就是切换组件时不销毁它，而是**将其缓存至内存**中；等切回来时再将其激活，不再走原来的生命周期了。
+
+其原理就是：被包含在 keep-alive 中创建的组件，会增加额外的vnode属性和逻辑如[keepalive](https://github.com/FunnyLiu/vue/blob/readsource/src/core/components/keep-alive.js#L133 )，而在vue框架生命周期的[patch阶段，对其做了处理](https://github.com/FunnyLiu/vue/blob/readsource/src/core/vdom/patch.js#L215)。
+
+查看patch.js逻辑。在首次加载被包裹组件时，由`keep-alive.js`中的render函数可知，`vnode.componentInstance`的值是undefined，keepAlive的值是true，因为keep-alive组件作为父组件，它的render函数会先于被包裹组件执行。所以逻辑断掉了。
+
+再次访问被包裹组件时，`vnode.componentInstance`的值就是已经缓存的组件实例，那么会执行`insert(parentElm, vnode.elm, refElm)`逻辑，这样就直接把上一次的DOM插入到了父元素中。
+
+参考：
+
+[彻底揭秘keep-alive原理 - 掘金](https://juejin.im/post/5cce49036fb9a031eb58a8f9)
