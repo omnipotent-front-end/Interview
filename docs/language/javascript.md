@@ -2,9 +2,24 @@
 
 ## 语言基础
 
+### javascript是一门什么类型的语言？动态、静态、强类型、弱类型分别有什么区别？
+
+在使用之前就需要确认其变 量数据类型的称为**静态语言**。
+相反地，我们把在运行过程中需要检查数据类型的语言称为**动态语言**。
+
+通常把偷偷转换的操作称为**隐式类型转换**。而支持隐式类型转换的语言称为**弱类型语言**，不支持隐式类型转换的语言称为**强类型语言**。
+
+JavaScript是一种**弱类型的、动态的语言**。
+
+编程语言类型图：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200119113154.png"/>
+
+
+
 ### javascript 有哪些数据类型，如何判断？
 
-javascript 中有七种数据类型，其中有六种简单数据类型，一种复杂数据类型。
+javascript 中有八种数据类型，其中有七种简单数据类型，一种复杂数据类型。
 
 六种简单数据类型
 
@@ -14,6 +29,7 @@ javascript 中有七种数据类型，其中有六种简单数据类型，一种
 - Null
 - Undefined
 - Symbol (ECMAScript 6 新定义)
+- BigInt (ECMAScript 201* 新定义)
 
 复杂数据类型
 
@@ -1068,6 +1084,36 @@ inspect.styles = Object.assign(Object.create(null), {
 });
 ```
 
+
+### 浏览器里的window和Window有什么区别？
+
+简单的说：
+
+Window 是类， window 是实例，全局变量是 window 的属性。
+
+1、概念上看，
+
+1）Window和window都是由浏览器实现的【native code】，应该可以增加属性，但肯定没法修改其原始代码；
+
+2）window是由构造函数Window实例化的对象，各自有自己独立的内存空间。
+
+2、继承关系上看：
+
+window的继承关系为：
+
+window—>Window.prototype—>Windowproperties.prototype—>EventTarget.prototype—>Object.prototype;
+
+而Window的继承关系为：
+
+Window—>EventTarget—>Function.prototype—>Object.prototype。
+
+两者的顶层都是Object.prototype，不可能单独为Window和window增加新的属性，Window的根下一层Function.prototype也不可能增加新的属性，因为所有自定义函数和对象都会用到这两个玩意；要想一样（指属性一样），只能从Window的EventTarget这一层和window的Windowproperties.prototype这一层以下做文章。对于对象属性可以互相引用，做到一样，对于原始类型的属性，只能通过代码来同步
+
+
+参考：
+
+[js中Window和window的区别是什么？ - 知乎](https://www.zhihu.com/question/52761658)
+
 ---
 
 ## 原理
@@ -1185,6 +1231,38 @@ import { onlyOne } from "path/to/module";
    编译时加载: ES6 模块不是对象，而是通过 export 命令显式指定输出的代码，import 时采用静态命令的形式。即在 import 时可以指定加载某个输出值，而不是加载整个模块，这种加载称为“编译时加载”。
 
 CommonJS 加载的是一个对象（即 module.exports 属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
+
+
+
+### 在同一段代码中，ES6是如何做到既要支持变量提升的特性，又要支持块级作用域的呢？
+
+以这段代码为例：
+
+``` js
+ function foo(){
+      var a = 1
+      let b = 2
+      {
+        let b = 3
+        var c = 4
+        let d = 5
+        console.log(a)
+        console.log(b)
+      }
+      console.log(b)
+      console.log(c)
+      console.log(d)  
+  }  
+  foo()
+```
+
+块级作用域就是通过词法环境的栈结构来 实现的，而变量提升是通过变量环境来实现，通过这两者的结合，JavaScript引擎也就同时支持了变量提升 和块级作用域了。
+
+沿着词法环境的栈顶向下查询，如果在词法环境中的某个块中查找到了，就 直接返回给JavaScript引擎，如果没有查找到，那么继续在变量环境中查找。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200119164448.png"/>
+
+
 
 ---
 

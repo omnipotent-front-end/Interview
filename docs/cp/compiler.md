@@ -16,6 +16,12 @@
 
 **字节码是一种中间状态（中间码）的二进制代码（文件）**。需要直译器转译后才能成为机器码。
 
+可以通过javascript进行对比：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200119174020.png"/>
+
+机器码所占用的空间远远超过了字节码，所以使用字节码可以减少系统的内存使用。
+
 参考
 
 [机器码和字节码 - 第五空间](https://blog.csdn.net/limonzet/article/details/77892159)
@@ -46,3 +52,15 @@ v8只关心你调了一个require函数，参数是个字符串，它只是执�
 参考：
 
 [v8引擎是如何工作的](https://blog.fundebug.com/2019/07/16/how-does-v8-work/)
+
+
+### 对JIT的理解
+
+即时编译(JIT)技术，是指字节码配合解释器和编译器。可以先了解[v8引擎是如何工作的](https://blog.fundebug.com/2019/07/16/how-does-v8-work/)，简单来说，就是指解释器Ignition在解释执行字节码 的同时，收集代码信息，当它发现某一部分代码变热了之后，TurboFan编译器便闪亮登场，把热点的字节 码转换为机器码，并把转换后的机器码保存起来，以备下次使用。
+
+对于JavaScript工作引擎，除了V8使用了“字节码+JIT”技术之外，苹果的SquirrelFish Extreme和Mozilla 的SpiderMonkey也都使用了该技术，Java和Python的虚拟机也都是基于这种 技术实现的。
+
+用一张图来表示：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200119174623.png"/>
+

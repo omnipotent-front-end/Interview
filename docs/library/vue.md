@@ -54,9 +54,23 @@
 nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数组，最后一次性地根据 useMacroTask 条件执行 macroTimerFunc 或者是 microTimerFunc，**useMacroTask条件的判断依据就是传入的回调函数中是否有操作state的行为，如果有就认为ture**。
 
 
-
-
 [参考](https://ustbhuangyi.github.io/vue-analysis/reactive/next-tick.html#vue-%E7%9A%84%E5%AE%9E%E7%8E%B0)
+
+
+### computed 和 watch 有什么区别及运用场景?
+
+区别
+
+computed 计算属性 : 依赖其它属性值,并且 computed 的值有缓存,只有它依赖的属性值发生改变,下一次获取 computed 的值时才会重新计算 computed 的值。
+
+watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于某些数据的监听回调,每当监听的数据变化时都会执行回调进行后续操作。
+
+运用场景：
+
+当我们需要进行数值计算,并且**依赖于其它数据**时,应该使用 computed,因为可以利用 computed 的缓存特性,**避免每次获取值时,都要重新计算**。
+
+当我们需要**在数据变化时执行异步或开销较大的操作时,应该使用 watch**,使用  watch  选项允许我们执行异步操作 ( 访问一个 API ),限制我们执行该操作的频率,并在我们得到最终结果前,设置中间状态。这些都是计算属性无法做到的。
+
 
 ## 原理
 
@@ -65,6 +79,10 @@ nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数
 一张图总结：
 
 ![](https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200103155422.png)
+
+
+首先是[Vue的初始化](https://github.com/FunnyLiu/vue/tree/readsource#%E7%BB%84%E4%BB%B6%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F)，在其生命周期过程中，对[数据进行监听](https://github.com/FunnyLiu/vue/tree/readsource#%E6%95%B0%E6%8D%AE%E8%A7%82%E5%AF%9F)，对[模板进行编译](https://github.com/FunnyLiu/vue/tree/readsource#%E6%A8%A1%E6%9D%BF%E7%9A%84%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B)生成给render函数的字符串。通过render函数，进入patch阶段，进行[VNode的diff](https://github.com/FunnyLiu/vue/tree/readsource#vnode%E7%9A%84%E6%9B%B4%E6%96%B0%E6%B5%81%E7%A8%8B)以及生成真正的dom进行挂载。
+
 
 ### virtual DOM有什么用？
 
@@ -189,7 +207,21 @@ Vue.use 接受一个 plugin 参数，并且维护了一个 _installedPlugins 数
 
 可以看到 Vue 提供的插件注册机制很简单，每个插件都需要实现一个静态的 install 方法，当我们执行 Vue.use 注册插件的时候，就会执行这个 install 方法，并且在这个 install 方法的第一个参数我们可以拿到 Vue 对象，这样的好处就是作为插件的编写方不需要再额外去import Vue 了。
 
-### Vue的响声式用Proxy和Object.defineProperty有什么区别？
+### Vue中的数据响应式如何实现的？
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200116113829.png"/>
+
+通过Observer，对需要的object，通过defineProperty递归的建立可观察对象；对需要的数组，通过array.js提供的方法对数组原型进行hack复写，并植入观察逻辑。
+
+Dep用来负责依赖的收集。
+
+watcher 中实例化了 dep 并向 dep.subs 中添加了订阅者,dep 通过 notify 遍历了 dep.subs 通知每个 watcher 更新。
+
+
+参考[源码解读](https://github.com/FunnyLiu/vue/tree/readsource#%E6%95%B0%E6%8D%AE%E8%A7%82%E5%AF%9F)。
+
+
+### Vue的响应式用Proxy和Object.defineProperty有什么区别？
 
 Object.defineProperty有如下缺陷：
 
@@ -220,7 +252,7 @@ Vue中的事件有Dom事件和Vue事件（自定义事件）两种，所以可�
 
 Vue中为DOM元素绑定事件是采用DOM2级事件的处理方式，也就是addEventListener，因为Vue服务的是IE9以上的现代浏览器，他们也都是支持DOM2级事件。
 
-而自定义事件是为组件间通信设计，自定义事件提供了 $on、$off、$once、$emit、$broadcast、$dispatch 几个 api，非常简洁。
+而自定义事件是为组件间通信设计，自定义事件提供了 $on、$off、$once、$emit、$broadcast、$dispatch 几个 api，非常简洁。[实现源码在此](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/events.js#L2)
 
 首先提两个vm的私有变量，**vm._events 和 vm._eventCount**。**每个vm实例所有的自定义事件都将存储在 vm._events，而 vm._eventsCount 存储的是执行事件广播后子组件触发自定义事件处理程序的数量**，这是为了事件广播优化而来的，如果 vm._eventsCount[event] 数量为零，当事件广播时则可断定子组件没有该事件的监听器，就没必要向子组件层层捕获该事件监听器了。
 
