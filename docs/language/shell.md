@@ -2,11 +2,39 @@
 
 ## 应用
 
-### 如何替换一个文件中的内容？（todo）
+### 如何替换一个文件中的内容？
 
-sed;那还有没有其它命令;cut
+1、vi/vim编辑
 
-### awk有什么用？（todo）
+2、sed和grep配合
+
+命令：sed -i s/yyyy/xxxx/g `grep yyyy -rl --include="*.txt" ./`
+
+作用：将当前目录(包括子目录)中所有txt文件中的yyyy字符串替换为xxxx字符串。其中，
+
+-i 表示操作的是文件，``括起来的grep命令，表示将grep命令的的结果作为操作文件。
+
+s/yyyy/xxxx/表示查找yyyy并替换为xxxx，后面跟g表示一行中有多个yyyy的时候，都替换，而不是仅替换第一个
+
+另外，如果不需要查找子目录，仅需要在当前目录替换，用sed命令就行了，命令如下：`sed -i s/xxxx/yyyy/g ./*.txt`
+
+3、find
+
+命令格式：find -name '要查找的文件名' | xargs perl -pi -e 's|被替换的字符串|替换后的字符串|g'
+
+#查找替换当前目录下包含字符串并进行替换
+```
+find -name '*.txt' | xargs perl -pi -e 's|智慧乡村|北部山区|g'
+```
+#递归查找替换
+```
+find . -type f -name '*.html' | xargs perl -pi -e 's|智慧乡村|北部山区|g'
+
+```
+
+### awk有什么用？
+
+相对于grep的查找，sed的编辑，awk在其对数据分析并生成报告时，显得尤为强大。简单来说awk就是把文件逐行的读入，以空格为默认分隔符将每行切片，切开的部分再进行各种分析处理。
 
 ### 对一个文件如何只查看特定行的内容
 
