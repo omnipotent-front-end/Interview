@@ -104,7 +104,7 @@ wormhole主要消耗性能的地方就在模板引擎渲染这部分，在并发
 参考[pm2的fork模式和cluster模式的有什么区别？](/library/pm2.html#pm2%E7%9A%84fork%E6%A8%A1%E5%BC%8F%E5%92%8Ccluster%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
 
 
-### 服务端异常如何监控（todo）
+### 服务端异常如何监控
 
 比如用 sentry 监控异常，elk 打日志，prometheus 监控性能并用 alertmanager 报警，再写一个webhook到钉钉。
 
@@ -114,9 +114,9 @@ wormhole主要消耗性能的地方就在模板引擎渲染这部分，在并发
 
 ps / pidstat
 
-### 当服务端的内存发生了OOM问题如何排查？（todo）
+### 当服务端的内存发生了OOM问题如何排查？
 
-比如看 promethues，查看监控的突然高峰，看日志那段时候发生了什么，看有没有提交代码
+比如看 promethues，查看监控的突然高峰，看日志那段时候发生了什么，看有没有提交代码。然后可以具体分析代码片段，通过node自建的profiling和apachebench配合[配合node内建profiling进行性能排查](https://nodejs.org/zh-cn/docs/guides/simple-profiling/)，其本质是基于[v8的profiling](https://v8.dev/docs/profile)。
 
 
 ### 如何设计一个高可用的短链服务？
@@ -173,3 +173,6 @@ ps / pidstat
 [短网址(short URL)系统的原理及其实现](https://hufangyun.com/2017/short-url/)
 
 
+### 一般如何进行压力测试
+
+简单的话用apachebench，系统性的可以考虑jmeter，用goreplay来回放线上流量。
