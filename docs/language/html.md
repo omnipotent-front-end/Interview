@@ -22,6 +22,32 @@ compositionstart 事件触发于一段文字的输入之前（类似于 keydown 
 
 触发compositionstart时，文本框会填入 “虚拟文本”（待确认文本），同时触发input事件；在触发compositionend时，就是填入实际内容后（已确认文本）,所以这里如果不想触发input事件的话就得设置一个bool变量来控制。
 
+
+### input如何做到文件上传？
+
+最简单的表单文件上传，使用type为file的input。
+
+``` html
+<form id="uploadForm" method="POST" action="upload" enctype="multipart/form-data">
+      <input type="file" id="myFile" name="file"></input>
+      <input type="submit" value="提交"></input>
+ </form>
+```
+
+通过multiple属性支持多文件
+
+```
+<input id="myFile" type="file" multiple>
+```
+
+通过异步接口配合FileReader来无刷新上传。
+
+
+参考文章：
+
+[文件上传那些事儿 - 前端 - 掘金](https://juejin.im/entry/590ad4682f301e00582a78b5)
+
+
 ## DOM相关
 
 ### 一个iframe，内嵌了一个A页面，iframe的宽高不停变化，如何让A页面的宽高实时自适应这个iframe的宽高大小

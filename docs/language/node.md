@@ -501,6 +501,19 @@ const readFileCallback = util.callbackify(readFilePromise); // callback
 [你可能不知道的 Node.js util 模块 - 知乎](https://zhuanlan.zhihu.com/p/75532713?utm_source=wechat_session&utm_medium=social&utm_oi=41809770184704&from=singlemessage&isappinstalled=0&wechatShare=1&s_r=0)
 
 
+
+### nodejs如何做热更新？
+
+首先说明，require 会有一个 cache, 有这个 cache 在, 即使你更新了 .js 文件, 在代码中再次 require 还是会拿到之前的编译好缓存在 v8 内存 (code space) 中的的旧代码. 但是如果只是单纯的清除掉 require 中的 cache, 再次 require 确实能拿到新的代码, 但是这时候很容易碰到各地维持旧的引用依旧跑的旧的代码的问题。而且会带来额外的内存泄漏问题，比如[记录一次由一行代码引发的“血案” - CNode技术社区](https://cnodejs.org/topic/5aaba2dc19b2e3db18959e63)。
+
+或者最好通过zookeeper或数据库等第三方组件来做这个事情。
+
+
+参考：
+
+[Node.js Interview](https://elemefe.github.io/node-interview/#/sections/zh-cn/module?id=%e7%83%ad%e6%9b%b4%e6%96%b0)
+
+
 ---
 
 ## 编码

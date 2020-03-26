@@ -1230,6 +1230,13 @@ import { onlyOne } from "path/to/module";
    运行时加载: CommonJS 模块就是对象；即**在输入时是先加载整个模块，生成一个对象，然后再从这个对象上面读取方法，这种加载称为“运行时加载”**。
    编译时加载: ES6 模块不是对象，而是通过 export 命令显式指定输出的代码，import 时采用静态命令的形式。即在 import 时可以指定加载某个输出值，而不是加载整个模块，这种加载称为“编译时加载”。
 
+3. CommonJs 是单个值导出，ES6 Module可以导出多个。
+
+4. CommonJs 是动态语法可以写在判断里，ES6 Module 静态语法只能写在顶层。
+
+5. CommonJs 的 this 是当前模块，ES6 Module的 this 是 undefined。
+
+
 CommonJS 加载的是一个对象（即 module.exports 属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
 
 
@@ -1263,6 +1270,16 @@ CommonJS 加载的是一个对象（即 module.exports 属性），该对象只�
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200119164448.png"/>
 
 
+
+### JavaScript 中不同类型以及不同环境下变量的内存都是何时释放?
+
+首先掌握[谈谈v8中的gc策略](/cp/browser.html#%E8%B0%88%E8%B0%88v8%E4%B8%AD%E7%9A%84gc%E7%AD%96%E7%95%A5)
+
+引用类型是在没有引用之后, 通过 v8 的 GC 自动回收, 值类型如果是处于闭包的情况下, 要等闭包没有引用才会被 GC 回收, 非闭包的情况下等待 v8 的新生代 (new space) 切换的时候回收。
+
+参考：
+
+[Node.js Interview](https://elemefe.github.io/node-interview/#/sections/zh-cn/common?id=%e5%86%85%e5%ad%98%e9%87%8a%e6%94%be)
 
 ---
 
