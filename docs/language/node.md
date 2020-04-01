@@ -524,6 +524,10 @@ const readFileCallback = util.callbackify(readFilePromise); // callback
 
 针对promisify：
 
+tomato-js实现，
+[@tomato-js/async | @tomato-js](https://tomato-js.github.io/tomato/modules/_tomato_js_async.html#promisify)
+
+
 promisify执行完后返回的是一个新的函数，新的函数的执行结果是一个promise，新函数内部会调用original原有的方法并且会自动追加error-first类型的callback，**根据original的执行结果判断是resolve还是reject**，简易版本的代码如下：
 
 ``` js
@@ -545,6 +549,9 @@ function promisify(original) {
 ```
 
 针对callbackify：
+
+[@tomato-js/async | @tomato-js](https://tomato-js.github.io/tomato/modules/_tomato_js_async.html#callbackify)
+
 
 调用原始函数original通过then方法，在同一阶段process.nextTick调用callback方法，简化版本如下：
 
