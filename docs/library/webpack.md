@@ -19,6 +19,170 @@
 loader的执行顺序是从后往前的，而plugin是作用于webpack整个生命周期，通过hook来决定执行顺序的，所以每一个都不一样。
 
 
+### 如何优化webpack构建速度？
+
+*   使用`高版本`的 Webpack 和 Node.js
+    
+*   `多进程/多实例构建`：HappyPack(不维护了)、thread-loader
+    
+*   `压缩代码`
+    
+
+*   webpack-paralle-uglify-plugin
+    
+*   uglifyjs-webpack-plugin 开启 parallel 参数 (不支持 ES6)
+    
+*   terser-webpack-plugin 开启 parallel 参数
+    
+
+*   多进程并行压缩
+    
+*   通过 mini-css-extract-plugin 提取 Chunk 中的 CSS 代码到单独文件，通过 css-loader 的 minimize 选项开启 cssnano 压缩 CSS。
+    
+
+*   `图片压缩`
+    
+
+*   使用基于 Node 库的 imagemin (很多定制选项、可以处理多种图片格式)
+    
+*   配置 image-webpack-loader
+    
+
+*   `缩小打包作用域`：
+    
+
+*   exclude/include (确定 loader 规则范围)
+    
+*   resolve.modules 指明第三方模块的绝对路径 (减少不必要的查找)
+    
+*   resolve.mainFields 只采用 main 字段作为入口文件描述字段 (减少搜索步骤，需要考虑到所有运行时依赖的第三方模块的入口文件描述字段)
+    
+*   resolve.extensions 尽可能减少后缀尝试的可能性
+    
+*   noParse 对完全不需要解析的库进行忽略 (不去解析但仍会打包到 bundle 中，注意被忽略掉的文件里不应该包含 import、require、define 等模块化语句)
+    
+*   IgnorePlugin (完全排除模块)
+    
+*   合理使用 alias
+    
+
+*   `提取页面公共资源`：
+    
+
+*   使用 html-webpack-externals-plugin，将基础包通过 CDN 引入，不打入 bundle 中
+    
+*   使用 SplitChunksPlugin 进行 (公共脚本、基础包、页面公共文件) 分离(Webpack4 内置) ，替代了 CommonsChunkPlugin 插件
+    
+
+*   基础包分离：
+    
+
+*   `DLL`：
+    
+
+*   使用 DllPlugin 进行分包，使用 DllReferencePlugin(索引链接) 对 manifest.json 引用，让一些基本不会改动的代码先打包成静态资源，避免反复编译浪费时间。
+    
+*   HashedModuleIdsPlugin 可以解决模块数字 id 问题
+    
+
+*   `充分利用缓存提升二次构建速度`：
+    
+
+*   babel-loader 开启缓存
+    
+*   terser-webpack-plugin 开启缓存
+    
+*   使用 cache-loader 或者 hard-source-webpack-plugin
+    
+
+*   `Tree shaking`
+    
+
+*   purgecss-webpack-plugin 和 mini-css-extract-plugin 配合使用 (建议)
+    
+
+*   打包过程中检测工程中没有引用过的模块并进行标记，在资源压缩时将它们从最终的 bundle 中去掉 (只能对 ES6 Modlue 生效) 开发中尽可能使用 ES6 Module 的模块，提高 tree shaking 效率
+    
+*   禁用 babel-loader 的模块依赖解析，否则 Webpack 接收到的就都是转换过的 CommonJS 形式的模块，无法进行 tree-shaking
+    
+*   使用 PurifyCSS(不在维护) 或者 uncss 去除无用 CSS 代码
+    
+
+*   `Scope hoisting`
+    
+
+*   构建后的代码会存在大量闭包，造成体积增大，运行代码时创建的函数作用域变多，内存开销变大。Scope hoisting 将所有模块的代码按照引用顺序放在一个函数作用域里，然后适当的重命名一些变量以防止变量名冲突
+    
+*   必须是 ES6 的语法，因为有很多第三方库仍采用 CommonJS 语法，为了充分发挥 Scope hoisting 的作用，需要配置 mainFields 对第三方模块优先采用 jsnext:main 中指向的 ES6 模块化语法
+    
+
+*   `动态Polyfill`
+    
+
+*   建议采用 polyfill-service 只给用户返回需要的 polyfill，社区维护。(部分国内奇葩浏览器 UA 可能无法识别，但可以降级返回所需全部 polyfill)
+    
+参考：
+
+[再来一打webpack面试题](https://mp.weixin.qq.com/s/neC8lKFQeaVOEuhgzOytLw)
+
+
+### 是否写过loader？简单说明下原理？
+
+是否写过 Loader？简单描述一下编写 loader 的思路？
+------------------------------------
+
+Loader 支持链式调用，所以开发上需要严格遵循 “单一职责”，每个 Loader 只负责自己需要负责的事情。
+
+Loader 的 API 可以去官网查阅
+
+https://www.webpackjs.com/api/loaders
+
+*   Loader 运行在 Node.js 中，我们可以调用任意 Node.js 自带的 API 或者安装第三方模块进行调用
+    
+*   Webpack 传给 Loader 的原内容都是 UTF-8 格式编码的字符串，当某些场景下 Loader 处理二进制文件时，需要通过 exports.raw = true 告诉 Webpack 该 Loader 是否需要二进制数据
+    
+*   尽可能的异步化 Loader，如果计算量很小，同步也可以
+    
+*   Loader 是无状态的，我们不应该在 Loader 中保留状态
+    
+*   使用 loader-utils 和 schema-utils 为我们提供的实用工具
+    
+*   加载本地 Loader 方法
+    
+
+*   Npm link
+    
+*   ResolveLoader
+
+### 是否写过 Plugin？简单描述一下编写 Plugin 的思路？
+------------------------------------
+
+webpack 在运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在特定的阶段钩入想要添加的自定义功能。Webpack 的 Tapable 事件流机制保证了插件的有序性，使得整个系统扩展性良好。
+
+Plugin 的 API 可以去官网查阅
+
+https://www.webpackjs.com/api/plugins
+
+*   compiler 暴露了和 Webpack 整个生命周期相关的钩子
+    
+*   compilation 暴露了与模块和依赖有关的粒度更小的事件钩子
+    
+*   插件需要在其原型上绑定 apply 方法，才能访问 compiler 实例
+    
+*   传给每个插件的 compiler 和 compilation 对象都是同一个引用，若在一个插件中修改了它们身上的属性，会影响后面的插件
+    
+*   找出合适的事件点去完成想要的功能
+    
+
+*   emit 事件发生时，可以读取到最终输出的资源、代码块、模块及其依赖，并进行修改 (emit 事件是修改 Webpack 输出资源的最后时机)
+    
+*   watch-run 当依赖的文件发生变化时会触发
+    
+
+*   异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
+    
+
+
 ---
 
 ## 原理

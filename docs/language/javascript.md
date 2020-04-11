@@ -663,6 +663,26 @@ console.log(a===b);
 
 点击 B 的 dom 时输出为 b，a；点击 A 的 dom 时输出 a，a。
 
+
+可以参考vue中.self修饰符的实现：
+
+``` js
+var genGuard = function (condition) { return ("if(" + condition + ")return null;"); };
+// 事件修饰符
+var modifierCode = {
+  stop: '$event.stopPropagation();',
+  prevent: '$event.preventDefault();',
+  self: genGuard("$event.target !== $event.currentTarget"),
+  ctrl: genGuard("!$event.ctrlKey"),
+  shift: genGuard("!$event.shiftKey"),
+  alt: genGuard("!$event.altKey"),
+  meta: genGuard("!$event.metaKey"),
+  left: genGuard("'button' in $event && $event.button !== 0"),
+  middle: genGuard("'button' in $event && $event.button !== 1"),
+  right: genGuard("'button' in $event && $event.button !== 2")
+};
+```
+
 参考：
 
 [深入理解 e.target 与 e.currentTarget - 掘金](https://juejin.im/post/59f16ffaf265da43085d4108)
