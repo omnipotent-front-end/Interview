@@ -26,3 +26,5 @@
 [今日头条web全栈面试记](https://mp.weixin.qq.com/s?__biz=MzA4MDg4NDczMQ==&mid=2455539265&idx=2&sn=74fd469b307385b2444cb2bbe9e78f5c&chksm=883548d5bf42c1c3efffe208d01311ec9857c0f1b2c4d38be3b55745424cda4d036aa24a8a05&mpshare=1&scene=1&srcid=&sharer_sharetime=1575433395747&sharer_shareid=28a10d527f30e00f332855c214b3febe&key=cfa54d7535da53266d73ea29e6402797f1d98878eedf674a03b72e980838014ce092ca275a7ce08cd4cf411938735308dfd9ca0d1d5da6934512c42c54899f7a6d17930a5bcbd11a2a4fb5b626f9c47e&ascene=0&uin=MjUwMTIyNjY4Mg%3D%3D&devicetype=iMac+MacBookPro13%2C2+OSX+OSX+10.14.1+build(18B75)&version=12020810&nettype=WIFI&lang=zh_CN&fontScale=100&pass_ticket=hZXV%2BFLZ7FPi2Mq%2FntU23H82UcYFSeqk71YCJSQ6Z%2Bk0bW4s2WBqPv7Le1jBh%2FcC)
 
 [字节跳动，前端面试_笔经面经_牛客网](https://www.nowcoder.com/discuss/174632)
+
+[来自一个渣渣的万字前端面经 小米 头条 高德 360 美团 等 - 掘金](https://juejin.im/post/5e7c439ce51d455c5a18562f)
