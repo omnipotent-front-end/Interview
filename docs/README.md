@@ -28,3 +28,5 @@
 [字节跳动，前端面试_笔经面经_牛客网](https://www.nowcoder.com/discuss/174632)
 
 [来自一个渣渣的万字前端面经 小米 头条 高德 360 美团 等 - 掘金](https://juejin.im/post/5e7c439ce51d455c5a18562f)
+
+[在阿里我是如何当面试官的（持续更新） - 掘金](https://juejin.im/post/5e6ebfa86fb9a07ca714d0ec#heading-10)

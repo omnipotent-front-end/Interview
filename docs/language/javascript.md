@@ -1104,7 +1104,7 @@ inspect.styles = Object.assign(Object.create(null), {
 });
 ```
 
-
+ 
 ### 浏览器里的window和Window有什么区别？
 
 简单的说：
@@ -1133,6 +1133,18 @@ Window—>EventTarget—>Function.prototype—>Object.prototype。
 参考：
 
 [js中Window和window的区别是什么？ - 知乎](https://www.zhihu.com/question/52761658)
+
+
+
+### 如何在代码中减少迭代次数？（todo）
+
+### 如何实现一个 Duff 装置？（todo）
+
+
+### 在 JavaScript 中如何实现对象的私有属性?（todo）
+
+
+
 
 ---
 
@@ -1300,6 +1312,33 @@ CommonJS 加载的是一个对象（即 module.exports 属性），该对象只�
 参考：
 
 [Node.js Interview](https://elemefe.github.io/node-interview/#/sections/zh-cn/common?id=%e5%86%85%e5%ad%98%e9%87%8a%e6%94%be)
+
+
+
+### JavaScript 中的数组为什么可以不需要分配固定的内存空间？（todo）
+
+### JavaScript 中数组的存储和 C / C++ / Java 中数组的存储有什么区别？（todo）
+
+### JavaScript 中数组是否可以理解为特殊的对象？（todo）
+
+### JavaScript 中数组和 C / C++ / Java 中数组存储在性能上有什么区别？（todo）
+
+### JavaScript 中的 Array 和 Node.js 中的 Buffer 有什么区别？（todo）
+
+### JavaScript 中的数组何时是连续存储的，何时是哈希存储的？（todo）
+
+### 哈希存储的键冲突（散列碰撞）可以有哪些解决方案（开链法、线性探测法、红黑树等）（todo）？
+
+
+### 聊聊继承以及说说 ES5 和 ES6 继承的区别？（todo）
+
+
+### 条件比较多的时候 if-else 和 switch 性能哪个高？（todo）
+
+### 字面量 / 数组 / 对象存储性能有没有什么区别？（todo）
+
+### 如何提升 JavaScript 变量的存储性能？
+
 
 ---
 
@@ -2422,3 +2461,7 @@ function render() {
   requestAnimFrame(animloop);
 })();
 ```
+
+
+### 实现一个简易的模板引擎（todo）
+

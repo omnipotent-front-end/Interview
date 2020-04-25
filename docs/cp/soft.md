@@ -8,3 +8,11 @@
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190710190123.png"/>
 
+### 平常在哪些地方有使用到观察者或发布 / 订阅模式？（todo）
+
+
+
+## 编程模型
+
+### 了解 MVC / MVP / MVVM 的区别吗？（todo）
+

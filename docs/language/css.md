@@ -2,6 +2,49 @@
 
 ## 应用
 
+### 浮动元素和绝对定位元素的区别和应用?(todo)
+
+### CSS 中解决浮动中高度塌陷的方案有哪些？(todo)
+
+解题思路
+
+可以先概括解决高度塌陷问题的两种类型：clear 属性 和 BFC 法
+
+然后可以介绍两种类型的具体方案：
+
+追加元素并设置 clear 属性
+
+使用 CSS 样式插入伪元素
+
+Bootstrap 的解决高度塌陷方案（BFC）
+
+### 高度塌陷产生的原因是什么？(todo)
+
+### clear 属性清除浮动的原理是什么？(todo)
+
+### 采用 BFC 解决高度塌陷和clear 属性清除浮动相比的优势是什么？(todo)
+
+### CSS 中的 vertical-align 有哪些值？它在什么情况下才能生效？
+
+vertical-align属性值：
+
+线类：baseline、top、middle、bottom
+
+文本类：text-top、text-bottom
+
+上标下标类：sub、super
+
+数值百分比类：20px、2em、20%等（对于基线往上或往下偏移）
+
+vertical-align**生效前提**  ：
+
+内联元素span、strong、em、img、button、input等
+
+display值为inline、inline-block、inline-table或table-cell的元素
+
+需要注意**浮动和绝对定位**会让元素块状化，因此此元素绝对不会生效
+
+
 ### 如何理解BFC？
 
 BFC 即 Block Formatting Contexts, 翻成中文是 块级格式化上下文。
@@ -21,6 +64,18 @@ BFC特性如下：
 - 同一个 BFC 下的两个块级元素之间的外边距会发生折叠.
 - 清除浮动.
 - 阻止元素被浮动元素覆盖
+
+### 了解 Flex 布局么？平常有使用 Flex 进行布局么？(todo)
+
+解题思路
+
+首先得说出 Flex 布局概念，Flex 的结构组成（Flex Container 、Flex Item），遇到的所有面试者都没有此回答
+
+其次可以讲讲自己平常用的最多的 Flex 属性
+
+最后可以讲讲自己平时常用的布局（左右两列，上下两行等）
+
+
 
 
 ### grid布局了不了解，简单说下？
@@ -60,6 +115,25 @@ unset是关键字 initial 和 inherit 的组合。
 
 [谈谈 CSS 关键字 initial、inherit 和 unset - 最骚的就是你 - 博客园](https://www.cnblogs.com/libin-1/p/6734751.html)
 
+
+### CSS 中选择器有哪些？CSS 选择器优先级是怎么去匹配？(todo)
+
+
+
+### 伪元素和伪类有什么区别？(todo)
+
+
+### CSS 中的 background 的 background-image 属性可以和 background-color 属性一起生效么？(todo)
+
+
+### background-color 属性可以覆盖 background-image 属性吗？(todo)
+
+### CSS 中哪些属性可以继承？(todo)
+
+
+
+
+### 了解 CSS 3 动画的硬件加速么？在重绘和重流方面有什么需要注意的点？(todo)
 
 
 ## 编码
@@ -231,4 +305,10 @@ div {
     <div class="right"></div>
 </body>
 ```
+
+### CSS 如何实现三列布局，左侧和右侧固定宽度，中间自适应宽度？(todo)
+
+### 如何设计一个 4 列等宽布局，各列之间的边距是 10px（考虑浏览器的兼容性）？(todo)
+
+### Flex 如何实现上下两行，上行高度自适应，下行高度 200px？(todo)
 

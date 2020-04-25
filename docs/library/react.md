@@ -88,6 +88,32 @@ class组件经历了`React.createClass`，`React.Component`,也经历了construc
 [Why React Hooks? - YouTube](https://www.youtube.com/embed/eX_L39UvZes)
 
 
+### React 中的 setState 为什么需要异步操作？（todo）
+
+### 什么时候setState会进行同步操作？（todo）
+
+### React 官方对于setState特定情况下进行同步操作的优化方案是什么？（todo）
+
+### React 中 setState 后想要拿到更新的state值应该怎么处理？（todo）
+
+### 使用 React Hooks 的同时为什么需要使用高阶组件？（todo）
+
+### 完全用 Hooks 的写法是否可以摒弃高阶组件的写法？（todo）
+
+### 怎么使用 Hooks 替代高阶组件？（todo）
+
+
+### Ajax 请求放在 componentDidMount 里进行处理还是放在componentWillMount 里进行处理比较合适？（todo）
+
+
+
+### React 中受控组件和非受控组件的区别？(todo)
+
+### 在哪些场景应该使用非受控组件？(todo)
+
+
+
+
 
 ### react可以写命令行？体验怎么样？
 
