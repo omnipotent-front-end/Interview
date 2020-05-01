@@ -1254,12 +1254,8 @@ import { onlyOne } from "path/to/module";
 而 require 则是 nodejs 中的依赖的方式，这种也叫 CommonJS，会有一套完成的查找模块的顺序。
 **require 和 es 的 import 的区别在于**：
 
-1. CommonJS 模块输出的是一个**值的拷贝**，ES6 模块输出的是**值的引用**。
-   CommonJS 模块输出的是**值的拷贝**，也就是说，一旦输出一个值，模块内部的变化就影响不到这个值。
-   ES6 模块的运行机制与 CommonJS 不一样。JS 引擎对脚本静态分析的时候，遇到模块加载命令 import，就会生成一个**只读引用**。等到脚本真正执行时，再根据这个只读引用，到被加载的那个模块里面去取值。换句话说，ES6 的 import 有点像 Unix 系统的“符号连接”，原始值变了，import 加载的值也会跟着变。因此，ES6 模块是动态引用，并且不会缓存值，模块里面的变量绑定其所在的模块。
-
-2. CommonJS 模块是**运行时加载**，ES6 模块是编译时输出接口。
-   运行时加载: CommonJS 模块就是对象；即**在输入时是先加载整个模块，生成一个对象，然后再从这个对象上面读取方法，这种加载称为“运行时加载”**。
+1. CommonJS 模块是**运行时加载**，ES6 模块是编译时输出接口。
+   运行时加载: CommonJS 模块就是对象；即**在输入时是先加载整个模块，生成一个对象，然后再从这个对象上面读取方法，这种加载称为“运行时加载”**，具体细节可以参考[require时到底发生了什么](https://github.com/FunnyLiu/node/tree/readsource#libinternalmodulescjsloaderjs)。
    编译时加载: ES6 模块不是对象，而是通过 export 命令显式指定输出的代码，import 时采用静态命令的形式。即在 import 时可以指定加载某个输出值，而不是加载整个模块，这种加载称为“编译时加载”。
 
 3. CommonJs 是单个值导出，ES6 Module可以导出多个。
@@ -1270,6 +1266,12 @@ import { onlyOne } from "path/to/module";
 
 
 CommonJS 加载的是一个对象（即 module.exports 属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
+
+
+参考：
+
+[require() 源码解读 - 阮一峰的网络日志](http://www.ruanyifeng.com/blog/2015/05/require.html)
+
 
 
 
