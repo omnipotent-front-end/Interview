@@ -1143,8 +1143,9 @@ Window—>EventTarget—>Function.prototype—>Object.prototype。
 
 ### 在 JavaScript 中如何实现对象的私有属性?（todo）
 
+### 获取精度更高的时间（todo）
 
-
+### 如何获取首屏渲染时间（todo）
 
 ---
 
@@ -2466,4 +2467,8 @@ function render() {
 
 
 ### 实现一个简易的模板引擎（todo）
+
+### 求字符串的最长公共前缀（todo）
+
+比如输入: ["flower","flow","flight"]，输出: "fl"
 

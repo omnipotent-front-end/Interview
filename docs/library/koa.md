@@ -162,3 +162,7 @@ koa-bodyparser依赖co-body依赖raw-body；express依赖body-parser依赖raw-bo
 
 而raw-body简单的说就是通过可读流stream的各种事件来读取数据。[stream.on('data)](https://github.com/stream-utils/raw-body/blob/master/index.js#L192)。req 实际上是个 stream，获取 body 的方法是基于注册 on data 事件实现的。
 
+## 编码实现
+
+### 手写 Koa 的 compose 方法（todo）
+

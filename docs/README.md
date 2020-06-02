@@ -30,3 +30,5 @@
 [来自一个渣渣的万字前端面经 小米 头条 高德 360 美团 等 - 掘金](https://juejin.im/post/5e7c439ce51d455c5a18562f)
 
 [在阿里我是如何当面试官的（持续更新） - 掘金](https://juejin.im/post/5e6ebfa86fb9a07ca714d0ec#heading-10)
+
+[三年前端寒冬入大厂，收获蚂蚁、字节 offer 面经分享](https://mp.weixin.qq.com/s/CFoTRNDXHbqenmW7jFVczg)
