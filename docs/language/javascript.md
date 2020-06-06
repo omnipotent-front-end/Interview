@@ -826,6 +826,17 @@ const scrollToTop = () => {
 
 也可以用于任务调度，如果 React 的 Fiber 就是基于 requestAnimationFrame 和 requestIdleCallback 的。
 
+### requestIdleCallback和requestAnimationFrame有什么区别？
+
+首先了解[浏览器每一帧到底做了什么？](/cp/browser.html#%E6%B5%8F%E8%A7%88%E5%99%A8%E6%AF%8F%E4%B8%80%E5%B8%A7%E5%88%B0%E5%BA%95%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F)
+requestAnimationFrame的回调会在每一帧确定执行，属于高优先级任务，而requestIdleCallback的回调则不一定，属于低优先级任务。 
+
+
+参考：
+
+[你应该知道的requestIdleCallback - 掘金](https://juejin.im/post/5ad71f39f265da239f07e862)
+
+
 ### js 异步编程方法和各种的优缺点
 
 发展历程：
@@ -870,6 +881,35 @@ async function test() {
 ```
 
 ---
+
+### 并发多个接口，如何回调一次结果？
+
+利用promise构造函数只触发一次，内部状态转换后无法重复的特性来完成。
+
+``` js
+const FecthSomething = () => new Promise((resolve,reject)=>{
+  setTimeout(()=>{
+    //构造函数中只会执行一次
+    console.log('exec')
+    resolve({code:0});
+  },2000)
+})
+const promise = new Promise((resolve, reject) => {
+  return FecthSomething().then(data=>{resolve(data)})
+})
+
+
+promise.then((result) => {
+  console.log(result)
+})
+
+promise.then((result) => {
+  console.log(result)
+})
+//exec
+//{code:0}
+//{code:0}
+```
 
 ### 如何实现 decorator
 
@@ -1340,7 +1380,7 @@ CommonJS 加载的是一个对象（即 module.exports 属性），该对象只�
 
 ### 字面量 / 数组 / 对象存储性能有没有什么区别？（todo）
 
-### 如何提升 JavaScript 变量的存储性能？
+### 如何提升 JavaScript 变量的存储性能？(todo)
 
 
 ---

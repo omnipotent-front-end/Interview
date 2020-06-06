@@ -316,3 +316,19 @@ HTTP参考：[https的握手过程是什么样子的？](/cp/network.html#https%
 [浏览器事件模型中捕获阶段、目标阶段、冒泡阶段实例详解 - 本期节目 - SegmentFault 思否](https://segmentfault.com/a/1190000003482372)
 
 [浏览器事件有哪些过程? 为什么一般在冒泡阶段，而不是在捕获阶段注册监听? · Issue #11 · maoxiaoke/one-day-one-puzzle](https://github.com/maoxiaoke/one-day-one-puzzle/issues/11)
+
+### 浏览器每一帧到底做了什么？
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200603112032.png"/>
+
+一帧包含了用户的交互、js的执行、以及requestAnimationFrame的调用，布局计算以及页面的重绘等工作。
+假如某一帧里面要执行的任务不多，在不到16ms（1000/60)的时间内就完成了上述任务的话，那么这一帧就会有一定的空闲时间，这段时间就恰好可以用来执行requestIdleCallback的回调，如下图所示：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200603112123.png"/>
+
+
+参考：
+
+[你应该知道的requestIdleCallback - 掘金](https://juejin.im/post/5ad71f39f265da239f07e862)
+
+
