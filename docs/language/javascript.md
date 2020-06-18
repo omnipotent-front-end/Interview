@@ -2416,6 +2416,8 @@ const parseQueryString = url => {
 };
 ```
 
+可以参考[tomato中的实现](https://github.com/tomato-js/tomato/blob/master/packages/path/src/parse.ts)
+
 ### 增加 url 中的参数
 
 ```js

@@ -31,6 +31,7 @@ module.exports = {
         {
           title: "库",
           children: [
+            "/library/axios.md",
             "/library/babel.md",
             "/library/docker.md",
             "/library/egg.md",

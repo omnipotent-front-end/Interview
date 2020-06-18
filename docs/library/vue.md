@@ -412,3 +412,25 @@ include定义缓存白名单，keep-alive会缓存命中的组件；exclude定�
 参考：
 
 [彻底揭秘keep-alive原理 - 掘金](https://juejin.im/post/5cce49036fb9a031eb58a8f9)
+
+
+### Vue的mixin模式怎么实现的？
+
+组件调用mixin的方式有两种：
+
+Vue.mixin()：直接调用组件构造函数上的mixin静态方法。
+
+vue options->{ mixins: [] }：在组件的配置对象中挂载mixins的成员。
+
+无论以上使用了哪种方式，最终调用的都是mergeOptions这个工具方法。
+
+这个方式的实现参考：[vue/options.js at readsource · FunnyLiu/vue](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/options.js#L401)，针对不同的类型，进行不同的策略进行merge。
+
+比如生命周期，就是通过[mergeHook](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/options.js#L147)，将父子的函数concat为数组来完成。
+
+具体每一种类型的实现不一一展开了。
+
+参考：
+
+[Vue探究：精读mixin与mergeOptions - 掘金](https://juejin.im/post/5d37de4ee51d45590a445c19)
+

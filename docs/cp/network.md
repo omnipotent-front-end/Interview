@@ -198,8 +198,21 @@ cookie会加密，可能导致其它请求无法通过身份验证。
 但是如果使用了 301，我们就无法统计到短地址被点击的次数了，如果对数据统计有要求的话，使用302跳转可能比较好一些！
 
 
+### CORS跨域如何实现？
 
+服务端设置 Access-Control-Allow-Origin 就可以开启 CORS
 
+### CORS情况下，get和post有什么区别？
+
+规范要求，对那些可能对服务器数据产生副作用的 HTTP 请求方法（**特别是 GET 以外的 HTTP 请求**，或者搭配某些 MIME 类型的 POST 请求），浏览器必须首先使用 OPTIONS 方法发起一个预检请求（preflight request），从而获知服务端是否允许该跨域请求。
+
+服务器确认允许之后，才发起实际的 HTTP 请求。在预检请求的返回中，服务器端也可以通知客户端，是否需要携带身份凭证（包括 Cookies 和 HTTP 认证相关数据）。
+
+所以说POST会多一次option的通信。
+
+参考：
+
+[HTTP访问控制（CORS） - HTTP | MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS)
 
 
 ## TCP
