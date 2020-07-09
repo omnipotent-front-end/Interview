@@ -62,3 +62,19 @@ while (chain.length) {
 [FunnyLiu/axios at readsource](https://github.com/FunnyLiu/axios/tree/readsource#%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9B%B8%E5%85%B3%E5%8E%9F%E7%90%86)
 
 
+## 实现
+
+### 在浏览器端如何实现的
+
+主要是使用`XMLHttpRequest`对象
+
+1. 创建XMLHttpRequest对象,也就是创建一个异步调用对象.
+2. 创建一个新的HTTP请求,并指定该HTTP请求的方法、URL及验证信息.
+3. 设置响应HTTP请求状态变化的函数.
+4. 发送HTTP请求.
+5. 获取异步调用返回的数据.
+6. 使用JavaScript和DOM实现局部刷新.
+
+### 在nodejs端如何实现的
+
+主要是通过http模板实现的

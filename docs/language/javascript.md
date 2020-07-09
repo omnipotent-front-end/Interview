@@ -184,7 +184,7 @@ String 是值类型，Object 是引用类型。值类型存储在栈中，引用
   - 如果有一个操作数是字符串，另一个操作数是数字，则将**字符串转换成数字**再进行比较
   - 如果有一个操作数是**引用类型的值，则调用该实例的 valueOf 方法，如果得到的值不是基本类型的值，再调用该实例的 toString 方法**，用得到的基本类型的值按照前面的规则进行匹配对比。
 
-valueOf 和 toString 的区别参考：[tostring 和 valueof 有什么区别？](/language/javascript.html#tostring%E5%92%8Cvalueof%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
+valueOf 和 toString 的区别参考：[tostring 和 valueof 有什么区别？](/language/javascript.html#tostring-和-valueof-有什么区别？)
 
 特殊情况为：
 
@@ -570,6 +570,9 @@ alert( counter2() ); // 0 （独立的）
 
 [闭包](https://zh.javascript.info/closure)
 
+### 闭包的作用是？
+1. 局部变量可以在全局空间内操作
+2. 将可能被删除或覆盖的局部变量，临时保存，不被删除或覆盖
 
 ### 闭包的使用场景是？
 
@@ -638,6 +641,19 @@ console.log(a===b);
 
 ```
 
+3、 ajax请求成功的回调
+
+4、 一个事件绑定的回调方法
+
+5、 setTimeout的延时回调
+
+6、 一个函数内部返回另一个匿名函数
+
+### 闭包的优缺点
+
+优点：让代码更加规范、简洁
+
+缺点：使用闭包过多，内存消耗大，造成内存的泄露
 
 ### event.target 和 event.currentTarget 有什么区别？
 
@@ -776,6 +792,10 @@ Object.defineProperty(kxy, "sex", {
 - forEach
 - for in
 - for of 数组对象也可以，例如 Dom nodelist
+
+### 介绍下 Set、Map、WeakSet 和 WeakMap 的区别？
+
+参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/6#issuecomment-464321312)
 
 ### Map 和 Object 的区别是什么？
 
@@ -1186,6 +1206,116 @@ Window—>EventTarget—>Function.prototype—>Object.prototype。
 ### 获取精度更高的时间（todo）
 
 ### 如何获取首屏渲染时间（todo）
+
+### ES6相对ES5更新的内容
+
+* 新增模板字符串（为JavaScript提供了简单的字符串插值功能）
+* 箭头函数（操作符左边为输入的参数，而右边则是进行的操作以及返回的值Inputs=>outputs。）
+* for-of（用来遍历数据—例如数组中的值。）
+* arguments对象可被不定参数和默认参数完美代替。
+* ES6将promise对象纳入规范，提供了原生的Promise对象。
+* 增加了let和const命令，用来声明变量。增加了块级作用域。let命令实际上就增加了块级作用域。ES6规定，var命令和function命令声明的全局变量，属于全局对象的属性；let命令、const命令、class命令声明的全局变量，不属于全局对象的属性
+* 引入module模块的概念
+* 引入了class（类），让JS的面向对象编程变得更加简单和易于理解
+
+### ES7的特性
+* `Array.prototype.includes()
+includes()`函数用来判断一个数组是否包含一个指定的值，如果包含则返回 true，否则返回false
+```
+let arr = ['react', 'angular', 'vue']
+if  (arr.includes('react')) {
+    console.log('react存在')
+}
+```
+* 指数操作符
+
+在ES7中引入了指数运算符**，**具有与Math.pow(..)等效的计算结果。
+```
+console.log(Math.pow(2, 10)) // 输出1024
+
+console.log(2**10) // 输出1024
+```
+
+### ES8的特性
+
+* async/await
+* Object.values()
+* Object.entries
+* String padding
+* 函数参数列表结尾允许逗号
+* Object.getOwnPropertyDescriptors()
+
+### 什么情况下不应该使用箭头函数
+
+* 在对象上定义函数
+
+箭头函数没有自己的this，this值继承自外围作用域
+
+```
+const obj = {
+  array: [1,2,3],
+  sum: () => {
+    console.log(this === window) // true
+    return this.array.reduce((result, item) => result + item);
+  }
+}
+
+// Throws "TypeError: Cannot read property 'reduce' of undefined"
+obj.sum();
+```
+
+* 在原型上定义函数
+
+在对象原型上定义函数也是同样的规则
+
+```
+function Cat(name) {
+    this.name = name;
+}
+
+Cat.prototype.sayCatName = () => {
+    console.log(this === window); // => true
+    return this.name;
+};
+
+const cat = new Cat('Mew');
+cat.sayCatName(); // => undefined
+```
+
+* 定义事件回调函数
+
+DOM 事件回调函数的`this`指向当前发生事件的`DOM`节点
+
+而在全局上下文下定义的箭头函数执行时 this 会指向 window
+
+```
+const button = document.getElementById('myButton');
+button.addEventListener('click', () => {
+    console.log(this === window); // => true
+    this.innerHTML = 'Clicked button';
+});
+```
+
+应该如下使用
+
+```
+const button = document.getElementById('myButton');
+button.addEventListener('click', function() {
+    console.log(this === button); // => true
+    this.innerHTML = 'Clicked button';
+});
+```
+* 定义构造函数
+
+构造函数中的 this 指向新创建的对象，当执行 new Car() 的时候，构造函数 Car 的上下文就是新创建的对象，也就是说 this instanceof Car === true。显然，箭头函数是不能用来做构造函数， 实际上 JS 会禁止你这么做，如果你这么做了，它就会抛出异常。
+
+```
+const Message = (text) => {
+    this.text = text;
+};
+// Throws "TypeError: Message is not a constructor"
+const helloMessage = new Message('Hello World!');
+```
 
 ---
 
@@ -2098,6 +2228,15 @@ console.log(uniqueArray(["a", "c", "b", "z", "A", "K", "d", "D", "a"]));
   return index === array.indexOf(ele);
 });
 ```
+
+### javascript继承的6种方法
+
+1. 原型链继承
+2. 借用构造函数继承
+3. 组合继承(原型+借用构造)
+4. 原型式继承
+5. 寄生式继承
+6. 寄生组合式继承
 
 ### 简单实现继承
 
