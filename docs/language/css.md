@@ -350,7 +350,17 @@ Flex 布局是轴线布局，只能指定"项目"针对轴线的位置，可以�
 
 ### position有哪些取值？
 
-relative,static,absolute,sticky,fixed,initial,inherit,unset。
+static,relative,absolute,sticky,fixed,initial,inherit,unset。
+
+* static 默认值。没有定位，元素出现在正常的流中
+
+* relative 生成相对定位的元素，相对于其在普通流中的位置进行定位。
+
+* absolute :生成绝对定位的元素， 相对于最近一级的 定位不是 static 的父元素来进行定位。
+
+* sticky 生成粘性定位的元素，容器的位置根据正常文档流计算得出
+
+* fixed （老IE不支持）生成绝对定位的元素，通常相对于浏览器窗口或 frame 进行定位。
 
 ### position的定位原点是什么？
 
@@ -1335,3 +1345,9 @@ p:after {
     background: tomato;
 }
 ```
+### css动画的兼容性
+
+1. 常见的谷歌浏览器和Safari浏览器的前缀为 -webkit-
+2. 火狐浏览器（Firefox）的前缀为 -moz-
+3. Opera浏览器的前缀为 -o-
+4. IE浏览器的前缀为 -ms-
