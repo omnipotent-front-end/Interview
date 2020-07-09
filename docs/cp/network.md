@@ -74,6 +74,17 @@ Last-Modified是服务器告诉浏览器该资源的**最后修改时间**，If-
 
 在 **HTTP 1.1 中 所有的连接默认都是持续连接**，除非特殊声明不支持。
 
+### 介绍下 http1.0、1.1、2.0 协议的区别？
+
+[参考](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/232#issuecomment-516664634)
+
+HTTP/2引入了“服务端推（server push）”的概念，它允许服务端在客户端需要数据之前就主动地将数据发送到客户端缓存中，从而提高性能。
+
+HTTP/2提供更多的加密支持
+
+HTTP/2使用多路技术，允许多个消息在一个连接上同时交差。
+
+它增加了头压缩（header compression），因此即使非常小的请求，其请求和响应的header都只会占用很小比例的带宽。
 
 ### http2多路复用是什么?解决了什么问题？
 
@@ -238,23 +249,93 @@ cookie会加密，可能导致其它请求无法通过身份验证。
 
 但是如果使用了 301，我们就无法统计到短地址被点击的次数了，如果对数据统计有要求的话，使用302跳转可能比较好一些！
 
+## 跨域
+
+### 什么是同源策略
+
+同源是指"协议+域名+端口"三者相同，即便两个不同的域名指向同一个ip地址，也非同源
+### 同源策略的限制内容
+
+同源策略限制内容有：
+
+* Cookie、LocalStorage、IndexedDB 等存储性内容
+* DOM 节点
+* AJAX 请求不能发送
+
+但是有三个标签是允许跨域加载资源：
+
+* `<img src=XXX>`
+* `<link href=XXX>`
+* `<script src=XXX>`
+
+> 特别说明两点：<br/>
+第一：如果是协议和端口造成的跨域问题“前台”是无能为力的。<br/>
+第二：在跨域问题上，仅仅是通过“URL的首部”来识别而不会根据域名对应的IP地址是否相同来判断。“URL的首部”可以理解为“协议, 域名和端口必须匹配”。
+
+> 请求跨域了，那么请求到底发出去没有？<br/>
+跨域并不是请求发不出去，请求能发出去，服务端能收到请求并正常返回结果，只是结果被浏览器拦截了。
+
+## 跨域解决方案
+
+### jsonp
+
+JSONP原理: 利用`<script>` 标签没有跨域限制的漏洞，网页可以得到从其他来源动态产生的 JSON 数据。JSONP请求一定需要对方的服务器做支持才可以。
+
+优点：JSONP优点是简单兼容性好，可用于解决主流浏览器的跨域数据访问的问题。
+
+缺点：缺点是仅支持get方法具有局限性,不安全可能会遭受XSS攻击。
 
 ### CORS跨域如何实现？
 
 服务端设置 Access-Control-Allow-Origin 就可以开启 CORS
 
-### CORS情况下，get和post有什么区别？
+### CORS情况下，简单请求和复杂请求有什么区别？
 
 规范要求，对那些可能对服务器数据产生副作用的 HTTP 请求方法（**特别是 GET 以外的 HTTP 请求**，或者搭配某些 MIME 类型的 POST 请求），浏览器必须首先使用 OPTIONS 方法发起一个预检请求（preflight request），从而获知服务端是否允许该跨域请求。
 
 服务器确认允许之后，才发起实际的 HTTP 请求。在预检请求的返回中，服务器端也可以通知客户端，是否需要携带身份凭证（包括 Cookies 和 HTTP 认证相关数据）。
 
-所以说POST会多一次option的通信。
+所以说复杂请求会多一次option的通信。
+
+若请求满足所有下述条件，则该请求可视为“简单请求”：
+
+* 使用下列方法之一：
+    * GET
+    * HEAD
+    * POST
+* 除了被用户代理自动设置的首部字段（例如 Connection ，User-Agent）和在 Fetch 规范中定义为 禁用首部名称 的其他首部，允许人为设置的字段为 Fetch 规范定义的 对 CORS 安全的首部字段集合。该集合为：
+    * Accept
+    * Accept-Language
+    * Content-Language
+    * Content-Type （需要注意额外的限制）
+    * DPR
+    * Downlink
+    * Save-Data
+    * Viewport-Width
+    * Width
+* Content-Type 的值仅限于下列三者之一：
+    * text/plain
+    * multipart/form-data
+    * application/x-www-form-urlencoded
+* 请求中的任意XMLHttpRequestUpload 对象均没有注册任何事件监听器；XMLHttpRequestUpload 对象可以使用 XMLHttpRequest.upload 属性访问。
+* 请求中没有使用 ReadableStream 对象。
 
 参考：
 
 [HTTP访问控制（CORS） - HTTP | MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS)
 
+### postMessage
+
+postMessage是HTML5 XMLHttpRequest Level 2中的API，且是为数不多可以跨域操作的window属性之一，它可用于解决以下方面的问题：
+
+* 页面和其打开的新窗口的数据传递
+* 多窗口之间消息传递
+* 页面与嵌套的iframe消息传递
+* 上面三个场景的跨域数据传递
+
+### nginx反向代理
+
+通过nginx配置一个代理服务器（域名与domain1相同，端口不同）做跳板机，反向代理访问domain2接口，并且可以顺便修改cookie中domain信息，方便当前域cookie写入，实现跨域登录
 
 ## TCP
 
