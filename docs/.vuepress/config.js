@@ -55,6 +55,12 @@ module.exports = {
             "/web/fed.md",
             "/web/safe.md"
           ]
+        },
+        {
+          title: "实践",
+          children: [
+            "/practice/project.md",
+          ]
         }
       ]
     }
