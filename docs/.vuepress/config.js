@@ -60,6 +60,7 @@ module.exports = {
           title: "实践",
           children: [
             "/practice/project.md",
+            "/practice/git.md",
           ]
         }
       ]
