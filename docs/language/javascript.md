@@ -1969,6 +1969,47 @@ const b = deepClone(a); // a !== b, a.obj !== b.obj
 
 如果要兼容 Buffer 对象、Promise、Set、Map、正则、Date 等等，还是算了。
 
+
+对象深拷贝是两个引用，有以下几种方式实现深拷贝：
+
+``` js
+//使用 Object.assign，只能实现第一层属性的深拷贝
+let clone = Object.assign({},obj)
+
+//使用 slice，如果数组中有引用类型的元素的话，只能实现第一层的深拷贝
+let clone = arr.slice(0);
+
+//使用 concat，同 slice
+let clone = [].concat(arr);
+
+//使用 JSON 对象，无法实现属性值为 function 和 undefined 的拷贝，并且拷贝从原型链继承的值也会有问题，比如 constructor 的值变成了 Object
+function deepClone(obj) {
+  let _obj = JSON.stringify(obj);
+  let clone = JSON.parse(_obj);
+  return clone;
+}
+
+//使用递归，在不使用库的情况下，这种方式可以实现真正的深层度的拷贝
+function deepClone(obj) {
+  let clone = Array.isArray(obj) ? [] : {};
+  if(obj && typeof obj === 'object') {
+    for(let key in obj) {
+      if(obj.hasOwnProperty(key) {
+        if(obj[key] && typeof obj[key] === 'object') {
+          clone[key] = deepClone(obj[key]);
+        }else {
+          clone[key] = obj[key];
+        }
+      }
+    }
+  }
+  return clone;
+}
+
+//通过 JQuery 的 extend 方法
+//使用 lodash 函数库
+```
+
 ### 如何简单的拷贝一些不同数据类型的值
 
 针对不同的数据类型，有一些不同的拷贝方案。
@@ -2183,6 +2224,16 @@ const flatten = arr => {
 // 运行示例：
 let nestedArr = [1, 2, [3, 4, [5, [6, 7]]]]; // 四维数组 展开
 console.log(flatten(nestedArr)); // [1,2,3,4,5,6,7]
+```
+
+```javascript
+function flatten(arr) {
+  return [].concat(
+    ...arr.map(function(x) {
+      return Array.isArray(x) ? flatten(x) : x;
+    })
+  );
+}
 ```
 
 参考：
@@ -2968,3 +3019,49 @@ function render() {
 
 比如输入: ["flower","flow","flight"]，输出: "fl"
 
+### 怎么判断两个对象是否相等
+
+要求
+
+```js
+const obj1 = {a: 1, b: 2}
+const obj2 = {a: 1, b: 2}
+isEqual(obj1, obj2) // true
+```
+
+```
+1）判断引用是否为同一个引用；
+2）如果是不同引用，判断长度是否相同；
+3）通过 Object.getOwnpropertyNames(a) 拿到所有属性，判断是否有相同的属性 key，如果相同，再判断值是否相同。
+```
+
+```js
+function isEqual(obj1, obj2) {
+  // 是全等就返回
+  if (obj1 === obj2) return true;
+  
+  const isObject1 = obj1 instanceof Object;
+  const isObject2 = obj2 instanceof Object;
+  /* 判断不是对象 */
+  if(!isObject1 || !isObject1){
+    return obj1 === obj2;
+  }
+  
+  let key1 = Object.keys(obj1)
+  let key2 = Object.keys(obj2)
+  // 长度不相同
+  if (key1.length !== key2.length) return false;
+  for(let item in obj1) {
+    if (!isEqual(obj1[item], obj2[item])) {
+      return false
+    }
+  }
+  return true;
+}
+
+let obj1 = {a: 1, b: 2};
+let obj2 = {a: 1, b: 2};
+let obj3 = {a: 1, b: {c: 1}};
+let obj4 = {a: 1, b: {c: 1}};
+isEqual(obj1, obj2)
+```
