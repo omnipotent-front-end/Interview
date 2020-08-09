@@ -64,3 +64,32 @@ v8只关心你调了一个require函数，参数是个字符串，它只是执�
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200119174623.png"/>
 
+---
+
+## 原理
+
+### 编译器的基本工作流程
+
+
+编译一般分为三个步骤：
+
+1、词法分析(laxical Analysis) 
+
+词法分析的意思就是，将代码块切分成最小的单位。这些最小单位称为token。比如 var a = 2;可以切分成var,a,=,2。
+
+2、语法分析(Syntactic Analysis) 
+
+将词法单元转换成一个有层级，代表程序语法结构的树，这就是我们经常说的AST，抽象语法树。
+注意：词法分析跟语法分析不是完全独立的，而是交错运行的。也就是说，并不是等所有的token都生成之后，才用语法分析器来处理。一般都是每取得一个token，就开始用语法分析器来处理了。
+
+AST可是所有编译器以及转换器的基础核心，我们常用的babel转码过程就是先将ES6的代码编成AST，然后转换成ES5的AST，最后由这个AST还原出ES5代码。
+
+3、代码生成(Code Genaration)
+
+最后一步就是将AST转成计算机可以识别的机器指令码。
+
+
+
+参考：
+
+[从敲下一行JS代码到这行代码被执行，中间发生了什么？](https://mp.weixin.qq.com/s/D2aPqf9qcfFJLSGTE4G8kg)
