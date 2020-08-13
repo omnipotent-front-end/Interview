@@ -125,7 +125,31 @@ npm 会用此地址检查本地缓存（根目录的.npm文件存有所有的模
 
 最后一步是生成或更新版本描述文件，并将新的包的压缩包放入.npm文件，方便下次取用，npm install 过程完成。
 
+### npm run script的原理如何？是如何能够识别当前局部安装的库的？
 
+参考[npm run **原理](https://github.com/FunnyLiu/cli/tree/readsource#npm-run--%E5%8E%9F%E7%90%86)，npm run 的时候是执行子shell命令的实现，基于npm-lifecycle这个模块。[npm-lifecycle源码分析](https://github.com/FunnyLiu/npm-lifecycle/tree/readsource)，主要负责npm包真正执行命令时的shell进程，需要注意的是，执行npm run时是在当前目录的 node_modules/.bin 子目录**加入到 PATH 变量**（从而实现识别当前局部安装的bin），执行结束后，再将 PATH 变量恢复原样（相关处理在lifecycle_函数中），然后真正执行shell是通过child_process模块开启子进程来完成。
+
+我们每次在运行 scripts 中的一个属性时候(npm run),**实际系统都会自动新建一个shell(一般是Bash)，在这个shell里面执行指定的脚本命令。
+
+参考：
+
+[【Node进阶】你应该知道的NPM知识都在这！](https://mp.weixin.qq.com/s/h4uYa1BW7bUQCpt3iGqWUA)
+
+### npm link相关原理
+
+参考[npm link原理分析](https://github.com/FunnyLiu/cli/tree/readsource#npm-link-%E5%8E%9F%E7%90%86)，
+
+npm link 主要做了两件事：
+
+为目标 npm 模块创建软链接，将其链接到全局 node 模块安装路径 /usr/local/lib/node_modules/。
+
+为目标 npm 模块的可执行 bin 文件创建软链接，将其链接到全局 node 命令安装路径 /usr/local/bin/。
+
+而 npm link ** 则是将全局的**再软链回自己的依赖下面。
+
+以上具体逻辑在link.js中。
+
+npm unlink的本质就是 npm uninstall，没有单独文件，直接指向uninstall.js文件
 
 ## 底层原理
 

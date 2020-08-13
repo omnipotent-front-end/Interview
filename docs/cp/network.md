@@ -98,7 +98,7 @@ HTTP/2的多路复用就是为了解决上述的两个性能问题。
 
 第二步：服务端接收消息后，又向客户端发送自己生成的 random 数、SSL 证书，确定使用的加密方法。
 
-第三步：客户端读取证书信息，确认证书有效，然后自己再生成一个 random 数，并使用证书的公钥进行加密，发送给服务端。
+第三步：客户端读取证书信息，如果证书无效，则提示告警；如果证书有效，然后自己再生成一个 random 数，并使用证书的公钥进行加密，发送给服务端。
 
 第四步：服务端使用自己本地的私钥，解密获取客户端的随机数。
 
@@ -113,6 +113,47 @@ session ID，记录有本次的握手存在，再次发送信息时，客户端�
 参考：
 
 [配置SSL，方法及须知原理](https://blog.csdn.net/dadadeganhuo/article/details/80265808)
+
+### https是对称还是非对称加密？
+
+
+首先了解[非对称加密、对称加密和单向散列加密的区别？](/web/safe.html#%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E3%80%81%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E5%8D%95%E5%90%91%E6%95%A3%E5%88%97%E5%8A%A0%E5%AF%86%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F)。
+
+非对称加密的加解密效率是非常低的，而 http 的应用场景中通常端与端之间存在大量的交互，非对称加密的效率是无法接受的；
+
+另外，在 HTTPS 的场景中只有服务端保存了私钥，一对公私钥只能实现单向的加解密，所以 **HTTPS 中内容传输加密采取的是对称加密，而不是非对称加密**。
+
+参考：
+
+[HTTPS就安全了吗？会被抓包吗？看完这篇你有对答如流](https://mp.weixin.qq.com/s/i5hWcq0__YGxJKaXQ-0T_A)
+
+### 为什么需要 CA 认证机构颁发证书？
+
+首先了解[https中间人攻击是什么？如何防护？](/web/safe.html#https%E4%B8%AD%E9%97%B4%E4%BA%BA%E6%94%BB%E5%87%BB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E9%98%B2%E6%8A%A4%EF%BC%9F)，如果不是CA认证，就会出现中间人攻击的问题。
+
+参考：
+
+[HTTPS就安全了吗？会被抓包吗？看完这篇你有对答如流](https://mp.weixin.qq.com/s/i5hWcq0__YGxJKaXQ-0T_A)
+
+### 浏览器如何验证证书的合法性？
+
+浏览器发起 HTTPS 请求时，服务器会返回网站的 SSL 证书，浏览器需要对证书做以下验证：
+
+1、验证域名、有效期等信息是否正确。证书上都有包含这些信息，比较容易完成验证；
+
+2、判断证书来源是否合法。每份签发证书都可以根据验证链查找到对应的根证书，操作系统、浏览器会在本地存储权威机构的根证书，利用本地根证书可以对对应机构签发证书完成来源验证；
+
+3、判断证书是否被篡改。需要与 CA 服务器进行校验；
+
+4、判断证书是否已吊销。通过CRL（Certificate Revocation List 证书注销列表）和 OCSP（Online Certificate Status Protocol 在线证书状态协议）实现，其中 OCSP 可用于第3步中以减少与 CA 服务器的交互，提高验证效率
+
+以上任意一步都满足的情况下浏览器才认为证书是合法的。
+
+
+
+参考：
+
+[HTTPS就安全了吗？会被抓包吗？看完这篇你有对答如流](https://mp.weixin.qq.com/s/i5hWcq0__YGxJKaXQ-0T_A)
 
 
 ### 想办法在https的网站下进行http的请求？
@@ -257,6 +298,94 @@ TCP单个数据包的传输流程和UDP流程差不 多，不同的地方在于�
 因为 upd 报文小，udp 头部8个字节，tcp 头部20个字节。，TCP为了保证数据传输的可靠性，牺牲了数据包的传输速度，因为“三次握 手”和“数据包校验机制”等把传输过程中的数据包的数量提高了一倍。
 
 虽说UDP不能保证数据可靠性，但是**传输速度却非常快**，所以UDP会应用在一些**关注速度、但不那么严格要求数据完整性**的领域，如**在线视频、互动游戏**等。
+
+### 现代浏览器在与服务器建立了一个 TCP 连接后是否会在一个 HTTP 请求完成后断开？什么情况下会断开？
+
+在 HTTP/1.0 中，一个服务器在发送完一个 HTTP 响应后，会断开 TCP 链接。
+
+但是这样每次请求都会重新建立和断开 TCP 连接，代价过大。所以虽然标准中没有设定，某些服务器对 Connection: keep-alive 的 Header 进行了支持。意思是说，完成这个 HTTP 请求之后，不要断开 HTTP 请求使用的 TCP 连接。这样的好处是连接可以被重新使用，之后发送 HTTP 请求的时候不需要重新建立 TCP 连接，以及如果维持连接，那么 SSL 的开销也可以避免。
+
+HTTP/1.1 就把 Connection 头写进标准，并且默认开启持久连接，除非请求中写明 Connection: close，那么浏览器和服务器之间是会维持一段时间的 TCP 连接，不会一个请求结束就断掉。
+
+所以默认情况下建立 TCP 连接不会断开，只有在请求报头中声明 Connection: close 才会在请求完成后关闭连接。
+
+参考：
+
+[面试官问我：一个 TCP 连接可以发多少个 HTTP 请求？我竟然回答不上来...](https://mp.weixin.qq.com/s?__biz=MzI5ODI5NDkxMw==&mid=2247489132&idx=1&sn=c15c4bf118abad5bea9afc287585f760&chksm=eca95d82dbded494d33755649ad9879e32a3fe8b287cb2ecadb173238aa4ac65df3b6cf16aa7&scene=21#wechat_redirect)
+
+### 一个 TCP 连接可以对应几个 HTTP 请求？
+
+首先了解[现代浏览器在与服务器建立了一个-tcp-连接后是否会在一个-http-请求完成后断开？什么情况下会断开？](/cp/network.html#%E7%8E%B0%E4%BB%A3%E6%B5%8F%E8%A7%88%E5%99%A8%E5%9C%A8%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%BB%BA%E7%AB%8B%E4%BA%86%E4%B8%80%E4%B8%AA-tcp-%E8%BF%9E%E6%8E%A5%E5%90%8E%E6%98%AF%E5%90%A6%E4%BC%9A%E5%9C%A8%E4%B8%80%E4%B8%AA-http-%E8%AF%B7%E6%B1%82%E5%AE%8C%E6%88%90%E5%90%8E%E6%96%AD%E5%BC%80%EF%BC%9F%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BC%9A%E6%96%AD%E5%BC%80%EF%BC%9F)，然后得知答案肯定不只1个了，如果维持连接，一个 TCP 连接是可以发送多个 HTTP 请求的。
+
+
+
+参考：
+
+[面试官问我：一个 TCP 连接可以发多少个 HTTP 请求？我竟然回答不上来...](https://mp.weixin.qq.com/s?__biz=MzI5ODI5NDkxMw==&mid=2247489132&idx=1&sn=c15c4bf118abad5bea9afc287585f760&chksm=eca95d82dbded494d33755649ad9879e32a3fe8b287cb2ecadb173238aa4ac65df3b6cf16aa7&scene=21#wechat_redirect)
+
+
+### 一个 TCP 连接中 HTTP 请求发送可以一起发送么（比如一起发三个请求，再三个响应一起接收）？
+
+HTTP/1.1 存在一个问题，单个 TCP 连接在同一时刻只能处理一个请求，意思是说：两个请求的生命周期不能重叠，任意两个 HTTP 请求从开始到结束的时间在同一个 TCP 连接里不能重叠。
+
+虽然 HTTP/1.1 规范中规定了 Pipelining 来试图解决这个问题，但是这个功能在浏览器中默认是关闭的。
+
+但是在实践中会出现许多问题：
+
+- 一些代理服务器不能正确的处理 HTTP Pipelining。
+
+- 正确的流水线实现是复杂的。
+
+- Head-of-line Blocking 连接头阻塞：在建立起一个 TCP 连接之后，假设客户端在这个连接连续向服务器发送了几个请求。按照标准，服务器应该按照收到请求的顺序返回结果，假设服务器在处理首个请求时花费了大量时间，那么后面所有的请求都需要等着首个请求结束才能响应。
+
+所以现代浏览器默认是不开启 HTTP Pipelining 的。
+
+但是，HTTP2 提供了 Multiplexing 多路传输特性，可以在一个 TCP 连接中同时完成多个 HTTP 请求。至于多路复用，参考[http2多路复用是什么-解决了什么问题？](/cp/network.html#http2%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E6%98%AF%E4%BB%80%E4%B9%88-%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F)
+
+所以在 HTTP/1.1 存在 Pipelining 技术可以完成这个多个请求同时发送，但是由于浏览器默认关闭，所以可以认为这是不可行的。**在 HTTP2 中由于 Multiplexing 特点的存在，多个 HTTP 请求可以在同一个 TCP 连接中并行进行**。
+
+
+参考：
+
+[面试官问我：一个 TCP 连接可以发多少个 HTTP 请求？我竟然回答不上来...](https://mp.weixin.qq.com/s?__biz=MzI5ODI5NDkxMw==&mid=2247489132&idx=1&sn=c15c4bf118abad5bea9afc287585f760&chksm=eca95d82dbded494d33755649ad9879e32a3fe8b287cb2ecadb173238aa4ac65df3b6cf16aa7&scene=21#wechat_redirect)
+
+### 为什么有的时候刷新页面不需要重新建立 SSL 连接？
+
+先明白[现代浏览器在与服务器建立了一个-tcp-连接后是否会在一个-http-请求完成后断开？什么情况下会断开？](/cp/network.html#%E7%8E%B0%E4%BB%A3%E6%B5%8F%E8%A7%88%E5%99%A8%E5%9C%A8%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%BB%BA%E7%AB%8B%E4%BA%86%E4%B8%80%E4%B8%AA-tcp-%E8%BF%9E%E6%8E%A5%E5%90%8E%E6%98%AF%E5%90%A6%E4%BC%9A%E5%9C%A8%E4%B8%80%E4%B8%AA-http-%E8%AF%B7%E6%B1%82%E5%AE%8C%E6%88%90%E5%90%8E%E6%96%AD%E5%BC%80%EF%BC%9F%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BC%9A%E6%96%AD%E5%BC%80%EF%BC%9F)，由于TCP可以维持，所以SSL自然可以保持连接。
+
+
+
+
+参考：
+
+[面试官问我：一个 TCP 连接可以发多少个 HTTP 请求？我竟然回答不上来...](https://mp.weixin.qq.com/s?__biz=MzI5ODI5NDkxMw==&mid=2247489132&idx=1&sn=c15c4bf118abad5bea9afc287585f760&chksm=eca95d82dbded494d33755649ad9879e32a3fe8b287cb2ecadb173238aa4ac65df3b6cf16aa7&scene=21#wechat_redirect)
+
+
+### 浏览器对同一 Host 建立 TCP 连接到数量有没有限制？
+
+假设我们还处在 HTTP/1.1 时代，那个时候没有多路传输，当浏览器拿到一个有几十张图片的网页该怎么办呢？肯定不能只开一个 TCP 连接顺序下载，那样用户肯定等的很难受，但是如果每个图片都开一个 TCP 连接发 HTTP 请求，那电脑或者服务器都可能受不了，要是有 1000 张图片的话总不能开 1000 个TCP 连接吧，你的电脑同意 NAT 也不一定会同意。
+
+所以答案是：有。Chrome 最多允许对同一个 Host 建立六个 TCP 连接。不同的浏览器有一些区别。
+
+
+参考：
+
+[面试官问我：一个 TCP 连接可以发多少个 HTTP 请求？我竟然回答不上来...](https://mp.weixin.qq.com/s?__biz=MzI5ODI5NDkxMw==&mid=2247489132&idx=1&sn=c15c4bf118abad5bea9afc287585f760&chksm=eca95d82dbded494d33755649ad9879e32a3fe8b287cb2ecadb173238aa4ac65df3b6cf16aa7&scene=21#wechat_redirect)
+
+
+### 收到的 HTML 如果包含几十个图片标签，这些图片是以什么方式、什么顺序、建立了多少连接、使用什么协议被下载下来的呢？
+
+如果图片都是 HTTPS 连接并且在同一个域名下，那么浏览器在 SSL 握手之后会和服务器商量能不能用 HTTP2，如果能的话就使用 Multiplexing 功能在这个连接上进行多路传输。不过也未必会所有挂在这个域名的资源都会使用一个 TCP 连接去获取，但是可以确定的是 Multiplexing 很可能会被用到。
+
+如果发现用不了 HTTP2 呢？或者用不了 HTTPS（现实中的 HTTP2 都是在 HTTPS 上实现的，所以也就是只能使用 HTTP/1.1）。那浏览器就会在一个 HOST 上建立多个 TCP 连接，连接数量的最大限制取决于浏览器设置，这些连接会在空闲的时候被浏览器用来发送新的请求，如果所有的连接都正在发送请求呢？那其他的请求就只能等等了。
+
+
+参考：
+
+[面试官问我：一个 TCP 连接可以发多少个 HTTP 请求？我竟然回答不上来...](https://mp.weixin.qq.com/s?__biz=MzI5ODI5NDkxMw==&mid=2247489132&idx=1&sn=c15c4bf118abad5bea9afc287585f760&chksm=eca95d82dbded494d33755649ad9879e32a3fe8b287cb2ecadb173238aa4ac65df3b6cf16aa7&scene=21#wechat_redirect)
+
+
+
 
 ## 其他
 
