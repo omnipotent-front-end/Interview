@@ -3,7 +3,7 @@ module.exports = {
   description: "Hello world",
   themeConfig: {
     repo: "omnipotent-front-end/Interview",
-    nav: [{ text: "awesome-url", link: "https://brizer.github.io/urls/zh/" }],
+    nav: [{ text: "awesome-url", link: "https://brizer.github.io/urls/zh/" },{ text: "设计模式", link: "https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/" }],
     sidebarDepth: 2,
     sidebar: {
       "": [

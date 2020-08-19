@@ -1734,6 +1734,47 @@ Function.prototype.mybind = function(context) {
 };
 ```
 
+### 如何实现instanceof？
+
+首先弄懂[说一下原型链，对象，构造函数之间的一些联系？prototype-和-proto-有什么区别？](/language/javascript.html#%E8%AF%B4%E4%B8%80%E4%B8%8B%E5%8E%9F%E5%9E%8B%E9%93%BE%EF%BC%8C%E5%AF%B9%E8%B1%A1%EF%BC%8C%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B9%8B%E9%97%B4%E7%9A%84%E4%B8%80%E4%BA%9B%E8%81%94%E7%B3%BB%EF%BC%9Fprototype-%E5%92%8C-proto-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
+
+本题主要考察instanceof的判断原理，instanceof主要的实现原理就是只要右边变量的 prototype 在左边变量的原型链上即可。因此，instanceof 在查找的过程中会遍历左边变量的原型链，直到找到右边变量的 prototype，如果查找失败，则会返回 false。
+
+``` js
+/**
+  自定义instanceof 
+*/
+function instanceOf(left, right) {
+  let proto = left.__proto__
+  while(proto){
+    if(proto === right.prototype){
+       return true
+    }
+    proto = proto.__proto__
+  }  
+  return false
+}
+
+class A{}
+class B extends A {}
+class C{}
+
+const b = new B()
+// 输出 true
+console.log(instanceOf(b,B))
+// 输出 true
+console.log(instanceOf(b,A))
+// 输出 false
+console.log(instanceOf(b,C))
+
+```
+
+参考：
+
+[面试造火箭，看下这些大厂原题 - 掘金](https://juejin.im/post/6859121743869509646)
+
+
+
 ### 如何实现 curry？
 
 ```js
