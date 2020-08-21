@@ -3,6 +3,11 @@
 
 ## 应用
 
+### 常见的浏览器内核有哪些？
+
+
+<table><thead><tr><th>浏览器 / RunTime</th><th>内核（渲染引擎）</th><th>JavaScript 引擎</th></tr></thead><tbody><tr><td>Chrome</td><td>webkit-&gt;blink</td><td>V8</td></tr><tr><td>FireFox</td><td>Gecko</td><td>SpiderMonkey</td></tr><tr><td>Safari</td><td>Webkit</td><td>JavaScriptCore</td></tr><tr><td>Edge</td><td>EdgeHTML</td><td>Chakra(for JavaScript)</td></tr><tr><td>IE</td><td>Trident</td><td>JScript（IE3.0-IE8.0）</td></tr><tr><td>Opera</td><td>Presto-&gt;blink</td><td>Linear A（4.0-6.1）/ Linear B（7.0-9.2）/ Futhark（9.5-10.2）/ Carakan（10.5-）</td></tr><tr><td>Node.js</td><td>-</td><td>V8</td></tr></tbody></table>
+
 
 ### 移动端浏览器点击事件触发顺序
 
@@ -10,6 +15,31 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 
 
 ---
+
+
+### DOMContentLoaded 与 load 的区别
+
+*   DOMContentLoaded 事件触发时：仅当 DOM 解析完成后，不包括样式表，图片等资源。
+    
+*   onload 事件触发时, 页面上所有的 DOM, 样式表, 脚本, 图片等资源已经加载完毕。
+
+
+那我们可以聊一聊它们与 async 和 defer 区别
+
+> 带 async 的脚本一定会在 load 事件之前执行，可能会在 DOMContentLoaded 之前或之后执行。
+
+*   情况 1： HTML 还没有被解析完的时候，async 脚本已经加载完了，那么 HTML 停止解析，去执行脚本，脚本执行完毕后触发 DOMContentLoaded 事件
+    
+*   情况 2： HTML 解析完了之后，async 脚本才加载完，然后再执行脚本，那么在 HTML 解析完毕、async 脚本还没加载完的时候就触发 DOMContentLoaded 事件
+    
+
+> 如果 script 标签中包含 defer，那么这一块脚本将不会影响 HTML 文档的解析，而是等到 HTML 解析完成后才会执行。而 DOMContentLoaded 只有在 defer 脚本执行结束后才会被触发。
+
+*   情况 1：HTML 还没解析完成时，defer 脚本已经加载完毕，那么 defer 脚本将等待 HTML 解析完成后再执行。defer 脚本执行完毕后触发 DOMContentLoaded 事件
+    
+*   情况 2：HTML 解析完成时，defer 脚本还没加载完毕，那么 defer 脚本继续加载，加载完成后直接执行，执行完毕后触发 DOMContentLoaded 事件
+    
+
 
 
 
