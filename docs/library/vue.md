@@ -362,6 +362,9 @@ watcher 中实例化了 dep 并向 dep.subs 中添加了订阅者,dep 通过 not
 
 参考[源码解读](https://github.com/FunnyLiu/vue/tree/readsource#%E6%95%B0%E6%8D%AE%E8%A7%82%E5%AF%9F)。
 
+参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/90)
+
+
 
 ### Vue的响应式用Proxy和Object.defineProperty有什么区别？
 
