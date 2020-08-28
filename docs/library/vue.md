@@ -279,6 +279,14 @@ watcher 中实例化了 dep 并向 dep.subs 中添加了订阅者,dep 通过 not
 
 参考[源码解读](https://github.com/FunnyLiu/vue/tree/readsource#%E6%95%B0%E6%8D%AE%E8%A7%82%E5%AF%9F)。
 
+参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/90)
+
+
+### 聊聊 Vue 的响应式，Model 如何改变 View，View 又是如何改变 Model 的
+
+参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/34#issuecomment-519823665)
+
+此题和上题同样可参考 [一题](https://juejin.im/post/5e93e1ea51882573cb72277a#heading-7) 
 
 ### Vue的响应式用Proxy和Object.defineProperty有什么区别？
 
@@ -441,14 +449,3 @@ vue options->{ mixins: [] }：在组件的配置对象中挂载mixins的成员�
 参考：
 
 [Vue探究：精读mixin与mergeOptions - 掘金](https://juejin.im/post/5d37de4ee51d45590a445c19)
-
-## 聊聊 Vue 的响应式，Model 如何改变 View，View 又是如何改变 Model 的
-
-参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/34#issuecomment-519823665)
-
-此题和下题同样可参考 [一题](https://juejin.im/post/5e93e1ea51882573cb72277a#heading-7) 
-
-## Vue 的响应式原理中 Object.defineProperty 有什么缺陷？为什么在 Vue3.0 采用了 Proxy，抛弃了 Object.defineProperty？
-
-参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/90#issue-431244246)
-参考
