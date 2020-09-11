@@ -135,6 +135,9 @@ watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于�
 首先是[Vue的初始化](https://github.com/FunnyLiu/vue/tree/readsource#%E7%BB%84%E4%BB%B6%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F)，在其生命周期过程中，对[数据进行监听](https://github.com/FunnyLiu/vue/tree/readsource#%E6%95%B0%E6%8D%AE%E8%A7%82%E5%AF%9F)，对[模板进行编译](https://github.com/FunnyLiu/vue/tree/readsource#%E6%A8%A1%E6%9D%BF%E7%9A%84%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B)生成给render函数的字符串。通过render函数，进入patch阶段，进行[VNode的diff](https://github.com/FunnyLiu/vue/tree/readsource#vnode%E7%9A%84%E6%9B%B4%E6%96%B0%E6%B5%81%E7%A8%8B)以及生成真正的dom进行挂载。
 
 
+### new Vue 发生了什么（todo）？
+
+
 ### virtual DOM有什么用？
 
 我们知道，Vue是数据驱动视图的，数据发生变化视图就要随之更新，在更新视图的时候难免要操作DOM,而操作真实DOM又是非常耗费性能的，这是因为浏览器的标准就把 DOM 设计的非常复杂，所以一个真正的 DOM 元素是非常庞大的。
@@ -433,4 +436,13 @@ vue options->{ mixins: [] }：在组件的配置对象中挂载mixins的成员�
 参考：
 
 [Vue探究：精读mixin与mergeOptions - 掘金](https://juejin.im/post/5d37de4ee51d45590a445c19)
+
+
+
+
+
+## 编码
+
+### 实现一个vue的懒加载指令（todo）
+
 

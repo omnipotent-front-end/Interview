@@ -638,6 +638,52 @@ console.log(a===b);
 
 ```
 
+3、模仿块级作用域
+
+经典的for var 问题：
+
+``` js
+for(var i = 0; i < 5; i++) {
+    (function(j){
+        setTimeout(() => {
+            console.log(j);
+        }, j * 1000);
+    })(i)
+}
+```
+
+4、私有变量和私有函数
+
+第一种方式是：
+
+``` js
+function MyObject() {
+    // 私有变量和私有函数
+    var privateVariable = 10;
+    function privateFunction() {
+        return false;
+    }
+    // 特权方法
+    this.publicMethod = function() {
+        privateVariable++;
+        return privateFunction;
+    }
+}
+```
+
+第二种方式就是闭包：
+
+``` js
+function Foo(name){
+    this.getName = function(){
+        return name;
+    };
+};
+var foo = new Foo('luckyStar');
+console.log(foo.name); //  => undefined
+console.log(foo.getName()); //  => 'luckyStar'
+```
+
 
 ### event.target 和 event.currentTarget 有什么区别？
 

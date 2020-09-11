@@ -374,3 +374,9 @@ function RenderFunctionComponent() {
 
 这样的好处在于，在底层封装一套event，跨端跨浏览器保持统一的API风格。
 
+
+
+## 编码
+
+### 实现一个自定义hook（todo）？
+
