@@ -638,6 +638,14 @@ console.log(a===b);
 
 ```
 
+通过模块单例化，比如实现一个自增长的id：[参考redux-saga](https://github.com/FunnyLiu/redux-saga/blob/readsource/packages/core/src/internal/uid.js#L1)，利用闭包就可以：
+
+``` js
+export let current = 0
+// 单例id自增长
+export default () => ++current
+```
+
 3、模仿块级作用域
 
 经典的for var 问题：
