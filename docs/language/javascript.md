@@ -2693,6 +2693,62 @@ class Promise {
 
 参考[实现符合Promise/A+规范的promise](https://github.com/FunnyLiu/nodeDemo/blob/master/myPromise/myPromise.js)
 
+### 实现简单的发布订阅
+
+Subject是构造函数，new Subject() 创建一个主题对象，该对象内部维护订阅当前主题的观察者数组。主题对象上有一些方法，如添加观察者(addObserver)、删除观察者(removeObserver)、通知观察者更新(notify)。 当notify 时实际上调用全部观察者 observer 自身的 update 方法。
+
+Observer 是构造函数，new Observer() 创建一个观察者对象，该对象有一个 update 方法，观察者可以订阅主题，实际上是把自己加入到主题的订阅者列表里。
+
+``` js
+class Subject {
+  observers = []
+
+  addObserver(observer) {
+    this.observers.push(observer)
+  }
+  removeObserver(observer) {
+    let index = this.observers.indexOf(observer)
+    if(index > -1){
+      this.observers.splice(index, 1)
+    }
+  }
+  notify() {
+    this.observers.forEach(observer => {
+      observer.update()
+    })
+  }
+}
+
+
+class Observer{
+  update() {}
+  subscribeTo(subject) {
+    subject.addObserver(this)
+  }
+} 
+```
+
+用法如下：
+
+``` js
+let subject = new Subject()
+let observer = new Observer()
+observer.update = function() {
+  console.log('observer update')
+}
+observer.subscribeTo(subject)  //观察者订阅主题
+
+subject.notify()
+```
+
+更详细的设计模式相关可以查看：[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/observer/index)
+
+参考：
+
+[手写发布订阅模式（手写系列二） - 知乎](https://zhuanlan.zhihu.com/p/210218462)
+
+
+
 ### 基于 Object.defineProperty 实现双向绑定
 
 ```js
