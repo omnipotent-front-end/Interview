@@ -3085,6 +3085,376 @@ function render() {
 ```
 
 
+### 简单实现一个redux
+
+首先掌握[实现简单的发布订阅](/language/javascript.html#%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85)。然后稍作改造即可：
+
+``` js
+function createStore(reducer) {
+  let state
+  let handlers = []
+
+  return {
+    getState() {
+      return state
+    },
+
+    dispatch(action) {
+      state = reducer(state, action)
+      handlers.forEach(handler => handler())
+    },
+
+    subscribe(handler) {
+      handlers.push(handler)
+    }
+  }
+}
+
+function counter(state = 10, action) {
+  switch (action.type) {
+    case '+':
+      return state + action.val
+    case '-':
+      return state - action.val
+    default:
+      return state
+  }
+}
+
+let store = createStore(counter)
+
+store.subscribe(() => console.log(store.getState()))
+
+store.dispatch({type: '+', val: 10})
+store.dispatch({type: '-', val: 10})
+```
+
+相当于一个带state的发布订阅，createStore传入reducer，dispatch就执行reducer和对应的subscribe传入的handler。
+
+参考：
+
+[手写简易Redux（手写系列三） - 知乎](https://zhuanlan.zhihu.com/p/222031321)
+
+
+### 实现一个简易的模块加载器
+
+
+``` js
+(global => {
+  let modules = {}
+
+  function require(deps, callback) {    
+    if(!Array.isArray(deps)) {
+      callback = deps
+      deps = []
+    }
+    depFns = deps.map(depName => modules[depName])
+    return callback.apply(null, depFns)
+  }
+
+  function define(name, deps, callback) {
+    modules[name] = require(deps, callback)
+  }
+
+  global.define = define
+  global.require = require
+  
+})(window)
+// 用法如下：
+define('firstName', [], () => {
+  return '饥人谷'
+})
+
+define('lastName', [], () => {
+  return '前端'
+})
+
+define('sayHello', ['firstName', 'lastName'], (v1, v2) => {
+  return function() {
+    console.log(`Hello ${v1} ${v2}`)
+  }
+})
+
+require(['sayHello'], (fn) => {
+  fn()
+})
+```
+
+以上代码为模块加载器的简易实现，未涉及模块的网络下载以及循环引用的处理。
+
+参考：
+
+[手写简易模块加载器（手写系列四） - 知乎](https://zhuanlan.zhihu.com/p/242419249)
+
+
+### 实现一个模块打包器
+
+``` js
+// 每个模块
+const modules = {
+  0: {
+    module(require, exports) {
+      //模块的真实内容
+      const { sum } = require('./sum.js')  
+      console.log(sum(2, 3))               
+    },
+    mapping: {'./sum.js': 1 } 
+  },
+  1: {
+    module(require, exports) {
+      function sum(...args) {
+        return args.reduce((v1, v2) => v1 + v2)
+      }
+      exports.sum = sum
+    },
+    mapping: {}
+  }
+}
+
+function exec(id) {
+  const { module, mapping } = modules[id]
+  let  exports =  {}
+  module(path => exec(mapping[path]), exports)
+  return exports
+}
+exec(0)
+```
+
+代码通过exec(0)获取到入口模块的代码(module) 和依赖映射(mapping)；执行module；执行时如果里面遇到了require('./sum.js')，require就是箭头函数，执行的结果是exec(mapping['./sum.js']) 也就是 exec(1)，最终拿到id为1的模块对象里面的exports。
+
+参考：
+
+[手写简易模块打包器（手写系列五） - 知乎](https://zhuanlan.zhihu.com/p/257046071)
+
+
+### 实现一个简单的react
+
+``` js
+//我们在使用React的时候，源码里写的都是JSX。JSX代码在运行之前会被Babel的@babel/preset-react 预设里的插件转换成JavaScript后再运行。
+//React.createElement方法专门用来生成virtual dom对象，比如：
+//let div = <div className="header">hello jirengu</div>;
+//JSX会变为下面：
+//let div = React.createElement("div", {className: "header"}, "hello jirengu");
+const React = {
+  createElement(tag, attrs, ...children) {
+    return {tag, attrs, children};
+  }
+};
+
+const ReactDom = {
+  render(vdom, container) {
+    container.innerHTML = "";
+    render(vdom, container);
+  }
+};
+//vdom是经过React.createElement之后的内容
+function render(vdom, container) {
+  let node;
+  if (typeof vdom === "string") {
+    node = document.createTextNode(vdom);
+  }
+  if (typeof vdom === "object") {
+    node = document.createElement(vdom.tag);
+    setAttribute(node, vdom.attrs);
+    //层层渲染
+    vdom.children.forEach((childVdom) => render(childVdom, node));
+  }
+  container.appendChild(node);
+}
+
+function setAttribute(node, attrs) {
+  for (let key in attrs) {
+    if (key.startsWith("on")) {
+      node[key.toLocaleLowerCase()] = attrs[key];
+    } else if (key === "style") {
+      Object.assign(node.style, attrs[key]);
+    } else {
+      node[key] = attrs[key];
+    }
+  }
+}
+
+//测试代码
+let str = "jirengu";
+let styleObj = {
+  color: "red",
+  fontSize: "30px"
+};
+
+ReactDom.render(
+  <div className="wrap">
+    Hello {str}
+    <button className="btn" onClick={() => console.log("click me")}>
+      Click me!
+    </button>
+    <p style={styleObj}>I have style</p>
+  </div>,
+  document.body
+);
+```
+
+参考：
+
+[手写简易React（手写系列六） - 知乎](https://zhuanlan.zhihu.com/p/259741693)
+
+
+### 实现一个简单的react hooks
+
+我们先看看hooks的用法：
+
+``` js
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+
+function Counter() {
+  let [count, setCount] = useState(0);
+  return (
+    <>
+      <p>Clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>Click</button>
+    </>
+  );
+}
+
+ReactDOM.render(<Counter />, document.querySelector("#root"));
+```
+
+我们可以得出以下信息：
+
+1、useState是一个函数
+
+2、useState执行返回一个数组，数组第一项是内部维护的数据（通过函数第一次调用的参数传入，可被修改），数组第二项是一个能修改内部数据的函数
+
+3、当触发修改数据修改的方法时，会修改数据，并且会再次渲染组件
+
+4、再次渲染组件时，会再次执行useState，获取修改后新值而不是初始值
+
+如果只需要兼容单个useState，代码如下：
+
+``` js
+import React from "react";
+import ReactDOM from "react-dom";
+
+let value;
+function useState(initValue) {
+  value = value === undefined ? initValue : value;
+  function dispatch(newValue) {
+    value = newValue;
+    // 调用重新渲染
+    scheduleWork();
+  }
+  return [value, dispatch];
+}
+
+function Counter() {
+  let [count, setCount] = useState(0);
+  return (
+    <>
+      <p>Clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}> Add count</button>
+    </>
+  );
+}
+
+function scheduleWork() {
+  ReactDOM.render(<Counter />, document.querySelector("#root"));
+}
+```
+
+当在组件里连续使用多个 useState 时，上述代码就没法正常工作了。因为只有一个全局的vulue ，无法同时代表多个数据。
+
+可以沿着当前思路继续往下走。
+
+把**每个数据都放到一个对象节点里，这些节点构成一个单向链表，这样我们就能存储多个数据**。
+
+把执行过程分为 mount 和 update 两个阶段，两个阶段做的事情不一样。
+
+在 mount 阶段依次执行 useState 时，会使用初始化的数据依次创建多个hook节点，构造链表。
+
+在 update 阶段依次执行 useState 时，会从链表开头依次遍历 hook 节点，返回节点信息(如[age, setAge]) 。
+
+执行修改数据的方法时会修改当前hook节点的数据，定位到链表开头， 修改mount阶段到update阶段。
+
+``` js
+import React from "react";
+import ReactDOM from "react-dom";
+
+const Dispatcher = (() => {
+  let isMount = true;
+  let firstWorkInProgressHook = null;
+  let workInProgressHook = null;
+
+  function mountWorkInProgressHook() {
+    const hook = {
+      state: null,//数据
+      dispatch: null,//修改数据的方法
+      next: null//指向下一节点
+    };
+    if (workInProgressHook === null) {
+      firstWorkInProgressHook = workInProgressHook = hook;
+    } else {
+      //将下一个挂到上一个的next
+      workInProgressHook = workInProgressHook.next = hook;
+    }
+    return workInProgressHook;
+  }
+
+  function updateWorkInProgressHook() {
+    let curHook = workInProgressHook;
+    workInProgressHook = workInProgressHook.next;
+    return curHook;
+  }
+
+  function useState(initialState) {
+    let hook;
+    //mount阶段，用来定义hooks
+    if (isMount) {
+      hook = mountWorkInProgressHook();
+      hook.state = initialState;
+    } else {
+      //update阶段
+      hook = updateWorkInProgressHook();
+    }
+
+    hook.dispatch = function (newState) {
+      this.state = newState;
+      workInProgressHook = firstWorkInProgressHook;
+      //如果调用，将不再是mount阶段
+      isMount = false;
+      // 重新渲染
+      scheduleWork();
+    }.bind(hook);
+
+    return [hook.state, hook.dispatch];
+  }
+
+  return {
+    useState
+  };
+})();
+
+function Counter() {
+  let [count, setCount] = Dispatcher.useState(1);
+  let [age, setAge] = Dispatcher.useState(10);
+  return (
+    <>
+      <p>Clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}> Add count</button>
+      <p>Age is {age}</p>
+      <button onClick={() => setAge(age + 1)}> Add age</button>
+    </>
+  );
+}
+
+function scheduleWork() {
+  ReactDOM.render(<Counter />, document.querySelector("#root"));
+}
+
+scheduleWork();
+```
+
+
+
 ### 实现一个简易的模板引擎（todo）
 
 ### 求字符串的最长公共前缀（todo）
