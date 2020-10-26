@@ -40,6 +40,12 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 *   情况 2：HTML 解析完成时，defer 脚本还没加载完毕，那么 defer 脚本继续加载，加载完成后直接执行，执行完毕后触发 DOMContentLoaded 事件
     
 
+### 为什么操作DOM会慢？
+
+一些 DOM 的操作或者属性访问可能会引起页面的回流（重排）和重绘，从而引起性能上的消耗。可以了解下[重排和重绘是什么？](/cp/browser.html#%E9%87%8D%E6%8E%92%E5%92%8C%E9%87%8D%E7%BB%98%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F)和[如何避免重排和重绘？](/cp/browser.html#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E9%87%8D%E6%8E%92%E5%92%8C%E9%87%8D%E7%BB%98%EF%BC%9F)
+
+
+
 
 
 
