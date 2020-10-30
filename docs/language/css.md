@@ -2,6 +2,17 @@
 
 ## 应用
 
+### 介绍一下标准的 CSS 的盒子模型?低版本 IE 的盒子模型有什么不同的?
+
+
+盒模型都是由四个部分组成的，分别是 margin、border、padding 和 content。
+
+标准盒模型和 IE 盒模型的区别在于设置 width 和 height 时，所对应的范围不同。标准盒模 型的 width 和 height 属性的范围只包含了 content，而 IE 盒模型的 width 和 height 属性的范围包含了 border、padding 和 content。
+
+一般来说，我们可以通过修改元素的 box-sizing 属性来改变元素的盒模型。 
+
+ 
+
 ### 浮动元素和绝对定位元素的区别和应用?(todo)
 
 ### CSS 中解决浮动中高度塌陷的方案有哪些？(todo)
@@ -123,12 +134,36 @@ unset是关键字 initial 和 inherit 的组合。
 [谈谈 CSS 关键字 initial、inherit 和 unset - 最骚的就是你 - 博客园](https://www.cnblogs.com/libin-1/p/6734751.html)
 
 
-### CSS 中选择器有哪些？CSS 选择器优先级是怎么去匹配？(todo)
+### CSS 中选择器有哪些？CSS 选择器优先级是怎么去匹配？
 
 
+(1)id 选择器(#myid) 
 
-### 伪元素和伪类有什么区别？(todo)
+(2)类选择器(.myclassname) 
 
+(3)标签选择器(div,h1,p) 
+
+(4)后代选择器(h1 p) 
+
+(5)相邻后代选择器(子)选择器(ul>li) 
+
+(6)兄弟选择器(li~a) 
+
+(7)相邻兄弟选择器(li+a) 
+
+(8)属性选择器(a[rel="external"]) 
+
+(9)伪类选择器(a:hover,li:nth-child)
+
+(10)伪元素选择器(::before、::after) 
+
+(11)通配符选择器(*)
+
+### 伪元素和伪类有什么区别？
+
+在 css3 中使用单冒号来表示伪类，用双冒号来表示伪元素。但是为了兼容已有的伪元素的写法，在一些浏览器中也可以使用单冒号来表示伪元素。
+
+伪类一般匹配的是`元素的一些特殊状态`，如 hover、link 等，而伪元素一般匹配的`特殊的位置`，比如 after、before 等。
 
 ### CSS 中的 background 的 background-image 属性可以和 background-color 属性一起生效么？(todo)
 

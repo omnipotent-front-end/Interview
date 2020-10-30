@@ -53,6 +53,47 @@ HTML4 中，元素被分成两大类:inline (内联元素)与 block (块级元�
   
 (5) 使阅读源代码的人对网站更容易将网站分块，便于阅读维护理解。
 
+### 场景的meta标签有哪些？
+
+`<meta>` 元素可提供有关页面的元信息(meta-information)，比如针对搜索引擎和更新频度 的描述和关键词。
+`<meta>` 标签位于文档的头部，不包含任何内容。`<meta>` 标签的属性定义了与文档相关联 的名称/值对。
+``` html
+<!DOCTYPE html> H5 标准声明，使用 HTML5 doctype，不区分大小写
+<head lang=”en”> 标准的 lang 属性写法
+<meta charset=’utf-8′> 声明文档使用的字符编码
+<meta http-equiv=”X-UA-Compatible” content=”IE=edge,chrome=1′′/> 优先使用 IE 最新版
+本和 Chrome
+<meta name=”description” content=”不超过 150 个字符”/> 页面描述
+<meta name=”keywords” content=””/> 页面关键词者
+<meta name=”author” content=”name, email@gmail.com”/> 网页作
+<meta name=”robots” content=”index,follow”/> 搜索引擎抓取
+<meta name=”viewport” content=”initial-scale=1, maximum-scale=3, minimum-scale=1,
+user-scalable=no”> 为移动设备添加 viewport
+<meta name=”apple-mobile-web-app-title” content=”标题”> iOS 设备 begin
+<meta name=”apple-mobile-web-app-capable” content=”yes”/> 添加到主屏后的标题(iOS 6
+新增)
+是否启用 WebApp 全屏模式，删除苹果默认的工具栏和菜单栏
+<meta name=”apple-itunes-app” content=”app-id=myAppStoreID, affiliate-data=myAffiliateData,
+app-argument=myURL”>
+添加智能 App 广告条 Smart App Banner(iOS 6+ Safari)
+<meta name=”apple-mobile-web-app-status-bar-style” content=”black”/>
+<meta name=”format-detection” content=”telphone=no, email=no”/> 设置苹果工具栏颜色 <meta name=”renderer” content=”webkit”> 启用 360 浏览器的极速模式(webkit)
+<meta http-equiv=”X-UA-Compatible” content=”IE=edge”> 避免 IE 使用兼容模式
+<meta http-equiv=”Cache-Control” content=”no-siteapp” /> 不让百度转码
+<meta name=”HandheldFriendly” content=”true”> 针对手持设备优化，主要是针对一些
+老的不识别 viewport 的浏览器，比如黑莓
+<meta name=”MobileOptimized” content=”320′′> 微软的老式浏览器
+    <meta name=”screen-orientation” content=”portrait”> <meta name=”x5-orientation” content=”portrait”> <meta name=”full-screen” content=”yes”>
+<meta name=”x5-fullscreen” content=”true”>
+<meta name=”browsermode” content=”application”>
+<meta name=”x5-page-mode” content=”app”> QQ 应用模式
+<meta name=”msapplication-tap-highlight” content=”no”> windows phone 点击无高光 设置页面不缓存
+uc 强制竖屏 QQ 强制竖屏
+UC 强制全屏 QQ 强制全屏
+UC 应用模式
+ <meta http-equiv=”pragma” content=”no-cache”> <meta http-equiv=”cache-control” content=”no-cache”> <meta http-equiv=”expires” content=”0′′>
+```
+
 ## 表单相关
 
 ### label标签有什么用？
@@ -116,6 +157,15 @@ autocomplete 属性规定输入字段是否应该启用自动完成功能。默�
 自动完成允许浏览器预测对字段的输入。当用户在字段开始键入时，浏览器基于之前键入 过的值，应该显示出在字段中填写的选项。
 
 autocomplete 属性适用于` <form>`，以及下面的 `<input>` 类型:text, search, url, telephone, email, password, datepickers, range 以及 color。
+
+
+### disabled 和 readonly 的区别?
+
+disabled 指当 input 元素加载时禁用此元素。input 内容不会随着表单提交。
+
+readonly 规定输入字段为只读。input 内容会随着表单提交。
+
+无论设置 readonly 还是 disabled，通过 js 脚本都能更改 input 的 value。
 
 
 ## DOM相关
@@ -182,6 +232,12 @@ iframe 元素会创建包含另外一个文档的内联框架(即行内框架)�
 (2)纯 css 实现，使用 border-radius ，当 border-radius 的长度等于宽高相等的元素值 的一半时，即可实现一个圆形的点击区域。
 
 (3)纯 js 实现，判断一个点在不在圆上的简单算法，通过监听文档的点击事件，获取每 次点击时鼠标的位置，判断该位置是否在我们规定的圆形区域内。
+
+
+### img 的 title 和 alt 有什么区别?
+title 通常当鼠标滑动到元素上的时候显示。
+
+alt 是 `<img>` 的特有属性，是图片内容的等价描述，用于图片无法加载时显示、读屏器阅 读图片。可提图片高可访问性，除了纯装饰图片外都必须设置有意义的值，搜索引擎会重点分析。
 
 
 ## 样式相关

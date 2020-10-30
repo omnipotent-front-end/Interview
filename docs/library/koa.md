@@ -109,7 +109,9 @@ m1 end
 
 所以如果仅仅是考虑可以前后置执行简单的逻辑，是不足以体现koa洋葱模型的优势的。
 
-最关键的不是这些中间的执行顺序，而是响应的时机。Express 是基于 layer 的，每次进入 handle 都会拿到匹配的一个然后执行，也就是基于路由的匹配，使用 res.end() 立即返回。
+上面的例子一是没有考虑异步，express的基于回调，而koa是的koa-compose是基于promise的，所以koa中间件在异步情况下也可以保证执行顺序。第二个就是对响应体body的拦截能力。
+
+Express 是基于 layer 的，每次进入 handle 都会拿到匹配的一个然后执行，也就是基于路由的匹配，使用 node原生res.end() 立即返回，而res上并没有body。
 
 koa的设计中，router也是一个中间件而已。Koa 是在所有中间件中使用 ctx.body 设置响应数据，在所有中间件执行结束后，再调用 res.end(ctx.body) 进行响应，这样就为响应前的操作预留了空间，所以是请求与响应都在最外层，中间件处理是一层层进行，所以被理解成洋葱模型。
 
@@ -122,6 +124,8 @@ koa的设计中，router也是一个中间件而已。Koa 是在所有中间件�
 [express中间件和koa中间件的区别 - CNode技术社区](https://cnodejs.org/topic/59a90638ea0aea6b0c64e6ed)
 
 [koa/koa-vs-express.md at master · koajs/koa](https://github.com/koajs/koa/blob/master/docs/koa-vs-express.md)
+
+[Express VS Koa 中间件机制分析](https://juejin.im/post/6844903922428035085)
 
 
 
