@@ -21,7 +21,7 @@ JavaScript是一种**弱类型的、动态的语言**。
 
 javascript 中有八种数据类型，其中有七种简单数据类型，一种复杂数据类型。
 
-六种简单数据类型
+七种简单数据类型
 
 - String
 - Number
@@ -88,6 +88,94 @@ Object.prototype.toString.call(undefined); //  "[object Undefined]"
 [Javascript 判断变量类型的陷阱 与 正确的处理方式 - 前端 - 掘金](https://juejin.im/entry/5964a1c15188250d8b65ef5f)
 
 [JS 数据类型分类和判断 - 掘金](https://juejin.im/post/5b2b0a6051882574de4f3d96)
+
+
+### 什么是堆?什么是栈?它们之间有什么区别和联系?
+ 
+堆和栈的概念存在于数据结构中和操作系统内存中。
+
+在数据结构中，栈中数据的存取方式为 先进后出。而堆是一个优先队列，是按优先级来进行排序的，优先级可以按照大小来规定。完全 二叉树是堆的一种实现方式。
+
+在操作系统中，内存被分为栈区和堆区。栈区内存由编译器自动分 配释放，存放函数的参数值，局部变量的值等。其操作方式类似于数据结构中的栈。堆区内存一 般由程序员分配释放，若程序员不释放，程序结束时可能由垃圾回收机制回收。
+
+js中的基本数据类型的值直接保存在栈中，而复杂数据类型的值保存在堆中，通过使用在栈中保存对应的指针来获取堆中的值。
+
+原始数据类型直接存储在栈(stack)中的简单数据段， 占据空间小、大小固定，属于被频繁使用数据，所以放入栈中存储。引用数据类型存储在堆(heap) 中的对象，占据空间大、大小不固定。如果存储在栈中，将会影响程序运行的性能;引用数据类 型在栈中存储了指针，该指针指向堆中该实体的起始地址。当解释器寻找引用值时，会首先检索 其在栈中的地址，取得地址后从堆中获得实体。
+
+### 介绍 js 有哪些内置对象?
+
+js 中的内置对象主要指的是在程序执行前存在全局作用域里的由 js 定义的一些全局值属性、 函数和用来实例化其他对象的构造函数对象。
+
+(1)值属性，这些全局属性返回一个简单值，这些值没有自己的属性和方法。例如 Infinity、
+NaN、undefined、null 字面量 
+
+(2)函数属性，全局函数可以直接调用，不需要在调用时指定所属对象，执行结束后会将结果
+直接返回给调用者。例如 eval()、parseFloat()、parseInt() 等 
+
+(3)基本对象，基本对象是定义或使用其他对象的基础。基本对象包括一般对象、函数对象和
+错误对象。例如 Object、Function、Boolean、Symbol、Error 等 
+
+(4)数字和日期对象，用来表示数字、日期和执行数学计算的对象。例如 Number、Math、Date
+                       
+ 
+(5)字符串，用来表示和操作字符串的对象。例如 String、RegExp 
+
+(6)可索引的集合对象，这些对象表示按照索引值来排序的数据集合，包括数组和类型数组，
+以及类数组结构的对象。例如 Array 
+
+(7)使用键的集合对象，这些集合对象在存储数据时会使用到键，支持按照插入顺序来迭代元
+素。例如 Map、Set、WeakMap、WeakSet
+
+(8)矢量集合，SIMD 矢量集合中的数据会被组织为一个数据序列。例如 SIMD 等
+
+(9)结构化数据，这些对象用来表示和操作结构化的缓冲区数据，或使用 JSON 编码的数据。 例如 JSON 等
+
+(10)控制抽象对象例如 Promise、Generator 等 
+
+(11)反射，例如 Reflect、Proxy
+
+(12)国际化，为了支持多语言处理而加入 ECMAScript 的对象。例如 Intl、Intl.Collator 等
+
+(13)WebAssembly
+
+### null 和 undefined 的区别?
+
+首先 Undefined 和 Null 都是基本数据类型，这两个基本数据类型分别都只有一个值， 就是 undefined 和 null。
+
+undefined 代表的含义是未定义，null 代表的含义是空对象。
+
+一般变量声明了但还没有定义的时候会返回 undefined，null 主要用于赋值给一些可能会返回对 象的变量，作为初始化。undefined 在 js 中不是一个保留字，这意味着我们可以使用 undefined 来作为一个变量名，这样的做法是非常危险的，它会影响我们对 undefined 值的 判断。
+
+但是我们可以通过一些方法获得安全的 undefined 值，比如说 void 0。当我们对两种 类型使用 typeof 进行判断的时候，Null 类型化会返回 “object”，这是一个历史遗留的问题。 当我们使用双等号对两种类型的值进行比较时会返回 true，使用三个等号时会返回 false。
+
+
+### 如何获取安全的 undefined 值?
+
+void 0来替代。为什么呢？
+
+我们先看第一点，答案很简单，undefined 并不是保留词（reserved word），它只是全局对象的一个属性，在低版本 IE 中能被重写。
+
+事实上，undefined 在 ES5 中已经是全局对象的一个只读（read-only）属性了，它不能被重写。但是在局部作用域中，还是可以被重写的。
+
+接下来思考第二个问题，为毛找的替代品是 void 0？
+
+void 运算符能对给定的表达式进行求值，然后返回 undefined。也就是说，void 后面你随便跟上一个表达式，返回的都是 undefined，都能完美代替 undefined！那么，这其中最短的是什么呢？毫无疑问就是 void 0 了。其实用 void 1，void (1+1)，void (0) 或者 void "hello"，void (new Date()) 等等，都是一样的效果。更重要的前提是，void 是不能被重写的（cannot be overidden）。
+
+那么，ES5 大环境下，void 0 就没有用武之地了吗？答案是否定的，用 void 0 代替 undefined 能节省不少字节的大小，事实上，不少 JavaScript 压缩工具在压缩过程中，正是将 undefined 用 void 0 代替掉了。
+
+参考
+
+[为什么用「void 0」代替「undefined」 · Issue #1 · lessfish/underscore-analysis](https://github.com/lessfish/underscore-analysis/issues/1) 
+
+
+### 在 js 中不同进制数字的表示方式
+
+0X、0x 开头的表示为十六进制
+
+0、0O、0o 开头的表示为八进制
+
+以 0B、0b 开头的表示为二进制格式
+        
 
 ### toString 和 valueOf 有什么区别？
 
@@ -163,6 +251,7 @@ console.log(j.toString()); // '/\d/g'
 [valueOf() vs. toString() in Javascript - Stack Overflow](https://stackoverflow.com/questions/2485632/valueof-vs-tostring-in-javascript)
 
 [js 中 toString 和 valueOf 的区别？ - 知乎](https://www.zhihu.com/question/24262399)
+
 
 ### 'hello' 和 new String('hello')有什么区别？
 
@@ -484,6 +573,20 @@ console.log(person2.__proto__.__proto__ == Person.prototype); //true
 [JavaScript 深入之从原型到原型链 · Issue #2 · mqyqingfeng/Blog](https://github.com/mqyqingfeng/Blog/issues/2)
 
 [原型，原型链，对象，构造函数之间的联系。 - 泰阳的博客 - CSDN 博客](https://blog.csdn.net/qq_39795538/article/details/81836497)
+
+
+### js获取原型的方法
+
+``` js
+
+p.__proto__
+
+p.constructor.prototype
+
+Object.getPrototypeOf(p)
+
+```
+
 
 ### 闭包是什么？
 
