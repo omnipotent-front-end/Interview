@@ -1506,6 +1506,37 @@ Window—>EventTarget—>Function.prototype—>Object.prototype。
 
 ### 如何获取首屏渲染时间（todo）
 
+
+### 列举常见dom api
+
+(1)创建新节点
+
+createDocumentFragment(node);createElement(node);createTextNode(text);
+
+(2)添加、移除、替换、插入
+
+appendChild(node)removeChild(node)replaceChild(new,old)insertBefore(new,old )
+
+   
+(3)查找
+
+getElementById();getElementsByName();getElementsByTagName();getElementsByClassName();
+
+querySelector();querySelectorAll(); 
+
+(4)属性操作
+
+getAttribute(key);setAttribute(key, value);hasAttribute(key);removeAttribute(key);
+
+
+### innerHTML 和 outerHTML的区别？
+
+对于这样一个 HTML 元素:`<div>content<br/></div>`。 
+
+innerHTML:内部 HTML，`content<br/>`; 
+
+outerHTML:外部 HTML，`<div>content<br/></div>`; 
+
 ---
 
 ## 原理
@@ -1743,6 +1774,18 @@ queueMicrotask(()=>{
 // then2-2
 // then2-3
 ```
+
+### js的几种模块规范
+
+js 中现在比较成熟的有四种模块加载方案。
+
+第一种是 CommonJS 方案，它通过 require 来引入模块，通过 module.exports 定义模块的 输出接口。这种模块加载方案是服务器端的解决方案，它是以同步的方式来引入模块的，因为在 服务端文件都存储在本地磁盘，所以读取非常快，所以以同步的方式加载没有问题。但如果是在 浏览器端，由于模块的加载是使用网络请求，因此使用异步加载的方式更加合适。
+
+第二种是 AMD 方案，这种方案采用异步加载的方式来加载模块，模块的加载不影响后面语句的 执行，所有依赖这个模块的语句都定义在一个回调函数里，等到加载完成后再执行回调函数。 require.js 实现了 AMD 规范。
+
+第三种是 CMD 方案，这种方案和 AMD 方案都是为了解决异步模块加载的问题，sea.js 实现 了 CMD 规范。它和 require.js 的区别在于模块定义时对依赖的处理不同和对依赖模块的执行 时机的处理不同。
+
+第四种方案是 ES6 提出的方案，使用 import 和 export 的形式来导入导出模块。这种方案 和上面三种方案都不同。
 
 ### 模块依赖管理 import，import from 和 require 等的区别？
 
