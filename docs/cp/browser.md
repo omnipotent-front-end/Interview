@@ -65,6 +65,10 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200119163728.png"/>
 
+### 谈一谈浏览器的缓存机制
+
+
+
 ### 请求时浏览器缓存 from memory cache 和 from disk cache 的区别是什么？
 
 **Memory Cache 也就是内存中的缓存**，主要包含的是当前中页面中已经抓取到的资源,例如页面上**已经下载的样式、脚本、图片等**。

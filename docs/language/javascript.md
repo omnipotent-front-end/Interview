@@ -1111,6 +1111,51 @@ requestAnimationFrame的回调会在每一帧确定执行，属于高优先级�
 [你应该知道的requestIdleCallback - 掘金](https://juejin.im/post/5ad71f39f265da239f07e862)
 
 
+### 什么是ajax？
+
+我对 ajax 的理解是，它是一种异步通信的方法，通过直接由 js 脚本向服务器发起 http 通 信，然后根据服务器返回的数据，更新网页的相应部分，而不用刷新整个页面的一种方法。创建 一个 ajax 有这样几个步骤。
+
+首先是创建一个 XMLHttpRequest 对象。然后在这个对象上使用 open 方法创建一个 http 请求，open 方法所需要的参数是请求的方法、请求的地址、是否异步和用户的认证信息。 
+
+在发起请求前，我们可以为这个对象添加一些信息和监听函数。比如说我们可以通过 setRequestHeader 方法来为请求添加头信息。我们还可以为这个对象添加一个状态监听函数。 
+
+一个 XMLHttpRequest 对象一共有 5 个状态，当它的状态变化时会触发 onreadystatechange 事件，我们可以通过设置监听函数，来处理请求成功后的结果。
+
+当对象 的 readyState 变为 4 的时候，代表服务器返回的数据接收完成，这个时候我们可以通过判 断请求的状态，如果状态是 2xx 或者 304 的话则代表返回正常。
+
+这个时候我们就可以通过 response 中的数据来对页面进行更新了。
+
+当对象的属性和监听函数设置完成后，最后我们调用 sent 方法来向服务器发起请求，可以传入参数作为发送的数据体。
+
+以下是一个普通实现：
+
+``` js
+let xhr = new XMLHttpRequest();
+// 创建 Http 请求 
+xhr.open("GET", SERVER_URL, true);
+// 设置状态监听函数 
+xhr.onreadystatechange = function() {
+  if (this.readyState !== 4) return;
+  // 当请求成功时
+  if (this.status === 200) {
+    //回调执行返回内容
+    handle(this.response); 
+  } else {
+    console.error(this.statusText); 
+  }
+};
+// 设置请求失败时的监听函数 
+xhr.onerror = function() { 
+  console.error(this.statusText);
+};
+// 设置请求头信息 
+xhr.responseType = "json";
+xhr.setRequestHeader("Accept", "application/json");
+// 发送 Http 请求 
+xhr.send(null);
+```
+
+
 ### js 异步编程方法和各种的优缺点
 
 发展历程：
