@@ -608,3 +608,50 @@ function callbackify(original) {
 参考：
 
 [Node.js util模块解读 - 彩色代码 - SegmentFault 思否](https://segmentfault.com/a/1190000015115159)
+
+
+
+### 如何判断是在node还是浏览器端？
+
+可以参考tomato：
+
+浏览器通过window和document对象来区分：
+``` js
+/**
+ * 判断是否在浏览器环境
+ *
+ *
+ * 脚本举例
+ * ```javascript
+ *   import { isBrowser } from '@tomato-js/env'
+ *   isBrowser();//true
+ * ```
+ *
+ * @returns 是否存在window上
+ */
+export const isBrowser = () => ![typeof window, typeof document].includes("undefined");
+```
+
+Node则通过process对象的toString为`[object process]`来区分：
+
+``` js
+/**
+ * 判断是否在Node环境
+ *
+ *
+ * 脚本举例
+ * ```javascript
+ *   import { isNode } from '@tomato-js/env'
+ *   isNode();//false
+ * ```
+ *
+ * @returns 是否存在global上
+ */
+const toString = Object.prototype.toString;
+
+export function isType<T>(value: unknown, type: string): value is T {
+  return toString.call(value) === "[object " + type + "]";
+}
+export const isNode = () => typeof process !== "undefined" && isType(process, "process");
+
+```

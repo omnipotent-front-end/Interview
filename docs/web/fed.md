@@ -1,5 +1,28 @@
 # 前端架构
 
+## 前端路由
+
+### 实现一个页面操作不会整页刷新的网站，并且能在浏览器前进、后退时正确响应。给出你的技术实现方案
+
+1. 利用 location.hash 来实现
+
+hash 属性是Javascript原生的属性，是一个可读写的字符串，该字符串是 URL 的锚部分（从 # 号开始的部分）。比如 location.href = "http://blog.chenxu.me/post/#1"，那么  location.hash = "#1"。通过设置 hash 可以操作浏览器的历史记录（即前进、后退）。
+
+
+
+2、利用 history.pushState API
+
+pushState 是 Html5 中引入的新特性，用来修改浏览器的历史记录。通过 pushState 把记录保存到浏览器的历史数据中，然后通过windows.onpopstate事件来响应浏览器的前进、后退操作。
+
+通过使用 pushState + ajax 实现浏览器无刷新前进后退，当一次 ajax 调用成功后我们将一 条 state 记录加入到 history对象中。一条 state 记录包含了 url、title 和 content 属性，在 popstate 事件中可以 获取到这个 state 对象，我们可以使用 content 来传递数据。最后我们通过对 window.onpopstate 事件监听来响应浏览器 的前进后退操作。
+
+使用 pushState 来实现有两个问题，一个是打开首页时没有记录，我们可以使用 replaceState 来将首页的记录替换，另一个问题是当一个页面刷新的时候，仍然会向服务器端请求数据，因此如果请求的 url 需要后端的配 合将其重定向到一个页面。
+
+
+参考：
+
+[pushState + ajax 实现浏览器无刷新前进后退 - Charley Blog](http://blog.chenxu.me/post/detail?id=ed4f0732-897f-48e4-9d4f-821e82f17fad)
+
 ## 数据状态管理
 
 ### 前端常见数据状态管理方案有哪些？它们各有什么优缺点？
