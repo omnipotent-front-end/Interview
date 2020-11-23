@@ -4,7 +4,7 @@
 
 ### CDN劫持如何防护？
 
-[使用SRI解决CDN劫持问题](https://github.com/omnipotent-front-end/blog/blob/master/2019/07/20190704%E4%BD%BF%E7%94%A8SRI%E8%A7%A3%E5%86%B3CDN%E5%8A%AB%E6%8C%81%E9%97%AE%E9%A2%98.md)
+[使用SRI解决CDN劫持问题](https://github.com/omnipotent-front-end/blog/issues/1)
 
 ### XSS和CSRF了解吗？为什么既要有cookie又要有token？
 
@@ -55,6 +55,21 @@ token：用户点击链接，**由于浏览器不会自动带上token，所以�
 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/31)
 
 ---
+
+### CSRF还有哪些防护手段？
+
+第一种是同源检测的方法，服务器根据 http 请求头中 origin 或者 referer 信息来判断请 求是否为允许访问的站点，从而对请求进行过滤。当 origin 或者 referer 信息都不存在的 时候，直接阻止。这种方式的缺点是有些情况下 referer 可以被伪造。还有就是我们这种方法 同时把搜索引擎的链接也给屏蔽了，所以一般网站会允许搜索引擎的页面请求，但是相应的页面 请求这种请求方式也可能被攻击者给利用。
+
+第二种方法是使用 CSRF Token 来进行验证，服务器向用户返回一个随机数 Token ，当网站 再次发起请求时，在请求参数中加入服务器端返回的 token ，然后服务器对这个 token 进行 验证。这种方法解决了使用 cookie 单一验证方式时，可能会被冒用的问题，但是这种方法存 在一个缺点就是，我们需要给网站中的所有请求都添加上这个 token，操作比较繁琐。还有一 个问题是一般不会只有一台网站服务器，如果我们的请求经过负载平衡转移到了其他的服务器， 但是这个服务器的 session 中没有保留这个 token 的话，就没有办法验证了。这种情况我们 可以通过改变 token 的构建方式来解决。
+
+第三种方式使用双重 Cookie 验证的办法，服务器在用户访问网站页面时，向请求域名注入一 个 Cookie，内容为随机字符串，然后当用户再次向服务器发送请求的时候，从 cookie 中取出 这个字符串，添加到 URL 参数中，然后服务器通过对 cookie 中的数据和参数中的数据进行比 较，来进行验证。使用这种方式是利用了攻击者只能利用 cookie，但是不能访问获取 cookie 的特点。并且这种方法比 CSRF Token 的方法更加方便，并且不涉及到分布式访问的问题。这 种方法的缺点是如果网站存在 XSS 漏洞的，那么这种方式会失效。同时这种方式不能做到子域 名的隔离。
+
+第四种方式是使用在设置 cookie 属性的时候设置 Samesite ，限制 cookie 不能作为被第三 方使用，从而可以避免被攻击者利用。Samesite 一共有两种模式，一种是严格模式，在严格模 式下 cookie 在任何情况下都不可能作为第三方 Cookie 使用，在宽松模式下，cookie 可以 被请求是 GET 请求，且会发生页面跳转的请求所使用。
+
+参考：
+
+[前端安全系列之二：如何防止CSRF攻击？](https://juejin.cn/post/6844903689702866952)
+
 
 ### Https中间人攻击是什么？如何防护？
 
@@ -114,9 +129,52 @@ token：用户点击链接，**由于浏览器不会自动带上token，所以�
 - CSP
     CSP(content security policy)，是一个额外的安全层，用于检测并削弱某些特定类型的攻击，包括跨站脚本 (XSS) 和数据注入攻击等。
 
+通常有两种方式来开启 CSP，一种是设置 HTTP 首部中的 Content-Security-Policy，一种 是设置 meta 标签的方式 `<meta http-equiv="Content-Security-Policy">`
+
 参考：
 
 [内容安全策略( CSP ) - HTTP | MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CSP)
+
+
+
+### 什么是点击劫持?如何防范点击劫持? 
+
+点击劫持是一种视觉欺骗的攻击手段，攻击者将需要攻击的网站通过 iframe 嵌套的方式嵌入自己的网页中，并将 iframe 设置为透明，在页面中透出一个按钮诱导用户点击。
+
+我们可以在 http 响应头中设置 X-FRAME-OPTIONS 来防御用 iframe 嵌套的点击劫持攻击。 通过不同的值，可以规定页面在特
+定的一些情况才能作为 iframe 来使用。
+
+参考：
+
+[web安全之--点击劫持攻击与防御技术简介 - 简书](https://www.jianshu.com/p/251704d8ff18)
+
+### SQL 注入攻击?
+               
+SQL 注入攻击指的是攻击者在 HTTP 请求中注入恶意的 SQL 代码，服务器使用参数构建数据库 SQL 命令时，恶意 SQL 被一起构
+造，破坏原有 SQL 结构，并在数据库中执行，达到编写程序时意料之外结果的攻击行为。
+
+防范：
+
+使用预编译的PrepareStatement是必须的，但是一般我们会从两个方面同时入手。
+
+Web端
+有效性检验。
+
+限制字符串输入的长度。
+
+服务端
+
+不用拼接SQL字符串。
+
+使用预编译的PrepareStatement。
+
+有效性检验。(为什么服务端还要做有效性检验？第一准则，外部都是不可信的，防止攻击者绕过Web端请求)
+
+过滤SQL需要的参数中的特殊字符。比如单引号、双引号。
+
+参考：
+
+[如何防范常见的Web攻击 | 梁桂钊的博客](http://blog.720ui.com/2016/security_web/)
 
 
 

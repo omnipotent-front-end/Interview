@@ -110,6 +110,51 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 
  服务器端可以使用 Set-Cookie 的响应头部来配置 cookie 信息。一条 cookie 包括了 5 个属性值 expires、domain、path、secure、HttpOnly。其中 expires 指定了 cookie 失 效的时间，domain 是域名、path 是路径，domain 和 path 一起限制了 cookie 能够被哪些 url 访问。secure 规定了 cookie 只能在确保安全的情况下传输，HttpOnly 规定了这个 cookie 只能被服务器访问，不能使用 js 脚本访问。在发生 xhr 的跨域请求的时候，即使是 同源下的 cookie，也不会被自动添加到请求头部，除非显示地规定。
 
+### Cookie的SameSite属性做什么的？
+
+SameSite Cookie 表示同站 cookie，避免 cookie 被第三方所利用。
+
+将 SameSite 设为 strict ，这种称为严格模式，表示这个 cookie 在任何情况下都不可能作 为第三方 cookie。
+         
+将 SameSite 设为 Lax ，这种模式称为宽松模式，如果这个请求是个 GET 请求，并且这个请 求改变了当前页面或者打开了新的页面，那么这个 cookie 可以作为第三方 cookie，其余情况下都不能作为第三方 cookie。
+
+使用这种方法的缺点是，因为它不支持子域，所以子域没有办法与主域共享登录信息，每次转入子域的网站，都回重新登录。还有一个问题就是它的兼容性不够好。
+
+参考：
+
+[SameSite cookies - HTTP | MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Set-Cookie/SameSite)
+
+
+### 检测浏览器版本版本有哪些方式?
+ 
+检测浏览器版本一共有两种方式:
+
+一种是检测 window.navigator.userAgent 的值，但这种方式很不可靠，因为 userAgent 可 以被改写，并且早期的浏览器如 ie，会通过伪装自己的 userAgent 的值为 Mozilla 来躲过 服务器的检测。
+
+
+第二种方式是功能检测，根据每个浏览器独有的特性来进行判断，如 ie 下独有的 ActiveXObject。
+
+### URI和URL的区别？
+
+URI: Uniform Resource Identifier             指的是统一资源标识符 
+
+URL: Uniform Resource Location                 指的是统一资源定位符 
+
+URN: Universal Resource Name                     指的是统一资源名称
+
+
+URI 指的是统一资源标识符，用唯一的标识来确定一个资源，它是一种抽象的定义，也就是说， 不管使用什么方法来定义，只要能唯一的标识一个资源，就可以称为 URI。
+
+URL 指的是统一资源定位符，URN 指的是统一资源名称。URL 和 URN 是 URI 的子集，URL 可 以理解为使用地址来标识资源，URN 可以理解为使用名称来标识资源。
+
+
+
+
+参考：
+
+[HTTP 协议中 URI 和 URL 有什么区别？ - 知乎](https://www.zhihu.com/question/21950864)
+
+
  
 
 ## 原理

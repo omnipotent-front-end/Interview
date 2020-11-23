@@ -597,6 +597,41 @@ Number.prototype.add = function(arg) {
 };
 ```
 
+
+### toPrecision 和 toFixed 和 Math.round 的区别?
+
+toPrecision 用于处理精度，精度是从左至右第一个不为 0 的数开始数起。 
+
+``` js
+function precise(x) {
+  return Number.parseFloat(x).toPrecision(4);
+}
+
+console.log(precise(123.456));
+// expected output: "123.5"
+
+console.log(precise(0.004));
+// expected output: "0.004000"
+```
+
+
+toFixed 是对小数点后指定位数取整，从小数点开始数起。
+
+``` js
+function financial(x) {
+  return Number.parseFloat(x).toFixed(2);
+}
+
+console.log(financial(123.456));
+// expected output: "123.46"
+
+console.log(financial(0.004));
+// expected output: "0.00"
+
+```
+
+Math.round 是将一个数字四舍五入到一个整数。
+
 ### 说一下原型链，对象，构造函数之间的一些联系？prototype 和__proto__有什么区别？
 
 ES 把对象定义为：“无序属性的集合，其属性可以包含基本值，对象和函数”。严格来讲，这就相当于说**对象是一组没有特定顺序的值**。
@@ -950,6 +985,18 @@ var modifierCode = {
    
 我们还可以实现事件的动态绑定，比如说新增了一个子节点听事件，它所发生的事件会交给父元素中的监听函数来处理。 
 
+### mouseover 和 mouseenter 的区别?
+
+当鼠标移动到元素上时就会触发 mouseenter 事件，类似 mouseover，它们两者之间的差别是 mouseenter 不会冒泡。
+
+由于 mouseenter 不支持事件冒泡，导致在一个元素的子元素上进入或离开的时候会触发其 mouseover 和 mouseout 事件，但是却不会触发 mouseenter 和 mouseleave 事件。
+
+参考：
+
+[mouseenter与mouseover为何这般纠缠不清？ · Issue #1 · qianlongo/zepto-analysis](https://github.com/qianlongo/zepto-analysis/issues/1)
+
+
+
 
 ### 说说对严格模式的理解
 
@@ -1224,6 +1271,23 @@ xhr.setRequestHeader("Accept", "application/json");
 xhr.send(null);
 ```
 
+### 什么是 Promise 对象，什么是 Promises/A+ 规范? 
+
+Promise 对象是异步编程的一种解决方案，最早由社区提出。Promises/A+ 规范是JavaScript Promise 的标准，规定了一个 Promise 所必须具有的特性。
+
+Promise 是一个构造函数，接收一个函数作为参数，返回一个 Promise 实例。
+
+一个 Promise 实例有三种状态，分别是 pending、resolved 和 rejected，分别代表了进行中、已成功和 已失败。
+
+实例的状态只能由 pending 转变 resolved 或者 rejected 状态，并且状态一经改 变，就凝固了，无法再被改变了。
+
+状态的改变是通过 resolve() 和 reject() 函数来实现的， 
+
+我们可以在异步操作结束后调用这两个函数改变 Promise 实例的状态，它的原型上定义了一个 then 方法，使用这个 then 方法可以为两个状态的改变注册回调函数。这个回调函数属于微任 务，会在本轮事件循环的末尾执行。
+
+参考：
+
+[Promise 对象 - ECMAScript 6入门](https://es6.ruanyifeng.com/#docs/promise)
 
 ### js 异步编程方法和各种的优缺点
 
@@ -1532,7 +1596,13 @@ inspect.styles = Object.assign(Object.create(null), {
 });
 ```
 
+### Object.is和===有什么区别？
+
+使用 Object.is 来进行相等判断时，一般情况下和三等号的判断相同，它处理了一些特殊的情 况，比如 -0 和 +0 不再相等，两个 NaN 认定为是相等的。
+
  
+
+
 ### 浏览器里的window和Window有什么区别？
 
 简单的说：
@@ -1607,6 +1677,56 @@ innerHTML:内部 HTML，`content<br/>`;
 outerHTML:外部 HTML，`<div>content<br/></div>`; 
 
 
+### escape,encodeURI,encodeURIComponent 有什么区别?
+
+encodeURI 是对整个 URI 进行转义，将 URI 中的非法字符转换为合法字符，所以对于一些在 URI 中有特殊意义的字符不会进行转义。
+
+encodeURIComponent 是对 URI 的组成部分进行转义，所以一些特殊字符也会得到转义。
+
+escape 和 encodeURI 的作用相同，不过它们对于 unicode 编码为 0xff 之外字符的时候会 有区别，escape 是直接在字符的 unicode 编码前加上 %u，而 encodeURI 首先会将字符转 换为 UTF-8 的格式，再在每个字节前加上 %。
+
+
+1、如果只是编码字符串，不和URL有半毛钱关系，那么用escape。
+
+2、如果你需要编码整个URL，然后需要使用这个URL，那么用encodeURI。比如`encodeURI("http://www.cnblogs.com/season-huang/some other thing")`;
+编码后会变为`"http://www.cnblogs.com/season-huang/some%20other%20thing"`;
+
+其中，空格被编码成了%20。但是如果你用了encodeURIComponent，那么结果变为`"http%3A%2F%2Fwww.cnblogs.com%2Fseason-huang%2Fsome%20other%20thing"`
+看到了区别吗，连 "/" 都被编码了，整个URL已经没法用了。
+
+3、当你需要编码URL中的参数的时候，那么encodeURIComponent是最好方法。
+``` js
+var param = "http://www.cnblogs.com/season-huang/"; //param为参数
+param = encodeURIComponent(param);
+var url = "http://www.cnblogs.com?next=" + param;
+console.log(url) //"http://www.cnblogs.com?next=http%3A%2F%2Fwww.cnblogs.com%2Fseason-huang%2F"
+```
+看到了把，参数中的 "/" 可以编码，如果用encodeURI肯定要出问题，因为后面的/是需要编码的。
+
+参考：
+
+[escape,encodeURI,encodeURIComponent有什么区别? - 知乎](https://www.zhihu.com/question/21861899)
+
+
+### 如何理解Proxy？
+
+ 
+Proxy 用于修改某些操作的默认行为，等同于在语言层面做出修改，所以属于一种“元编程”， 即对编程语言进行编程。
+
+Proxy 可以理解成，在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这 层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写。Proxy 这个词的原意是代 理，用在这里表示由它来“代理”某些操作，可以译为“代理器”。
+
+### Reflect 对象创建目的?
+1.将 Object 对象的一些明显属于语言内部的方法(比如Object.defineProperty)，放到 Reflect 对象上。
+
+2.修改某些 Object 方法的返回结果，让其变得更合理。
+
+3.让 Object 操作都变成函数行为。
+
+4.Reflect 对象的方法与 Proxy 对象的方法一一对应，只要是 Proxy 对象 的方法，就能在 Reflect 对象上找到对应的方法。这就让 Proxy 对象可以方便地调用对应的 Reflect 方法，完成默认行为，作为修改行为的基础。也就是说，不管 Proxy 怎么修改默认行为，你总可以在 Reflect 上获取 默认行为。比如应用场景：[基于-proxy-实现双向绑定](/language/javascript.html#%E5%9F%BA%E4%BA%8E-proxy-%E5%AE%9E%E7%8E%B0%E5%8F%8C%E5%90%91%E7%BB%91%E5%AE%9A)
+
+
+
+
 ### 怎么编写高性能的js，需要注意哪些点？
 
 - 建议将对象进行缓存处理，特别是DOM访问是比较消耗资源的
@@ -1638,6 +1758,10 @@ outerHTML:外部 HTML，`<div>content<br/></div>`;
 第三种情况是我们获取一个 DOM 元素的引用，而后面这个元素被删除，由于我们一直保留了对 这个元素的引用，所以它也无法被回收。
 
 第四种情况是不合理的使用闭包，从而导致某些变量一直被留在内存当中。
+
+### 什么是尾调用，使用尾调用有什么好处?
+                   
+尾调用指的是函数的最后一步调用另一个函数。我们代码执行是基于执行栈的，所以当我们在一 个函数里调用另一个函数时，我们会保留当前的执行上下文，然后再新建另外一个执行上下文加入栈中。使用尾调用的话，因为已经是函数的最后一步，所以这个时候我们可以不必再保留当前的执行上下文，从而节省了内存，这就是尾调用优化。但是ES6 的尾调用优化只在严格模式下开启，正常模式是无效的。
 
 ---
 
@@ -2832,6 +2956,8 @@ function create(obj) {
 ### 简单实现一个Promise对象
 
 
+首先需要了解[什么是-promise-对象，什么是-promises-a-规范](/language/javascript.html#%E4%BB%80%E4%B9%88%E6%98%AF-promise-%E5%AF%B9%E8%B1%A1%EF%BC%8C%E4%BB%80%E4%B9%88%E6%98%AF-promises-a-%E8%A7%84%E8%8C%83)
+
 ``` js
 const statusMap = {
   PENDING: 'pending',
@@ -3943,3 +4069,55 @@ export function sampleSize([...arr], n = 1) {
 
 
 ```
+
+### js实现拖拽的思路
+
+一个元素的拖拽过程，我们可以分为三个步骤，第一步是鼠标按下目标元素，第二步是鼠标保持 按下的状态移动鼠标，第三步是鼠
+标抬起，拖拽过程结束。
+
+
+这三步分别对应了三个事件，mousedown 事件，mousemove 事件和 mouseup 事件。只有在鼠 标按下的状态移动鼠标我们才会
+      
+ 
+执行拖拽事件，因此我们需要在 mousedown 事件中设置一个状态来标识鼠标已经按下，然后在 mouseup 事件中再取消这个状
+态。
+
+在 mousedown 事件中我们首先应该判断，目标元素是否为拖拽元素，如果是拖拽元素，我 们就设置状态并且保存这个时候鼠
+标的位置。
+
+然后在 mousemove 事件中，我们通过判断鼠标现在的位置和以前位置的相对移动， 来确定拖拽元素在移动中的坐标。
+
+最后 mouseup 事件触发后，清除状态，结束拖拽事件。
+
+参考：
+
+[【JS】原生js实现拖拽功能基本思路_LZGS_4的专栏-CSDN博客](https://blog.csdn.net/LZGS_4/article/details/43523465)
+
+
+### setInterval有什么问题，如何用setTimeout模拟？
+
+setInterval 的作用是每隔一段指定时间执行一个函数，但是这个执行不是真的到了时间立即 执行，它真正的作用是每隔一段时间将事件加入事件队列中去，只有当当前的执行栈为空的时候， 才能去从事件队列中取出事件执行。所以可能会出现这样的情况，就是当前执行栈执行的时间很 长，导致事件队列里边积累多个定时器加入的事件，当执行栈结束的时候，这些事件会依次执行， 因此就不能到间隔一段时间执行的效果。
+针对 setInterval 的这个缺点，我们可以使用 setTimeout 递归调用来模拟 setInterval， 这样我们就确保了只有一个事件结束了，我们才会触发下一个定时器事件，这样解决了 setInterval 的问题。
+
+``` js
+// 思路是使用递归函数，不断地去执行 setTimeout 从而达到 setInterval 的效果 
+function mySetInterval(fn, timeout) {
+  // 控制器，控制定时器是否继续执行 
+  var timer = { flag: true };
+  // 设置递归函数，模拟定时器执行。 
+  function interval() {
+    if (timer.flag) {
+      fn();
+      setTimeout(interval, timeout); 
+    }
+  }
+  // 启动定时器
+  setTimeout(interval, timeout);
+  // 返回控制器 
+  return timer;
+}
+```
+
+参考：
+
+[用setTimeout实现setInterval - 简书](https://www.jianshu.com/p/32479bdfd851)
