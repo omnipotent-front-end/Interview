@@ -42,6 +42,23 @@
 
 ### 中介者模式了不了解？
 
+中介者是一种行为设计模式，能让你减少对象之间混乱无序的依赖关系。该模式会限制对象之间的直接交互，迫使它们通过一个中介者对象进行合作。
+
+具体应用场景可以参考：[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/mediator/index?id=_1%e3%80%81%e6%95%b0%e6%8d%ae%e7%8a%b6%e6%80%81%e7%ae%a1%e7%90%86)
+
+### 代理模式了解不？
+
+代理是一种结构型设计模式，让你能够提供对象的替代品或其占位符。代理控制着对于原对象的访问，并允许在将请求提交给对象前后进行一些处理。
+
+具体应用场景可以参考：[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/proxy/index?id=%e5%ba%94%e7%94%a8%e5%9c%ba%e6%99%af)
+
+
+### 单例模式了解不？
+
+单例模式是一种创建型设计模式， 让你能够保证一个类只有一个实例， 并提供一个访问该实例的全局节点。
+
+具体应用场景可以参考：[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/singleton/index?id=%e5%ba%94%e7%94%a8%e5%9c%ba%e6%99%af)
+
 
 
 ## 编程模型

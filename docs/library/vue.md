@@ -24,6 +24,35 @@
 
 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/65)
 
+
+### Vue的完整生命周期
+
+Vue 一共有 8 个生命阶段，分别是创建前、创建后、加载前、加载后、更新前、更新后、销毁 前和销毁后，每个阶段对应了一个生命周期的钩子函数。
+
+(1)beforeCreate 钩子函数，在实例初始化之后，在数据监听和事件配置之前触发。因此在 这个事件中我们是获取不到 data 数据的。
+
+(2)created 钩子函数，在实例创建完成后触发，此时可以访问 data、methods 等属性。但 这个时候组件还没有被挂载到页面中去，所以这个时候访问不到 $el 属性。一般我们可以在这 个函数中进行一些页面初始化的工作，比如通过 ajax 请求数据来对页面进行初始化。
+
+(3)beforeMount 钩子函数，在组件被挂载到页面之前触发。在 beforeMount 之前，会找 到对应的 template，并编译成 render 函数。
+
+(4)mounted 钩子函数，在组件挂载到页面之后触发。此时可以通过 DOM API 获取到页面中 的 DOM 元素。
+
+(5)beforeUpdate 钩子函数，在响应式数据更新时触发，发生在虚拟 DOM 重新渲染和打补 丁之前，这个时候我们可以对可能会被移除的元素做一些操作，比如移除事件监听器。
+
+(6)updated 钩子函数，虚拟 DOM 重新渲染和打补丁之后调用。
+
+(7)beforeDestroy 钩子函数，在实例销毁之前调用。一般在这一步我们可以销毁定时器、 解绑全局事件等。
+
+(8)destroyed 钩子函数，在实例销毁之后调用，调用后，Vue 实例中的所有东西都会解除 绑定，所有的事件监听器会被移除，所有的子实例也会被销毁。
+
+当我们使用 keep-alive 的时候，还有两个钩子函数，分别是 activated 和 deactivated 。 用 keep-alive 包裹的组件在切换时不会进行销毁，而是缓存到内存中并执行 deactivated 钩子函数，命中缓存渲染后会执行 actived 钩子函数。
+
+参考：
+
+[vue 生命周期深入 - 前端](https://juejin.cn/entry/6844903602356502542)
+
+
+
 ### 父子组件间生命周期执行顺序是怎么样的？
 
 加载渲染过程
@@ -71,6 +100,12 @@ watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于�
 
 当我们需要**在数据变化时执行异步或开销较大的操作时,应该使用 watch**,使用  watch  选项允许我们执行异步操作 ( 访问一个 API ),限制我们执行该操作的频率,并在我们得到最终结果前,设置中间状态。这些都是计算属性无法做到的。
 
+参考：
+
+[做面试的不倒翁：浅谈 Vue 中 computed 实现原理](https://juejin.cn/post/6844903678533451783)
+
+[深入理解Vue的watch实现原理及其实现方式](https://juejin.cn/post/6844903605485436941)
+
 ### vue2组件通信方式
 
 #### 父子组件之间：
@@ -110,6 +145,45 @@ watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于�
 - provide和inject
 
 允许一个祖先组件向其所有子孙后代注入一个依赖，不论组件嵌套的层次有多深，并在起上下游关系成立的时间里始终有效。一言以蔽之：祖先组件中通过provider来提供变量，然后在子孙组件中通过inject来注入变量。
+
+
+### vue中常用的修饰符
+
+.prevent: 提交事件不再重载页面;
+
+.stop: 阻止单击事件冒泡;
+
+.self: 当事件发生在该元 素本身而不是子元素的时候会触发;
+
+
+### vue 中 mixin 和 mixins 区别?
+ 
+mixin 用于全局混入，会影响到每个组件实例。
+
+mixins 应该是我们最常使用的扩展组件的方式了。如果多个组件中有相同的业务逻辑，就可以 将这些逻辑剥离出来，通过 mixins 混入代码，比如上拉下拉加载数据这种逻辑等等。另外需 要注意的是 mixins 混入的钩子函数会先于组件内的钩子函数执行，并且在遇到同名选项的时 候也会有选择性的进行合并
+
+参考：
+
+[混入 — Vue.js](https://cn.vuejs.org/v2/guide/mixins.html)
+
+
+### vue-router 中的导航钩子函数
+ 
+(1)全局的钩子函数 beforeEach 和 afterEach。beforeEach 有三个参数，to 代表要进入的路由对象，from 代表离开的路由对象。next 是一 个必须要执行的函数，如果不传参数，那就执行下一个钩子函数，如果传入 false，则终止跳 转，如果传入一个路径，则导航到对应的路由，如果传入 error ，则导航终止，error 传入错 误的监听函数。
+
+(2)单个路由独享的钩子函数 beforeEnter，它是在路由配置上直接进行定义的。 
+
+(3)组件内的导航钩子主要有这三种:beforeRouteEnter、beforeRouteUpdate、beforeRouteLeave。它们是直接在路由组件内部直接进行定义的。
+
+### $route和$router的区别？
+
+$route 是“路由信息对象”，包括 path，params，hash，query，fullPath，matched，name 等路由信息参数。而 $router 是“路由实例”对象包括了路由的跳转方法，钩子函数等。
+
+
+
+参考：
+
+[导航守卫 | Vue Router](https://router.vuejs.org/zh/guide/advanced/navigation-guards.html)
 
 
 

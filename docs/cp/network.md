@@ -64,6 +64,32 @@ Last-Modified是服务器告诉浏览器该资源的**最后修改时间**，If-
 **Etag是由服务端特定算法生成的该文件的唯一标识**，而请求头把返回的Etag值通过If-None-Match再带给服务端，服务端通过比对从而决定是否响应新内容。这也是304缓存。
 
 
+
+
+### 开发中常用的几种 Content-Type?
+
+(1)application/x-www-form-urlencoded
+
+浏览器的原生 form 表单，如果不设置 enctype 属性，那么最终就会以 application/x-www-form-urlencoded 方式提交数据。该种方式提交的数据放在 body 数据按照 key1=val1&key2=val2 的方式进行编码，key 和 val 都进行了 URL
+转码。
+
+(2)multipart/form-data
+
+该种方式也是一个常见的 POST 提交方式，通常表单上传文件时使用该种方式。
+
+(3)application/json
+
+告诉服务器消息主体是序列化后的 JSON 字符串。
+
+(4)text/xml
+
+该种方式主要用来提交 XML 格式的数据。
+
+参考：
+
+[常用的几种 Content-Type | 独 奏](https://honglu.me/2015/07/13/%E5%B8%B8%E7%94%A8%E7%9A%84%E5%87%A0%E7%A7%8DContent-Type/)
+
+
 ### Keep-alive如何开启？有什么用？原理是什么？
 
 在 HTTP 1.0 中, 没有官方的 keepalive 的操作。通常是在现有协议上添加一个指数。如果浏览器支持 keep-alive，它会在请求的包头中添加：
@@ -73,6 +99,12 @@ Last-Modified是服务器告诉浏览器该资源的**最后修改时间**，If-
 这样做，**连接就不会中断，而是保持连接**。当客户端发送另一个请求时，它会使用同一个连接。这一直继续到客户端或服务器端认为会话已经结束，其中一方中断连接。
 
 在 **HTTP 1.1 中 所有的连接默认都是持续连接**，除非特殊声明不支持。
+
+
+
+
+
+
 
 
 ### http2多路复用是什么?解决了什么问题？

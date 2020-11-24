@@ -354,6 +354,18 @@ socket、cookie等等
 http 请求的解析速度。
 
 
+### 一个接口在什么情况下会cancel，怎么解决？
+
+1、手动通过js取消比如AbortController，或者promise.race失败，或者配合路由钩子来手动cancel，防止SPA切换后接口继续发。
+
+2、接口还没有发出去，页面就跳转了或者刷新了。解决方案是改为同步接口。
+
+3、表单提交submit时部分浏览器会刷新页面（即使看不出来），也会触发刷新流程，偶现cancel。解决方案是submit时vent.preventDefault()
+
+
+参考：
+
+[vue路由切换时取消上个页面的异步请求_zmmfjy的博客-CSDN博客](https://blog.csdn.net/zmmfjy/article/details/105572681)
 
 ---
 

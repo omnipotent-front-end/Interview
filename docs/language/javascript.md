@@ -83,6 +83,10 @@ Object.prototype.toString.call(false); //  "[object Boolean]"
 Object.prototype.toString.call(undefined); //  "[object Undefined]"
 ```
 
+具体的最佳实现可以参考tomato:[tomato/is-type.ts at master · tomato-js/tomato](https://github.com/tomato-js/tomato/blob/master/packages/shared/src/is-type.ts)
+
+
+
 参考：
 
 [Javascript 判断变量类型的陷阱 与 正确的处理方式 - 前端 - 掘金](https://juejin.im/entry/5964a1c15188250d8b65ef5f)
@@ -476,6 +480,50 @@ console.log("a" + +"b"); //'aNaN'
 造成变量声明提升的本质原因是 js 引擎在代码执行前有一个解析的过程，创建了执行上下文，初始化了一些代码执行时需要用到的对象。当我们访问一个变量时，我们会到当前执行上下文中的作用域链中去查找，而作用域链的首端指向的是当前执行上下文的变量对象，这个变量对象是执行上下文的一个属性，它包含了函数的形参、所有的函数和变量声明。
 
 这个对象的是在代码解析的时候创建的。这就是会出现变量声明提升的根本原因。
+
+
+### 函数声明和函数表达式的区别？
+
+函数声明：在主代码流中声明为单独的语句的函数。
+
+``` js
+// 函数声明
+function sum(a, b) {
+  return a + b;
+}
+
+```
+
+函数表达式：在一个表达式中或另一个语法结构中创建的函数。下面这个函数是在赋值表达式 = 右侧创建的：
+
+``` js
+// 函数表达式
+var sum = function(a, b) {
+  return a + b;
+};
+```
+
+函数表达式是在代码执行到达时被创建，并且仅从那一刻起可用，而函数声明存在变量提升，也就是说，下面的方式会报错：
+
+``` js
+sayHi("John"); // VM2331:1 Uncaught TypeError: sayHi is not a function
+
+var sayHi = function(name) {  // (*) no magic any more
+  alert( `Hello, ${name}` );
+};
+```
+
+
+
+
+
+
+
+参考：
+
+[函数表达式](https://zh.javascript.info/function-expressions)
+
+
 
 ### let 在全局作用域声明的变量在 window 上吗？
 
@@ -1601,6 +1649,12 @@ inspect.styles = Object.assign(Object.create(null), {
 使用 Object.is 来进行相等判断时，一般情况下和三等号的判断相同，它处理了一些特殊的情 况，比如 -0 和 +0 不再相等，两个 NaN 认定为是相等的。
 
  
+### 如何判断一个对象是否为空对象？
+
+
+
+可以参考tomato的实现：[tomato/is-empty.ts at master · tomato-js/tomato](https://github.com/tomato-js/tomato/blob/master/packages/shared/src/is-empty.ts)
+
 
 
 ### 浏览器里的window和Window有什么区别？
@@ -2124,6 +2178,67 @@ CommonJS 加载的是一个对象（即 module.exports 属性），该对象只�
 ---
 
 ## 编码
+
+
+### 说说下面输出结果
+
+首先弄明白[函数声明和函数表达式的区别？](/language/javascript.html#%E5%87%BD%E6%95%B0%E5%A3%B0%E6%98%8E%E5%92%8C%E5%87%BD%E6%95%B0%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F)，知道**函数表达式是在代码执行到达时被创建，并且仅从那一刻起可用，而函数声明存在变量提升**。
+
+
+
+``` js
+function Foo() {
+    getName = function () { alert (1); };
+    return this;
+}
+Foo.getName = function () { alert (2);};
+Foo.prototype.getName = function () { alert (3);};
+var getName = function () { alert (4);};
+function getName() { alert (5);}
+ 
+//请写出以下输出结果：
+Foo.getName();
+getName();
+Foo().getName();
+getName();
+new Foo.getName();
+new Foo().getName();
+new new Foo().getName();
+```
+
+最后结果为2411233
+
+答案解读：
+
+``` js
+function Foo() {
+    //函数表达式，执行到才赋值
+    getName = function () { alert (1); };
+    //this为window
+    return this;
+}
+Foo.getName = function () { alert (2);};
+Foo.prototype.getName = function () { alert (3);};
+//最后的getName为4，因为其是表达式
+var getName = function () { alert (4);};
+//函数声明被提升到顶部了
+function getName() { alert (5);}
+ 
+//请写出以下输出结果：
+Foo.getName();//调用的Foo.getName
+getName();//最初的是表达式：var getName = function () { alert (4);};，因为其最后执行而不被提升
+Foo().getName();//调用的是window.getName也就是被getName = function () { alert (1); };覆盖后的getName
+getName();//window上的getName已被覆盖为1
+new Foo.getName();//调用Foo.getName
+new Foo().getName();//Foo.prototype.getName
+new new Foo().getName();//Foo.prototype.getName
+```
+
+参考：
+
+[前端程序员经常忽视的一个JavaScript面试题 · Issue #85 · Wscats/articles](https://github.com/Wscats/articles/issues/85)
+
+
 
 ### 对于 this,prototype 理解
 
@@ -2943,6 +3058,10 @@ hub.emit("increment"); // `increment` variable is now 1
 hub.off("message", handler);
 ```
 
+或者参考tomato的最佳实践：[tomato/Events.ts at master · tomato-js/tomato](https://github.com/tomato-js/tomato/blob/master/packages/events/src/Events.ts)
+
+
+
 ### 简单实现 Object.create
 
 ```js
@@ -3356,6 +3475,26 @@ add(); //执行匿名子函数
 add();
 add();
 ```
+
+### 使用闭包每秒打印1个递增数字
+
+``` js
+// 使用闭包实现
+for (var i = 0; i < 5; i++) { 
+  (function(i) {
+    setTimeout(function() {
+     console.log(i);
+    }, i * 1000);
+  })(i);
+}
+// 使用 let 块级作用域
+for (let i = 0; i < 5; i++) {
+  setTimeout(function() {
+    console.log(i);
+  }, i * 1000);
+}
+```
+
 
 ### 函数节流
 
