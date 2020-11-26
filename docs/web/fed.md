@@ -385,6 +385,9 @@ http 请求的解析速度。
 
 通过window.performance来计算。
 
+具体的逻辑实现可以参考我写的[brizer/web-monitor-sdk: SDK for web monitor, a simple web data collection tool for performance, exceptions, etc.](https://github.com/brizer/web-monitor-sdk)
+
+
 
 参考：
 
