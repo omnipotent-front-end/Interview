@@ -939,6 +939,7 @@ console.log(a===b);
 
 ```
 
+
 通过模块单例化，比如实现一个自增长的id：[参考redux-saga](https://github.com/FunnyLiu/redux-saga/blob/readsource/packages/core/src/internal/uid.js#L1)，利用闭包就可以：
 
 ``` js
@@ -1000,6 +1001,7 @@ console.log(foo.getName()); //  => 'luckyStar'
 7. setTimeout的延时回调
 
 8. 一个函数内部返回另一个匿名函数
+
 
 ### 闭包的优缺点
 
@@ -1200,6 +1202,7 @@ Object.defineProperty(kxy, "sex", {
 - forEach
 - for in
 - for of 数组对象也可以，例如 Dom nodelist
+
 
 
 ### js中的类数组是什么？
@@ -1736,6 +1739,7 @@ Window—>EventTarget—>Function.prototype—>Object.prototype。
 ### 如何获取首屏渲染时间（todo）
 
 
+
 ### 列举常见dom api
 
 (1)创建新节点
@@ -1852,6 +1856,7 @@ Proxy 可以理解成，在目标对象之前架设一层“拦截”，外界�
 ### 什么是尾调用，使用尾调用有什么好处?
                    
 尾调用指的是函数的最后一步调用另一个函数。我们代码执行是基于执行栈的，所以当我们在一 个函数里调用另一个函数时，我们会保留当前的执行上下文，然后再新建另外一个执行上下文加入栈中。使用尾调用的话，因为已经是函数的最后一步，所以这个时候我们可以不必再保留当前的执行上下文，从而节省了内存，这就是尾调用优化。但是ES6 的尾调用优化只在严格模式下开启，正常模式是无效的。
+
 ### ES6相对ES5更新的内容
 
 * 新增模板字符串（为JavaScript提供了简单的字符串插值功能）
@@ -4364,6 +4369,7 @@ scheduleWork();
 
 比如输入: ["flower","flow","flight"]，输出: "fl"
 
+
 ### 生成随机字符串
 
 
@@ -4488,6 +4494,7 @@ function mySetInterval(fn, timeout) {
 参考：
 
 [用setTimeout实现setInterval - 简书](https://www.jianshu.com/p/32479bdfd851)
+
 ### 怎么判断两个对象是否相等
 
 要求

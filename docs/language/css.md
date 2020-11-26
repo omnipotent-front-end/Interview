@@ -362,6 +362,7 @@ static,relative,absolute,sticky,fixed,initial,inherit,unset。
 
 * fixed （老IE不支持）生成绝对定位的元素，通常相对于浏览器窗口或 frame 进行定位。
 
+
 ### position的定位原点是什么？
 
 relative 定位的元素，是相对于元素本身的正常位置来进行定位的。
@@ -386,6 +387,7 @@ absolute 定位的元素，是相对于它的第一个 position 值不为 static
 -(6)通过 clip/clip-path 元素裁剪的方法来实现元素的隐藏，这种方法下，元素仍在页面 中占据位置，但是不会响应绑定的监听事件。
 
 -(7)通过 transform:scale(0,0)来将元素缩放为 0，以此来实现元素的隐藏。这种方法下， 元素仍在页面中占据位置，但是不会响应绑定的监听事件。
+
 
 ### initial、inherit 和 unset是什么意思？
 
@@ -1345,9 +1347,13 @@ p:after {
     background: tomato;
 }
 ```
+
 ### css动画的兼容性
 
 1. 常见的谷歌浏览器和Safari浏览器的前缀为 -webkit-
+
 2. 火狐浏览器（Firefox）的前缀为 -moz-
+
 3. Opera浏览器的前缀为 -o-
+
 4. IE浏览器的前缀为 -ms-
