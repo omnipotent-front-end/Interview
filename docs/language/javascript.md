@@ -3727,7 +3727,7 @@ window.addEventListener(
 );
 ```
 
-通过闭包的封装版：
+通过闭包封装的时间戳版：
 
 ```js
 //节流函数
@@ -3749,6 +3749,22 @@ function fn() {
   console.log("节流");
 }
 addEventListener("scroll", throttle(fn, 300));
+```
+
+计时器版：
+
+```js
+const handle = (fn, interval) => {
+    let timeId = null;
+    return function() {
+        if (!timeId) {
+            timeId = setTimeout(() => {
+                fn.apply(this, arguments)
+                timeId = null
+            }, interval)
+        }
+    }
+}
 ```
 
 应用场景：
