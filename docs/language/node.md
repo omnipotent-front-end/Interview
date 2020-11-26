@@ -278,6 +278,50 @@ process.nextTick()会把回调塞入nextTickQueue，nextTickQueue将在当前操
 
 [浏览器和NodeJS中不同的Event Loop · Issue #234 · kaola-fed/blog](https://github.com/kaola-fed/blog/issues/234)
 
+### require的模块查找顺序是怎么样的？
+
+当 Node 遇到 require(X) 时，按下面的顺序处理。
+
+(1)如果 X 是内置模块(比如 require('http')) 
+
+a. 返回该模块。
+
+b. 不再继续执行。
+
+(2)如果 X 以 "./" 或者 "/" 或者 "../" 开头
+
+a.   根据 X 所在的父模块，确定 X 的绝对路径。
+
+b.   将 X 当成文件，依次查找下面文件，只要其中有一个存在，就返回该文件，不再继续 执行。
+
+```
+X
+X.js
+X.json
+X.node
+```
+
+c. 将 X 当成目录，依次查找下面文件，只要其中有一个存在，就返回该文件，不再继续 执行。
+
+```
+X/package.json(main 字段) X/index.js
+X/index.json
+X/index.node
+```
+
+(3)如果 X 不带路径
+
+a. 根据 X 所在的父模块，确定 X 可能的安装目录。
+
+b. 依次在每个目录中，将 X 当成文件名或目录名加载。
+
+(4)抛出 "not found"
+
+
+参考：
+
+[require() 源码解读 - 阮一峰的网络日志](http://www.ruanyifeng.com/blog/2015/05/require.html)
+
 ### cluster模块主要是做什么的？有哪些应用场景？
 
 主要作用就是**以master-worker模式启动多个应用实例**，来解决js代码执行在单线程中的脆弱问题。pm2，egg-cluster均基于此实现。
@@ -608,3 +652,50 @@ function callbackify(original) {
 参考：
 
 [Node.js util模块解读 - 彩色代码 - SegmentFault 思否](https://segmentfault.com/a/1190000015115159)
+
+
+
+### 如何判断是在node还是浏览器端？
+
+可以参考tomato：
+
+浏览器通过window和document对象来区分：
+``` js
+/**
+ * 判断是否在浏览器环境
+ *
+ *
+ * 脚本举例
+ * ```javascript
+ *   import { isBrowser } from '@tomato-js/env'
+ *   isBrowser();//true
+ * ```
+ *
+ * @returns 是否存在window上
+ */
+export const isBrowser = () => ![typeof window, typeof document].includes("undefined");
+```
+
+Node则通过process对象的toString为`[object process]`来区分：
+
+``` js
+/**
+ * 判断是否在Node环境
+ *
+ *
+ * 脚本举例
+ * ```javascript
+ *   import { isNode } from '@tomato-js/env'
+ *   isNode();//false
+ * ```
+ *
+ * @returns 是否存在global上
+ */
+const toString = Object.prototype.toString;
+
+export function isType<T>(value: unknown, type: string): value is T {
+  return toString.call(value) === "[object " + type + "]";
+}
+export const isNode = () => typeof process !== "undefined" && isType(process, "process");
+
+```

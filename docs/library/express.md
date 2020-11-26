@@ -11,6 +11,9 @@
 但是社区也提供了相关插件：
 
 - [express-interceptor](https://github.com/axiomzen/express-interceptor) - Express的响应拦截器(弥补非洋葱模型)
+
+它的思路是改写express继承的node原生的res.end，通过AOP的方式，将res.end的body，apply给自定义的回调函数，从而在最后关头拦截body并修改。
+
 - [express-mung](https://github.com/richardschneider/express-mung) - Express的响应转化器(弥补非洋葱模型)
 
 原理就是切片，重写res.end/res.write/res.json等相关方法。
