@@ -41,6 +41,7 @@ module.exports = {
             "/library/nginx.md",
             "/library/pm2.md",
             "/library/react.md",
+            "/library/redux.md",
             "/library/typescript.md",
             "/library/vue.md",
             "/library/webpack.md"
@@ -61,6 +62,8 @@ module.exports = {
           children: [
             "/practice/project.md",
             "/practice/git.md",
+            "/practice/iq.md",
+            "/practice/person.md"
           ]
         }
       ]

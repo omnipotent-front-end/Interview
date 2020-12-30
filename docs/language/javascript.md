@@ -653,6 +653,10 @@ Number.prototype.add = function(arg) {
 };
 ```
 
+参考：
+
+[JavaScript 浮点数陷阱及解法 · Issue #9 · camsong/blog](https://github.com/camsong/blog/issues/9)
+
 
 ### toPrecision 和 toFixed 和 Math.round 的区别?
 
@@ -768,6 +772,8 @@ console.log(person2.__proto__.__proto__ == Person.prototype); //true
 [JavaScript 深入之从原型到原型链 · Issue #2 · mqyqingfeng/Blog](https://github.com/mqyqingfeng/Blog/issues/2)
 
 [原型，原型链，对象，构造函数之间的联系。 - 泰阳的博客 - CSDN 博客](https://blog.csdn.net/qq_39795538/article/details/81836497)
+
+[原型继承](https://zh.javascript.info/prototype-inheritance)
 
 
 ### js获取原型的方法
@@ -1113,7 +1119,11 @@ for...of 语句在**可迭代对象**(包括 **Array, Map, Set, String, TypedArr
 
 ### 如何让一个对象变得可迭代，可迭代的本质是什么？
 
+可以将可迭代对象理解为“宽泛意义上的数组”——就是说，不一定是数组（Array.isArray(iterable) 返回 false），但却能够被 for...of 循环遍历。
+
 比方说如下代码会抛出TypeError，因为object是不可迭代的。
+
+
 
 ``` js
 const obj = {x:1,y:2,z:3};
@@ -1152,6 +1162,24 @@ obj[Symbol.iterator] = function() {
 }
 const arr = [...obj];//1,2,3
 ```
+
+
+参考：
+
+[什么是可迭代对象（Iterable objects）？](https://juejin.cn/post/6844903573973630989#heading-6)
+
+
+
+### 哪些内置对象是可迭代的？
+
+含有`[Symbol.iterator]`属性的对象，如数组、字符串、Map Set、均是可迭代的，可以使用for of的。
+
+参考：
+
+[什么是可迭代对象（Iterable objects）？](https://juejin.cn/post/6844903573973630989#heading-6)
+
+
+
 
 ### 对象属性的可枚举性是什么意思？会影响哪些操作？
 
@@ -1234,6 +1262,22 @@ Array.prototype.concat.apply([], arrayLike);
 ``` js
 Array.from(arrayLike);
 ```
+
+### 取出数组的最大值
+
+Math.max的用法是`console.log(Math.max(1, 3, 2));`
+
+所以可以通过扩展运算符来完成：
+
+``` js
+var arr = [6, 4, 1, 8, 2, 11, 23];
+console.log(Math.max(...arr))
+```
+
+
+参考：
+
+[JavaScript专题之如何求数组的最大值和最小值 · Issue #35 · mqyqingfeng/Blog](https://github.com/mqyqingfeng/Blog/issues/35)
 
 ### [,,,]和[,,,1]的长度是多少，为什么？
 
@@ -1358,6 +1402,65 @@ xhr.setRequestHeader("Accept", "application/json");
 xhr.send(null);
 ```
 
+
+### 怎么实现一个同步的ajax？
+
+xhr.open的第三个参数来判断的。其中true为异步，false为同步。
+
+``` js
+xhr.open("GET", SERVER_URL, true);
+```
+
+### 什么情况下会需要用到同步的接口？
+
+正常情况下同步接口会阻塞页面而异步不会，但是有些情况下比如接口回调后通过window.open新开tab页时，会被浏览器拦截，这种情况下需要用到同步接口解决。
+
+还有其他解决方案可以参考[window-open打开页面会被浏览器拦截问题解决](/web/fed.html#window-open%E6%89%93%E5%BC%80%E9%A1%B5%E9%9D%A2%E4%BC%9A%E8%A2%AB%E6%B5%8F%E8%A7%88%E5%99%A8%E6%8B%A6%E6%88%AA%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3)
+
+### fetch是什么？有什么优缺点？
+
+fetch() 方法是一种现代通用的方法。
+
+
+
+参考：
+
+[Fetch](https://zh.javascript.info/fetch)
+
+
+[前端面试29：什么是fetch？fetch与20年前的ajax有什么不同？ - PHPYuan](https://www.phpyuan.com/298605.html)
+
+
+### fetch怎么中止？
+
+使用AbortController来配合。
+
+``` js
+// 1 秒后中止
+let controller = new AbortController();
+setTimeout(() => controller.abort(), 1000);
+
+try {
+  let response = await fetch('/article/fetch-abort/demo/hang', {
+    signal: controller.signal
+  });
+} catch(err) {
+  if (err.name == 'AbortError') { // handle abort()
+    alert("Aborted!");
+  } else {
+    throw err;
+  }
+}
+```
+
+
+参考：
+
+[Fetch：中止（Abort）](https://zh.javascript.info/fetch-abort)
+
+
+
+
 ### 什么是 Promise 对象，什么是 Promises/A+ 规范? 
 
 Promise 对象是异步编程的一种解决方案，最早由社区提出。Promises/A+ 规范是JavaScript Promise 的标准，规定了一个 Promise 所必须具有的特性。
@@ -1420,6 +1523,35 @@ async function test() {
 ```
 
 ---
+
+### 简单说下generator的用法？
+
+``` js
+function* idMaker(){
+    let index = 0;
+    while(true)
+        yield index++;
+}
+
+let gen = idMaker(); // "Generator { }"
+
+console.log(gen.next().value);
+// 0
+console.log(gen.next().value);
+// 1
+console.log(gen.next().value);
+// 2
+```
+
+参考：
+
+[Generator - JavaScript | MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator)
+
+### javascript是如何实现让函数暂停的？
+
+参考[如何暂停和恢复一个函数？](/cp/browser.html#%E5%A6%82%E4%BD%95%E6%9A%82%E5%81%9C%E5%92%8C%E6%81%A2%E5%A4%8D%E4%B8%80%E4%B8%AA%E5%87%BD%E6%95%B0%EF%BC%9F)
+
+
 
 ### 并发多个接口，如何回调一次结果？
 
@@ -1725,19 +1857,296 @@ Window—>EventTarget—>Function.prototype—>Object.prototype。
 
 [js中Window和window的区别是什么？ - 知乎](https://www.zhihu.com/question/52761658)
 
+### window.top.location.href和window.location.href的区别？什么时候会用到top.location.href?
+
+window.top是指顶层window，比如iframe的情况下，就是其先祖，对标parent.parent...  。
+
+普通情况下window.top.location.href=window.location.href
+
+使用场景：
+
+app唤起时，是通过自定义url拦截来完成的，为了兼容iframe等场景，就需要唤起函数直接用window.top.location.href来进行跳转。
+
+参考：
+
+[javascript - Difference between window.location.href and top.location.href - Stack Overflow](https://stackoverflow.com/questions/3332756/difference-between-window-location-href-and-top-location-href)
+
+### 如何在代码中优化循环？
+
+1、最基本是缓存长度如
+
+``` js
+const arr = [0, 1, 2, 3, 4, 5];
+const len = arr.length;
+for (let i = 0; i < len; i++) {
+    console.log(arr[i]);
+}
+```
+
+这样就可以避免每次遍历一个元素都会重新访问其 length 属性，从而避免了不必要的性能损失。
+
+2、然后是反向while循环
+
+``` js
+const arr = [0, 1, 2, 3, 4, 5];
+let index = arr.length;
+while (index--) {
+    console.log(arr[index]);
+}
+```
+
+降低了毕竟`i<len`的过程。
+
+3、利用break或continue
+
+如果我们遍历某个数据集的目的是找到某个符合要求的值，那么当已经找出了所要寻找的值时，就应该立马跳出当前这一轮遍历，或结束整个循环。
+
+break 和 continue 关键字可以帮助我们进行这种操作：
+
+break 使当前整个循环停止执行，然后程序会转而继续执行循环语句之后的代码
+
+continue 使当前遍历的迭代停止，并开始进行下一次迭代
+
+4、优化ifelse
+
+分析找到共同条件抽象出来
+
+``` js
+if (x === 0) {
+    return result0;
+} else if (x === 1) {
+    return result1;
+} else if (x === 2) {
+    return result2;
+} else if (x === 3) {
+    return result3;
+} else if (x === 4) {
+    return result4;
+} else if (x === 5) {
+    return result5;
+} else {
+    return undefined;
+}
+// 优化之后
+if (x < 3) {
+    if (x < 1) {
+        if (x === 0) {
+            return result0;
+        } else {
+            return undefined;
+        }
+    } else {
+        if (x === 1) {
+            return result1;
+        } else {
+            return resul2;
+        }
+    }
+} else {
+    if (x < 5) {
+        if (x === 3) {
+            return result3;
+        } else {
+            return result4;
+        }
+    } else {
+        if (x === 5) {
+            return result5;
+        } else {
+            return undefined;
+        }
+    }
+}
+```
 
 
-### 如何在代码中减少迭代次数？（todo）
+5、降低迭代数量
 
-### 如何实现一个 Duff 装置？（todo）
+上面的方式在大量循环次数下性能还是不够，需要想办法降低迭代数量，可以通过duff 装置来完成。具体参考[如何实现一个-duff-装置？](/language/javascript.html#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA-duff-%E8%A3%85%E7%BD%AE%EF%BC%9F)
 
 
-### 在 JavaScript 中如何实现对象的私有属性?（todo）
 
-### 获取精度更高的时间（todo）
+参考：
 
-### 如何获取首屏渲染时间（todo）
+[JavaScript性能优化：（四）程序流程控制 | 中二病也要玩 front end](https://lfkid.github.io/2016/12/15/JavaScript%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%EF%BC%9A%EF%BC%88%E5%9B%9B%EF%BC%89%E7%A8%8B%E5%BA%8F%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6/)
 
+
+
+
+### 如何实现一个 Duff 装置？
+
+Duff’s Device背后的基本理念是：每次循环中最多可调用8次process()。循环的迭代次数iterations为总数除以8，startAt用来存放余数，表示一次循环中应调用多少次process()。
+
+``` js
+function duff(items) {
+    var len = items.length, //缓存局部变量
+        iterations = Math.floor(len / 8),  //商数，存放duff迭代次数
+        startAt = len % 8,    //余数，存放duff一次迭代调用process的次数
+        i = 0;
+        
+    do {
+        switch(startAt) {
+            case 0:
+                process(items[i++]);
+            case 7:
+                process(items[i++]);
+            case 6:
+                process(items[i++]);
+            case 5:
+                process(items[i++]);
+            case 4:
+                process(items[i++]);
+            case 3:
+                process(items[i++]);
+            case 2:
+                process(items[i++]);
+            case 1:
+                process(items[i++]);
+        }
+        
+        startAt = 0;
+    } while(iterations--);    //书上是--iterations，貌似不对吧，应该是iterations--
+};
+```
+
+
+假设我们定义process函数为：
+``` js
+function process(item) {
+ 
+      alert(item);
+ 
+};
+```
+调用一下duff函数：
+
+``` js
+duff([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);  //依次弹出1~12
+
+```
+
+//在这个调用过程中，我们可以知道iterations为1，startAt为4，也就是说，循环了两次，第一次循环调用process函数4次，第二次循环调用了8次。
+可见，可以满足我们的遍历需求，而据书中介绍，如果迭代次数超过1000次，duff遍历算法的执行效率将明显提升。
+
+### 在 JavaScript 中如何实现对象的私有属性?
+
+1、原生实现
+
+ ES2019 中已经增加了对 class 私有属性的原生支持，只需要在属性 / 方法名前面加上 `'#'` 就可以将其定义为私有，并且支持定义私有的 `static` 属性 / 方法。例如：
+
+``` js
+class Person {
+  
+  #name; 
+
+  constructor(name, age) {
+    this.#name = name;
+    this.age = age;
+  }
+
+  greet() {
+    console.log(`hi, i'm ${this.#name} and i'm ${this.age} years old`);
+  }
+}
+
+```
+
+2、IIFE实现
+
+IIFE 经常被用来：
+
+1.  定义一个自执行的匿名函数
+2.  创建一个局部作用域，避免对全局产生污染
+
+基于以上特性，用 IIFE 可以给一个对象实现简单的私有属性：
+
+``` js
+let person = (function () {
+  
+  let _name = "bruce"; 
+
+  return {
+    age: 30,
+    
+    get name() {
+      return _name;
+    },
+    
+    set name(val) {
+      _name = val;
+    },
+    greet: function () {
+      console.log(`hi, i'm ${_name} and i'm ${this.age} years old`);
+    }
+  };
+})();
+
+```
+
+IIFE 的实现简单易懂，但是只能作用于单个对象，而不能给 Class 或者构造函数定义私有属性。
+
+3、构造函数实现
+
+利用在构造函数中创建的局部变量可以作为 “私有属性” 使用：
+
+
+``` js
+function Person(name, age) {
+  
+  let _name = name; 
+  
+  this.age = age;
+  this.setName = function (name) {
+    _name = name;
+  };
+  this.getName = function () {
+    return _name;
+  };
+}
+
+Person.prototype.greet = function (){
+  console.log(`hi, i'm ${this.getName()} and i'm ${this.age} years old`);
+}
+```
+
+``` js
+class Person {
+  constructor(name, age) {
+    
+    let _name = name; 
+    
+    this.age = age;
+    this.setName = function (name) {
+      _name = name;
+    };
+    this.getName = function () {
+      return _name;
+    };
+  }
+
+  greet() {
+    console.log(`hi, i'm ${this.getName()} and i'm ${this.age} years old`);
+  }
+}
+```
+
+
+
+### 获取精度更高的时间
+
+有的时候，我们希望获取比Date.now()更高精度的时间戳。
+
+在浏览器中有一个 performance.now() 的接口，它表达了从页面加载到执行该语句之间的时间间隔，是一个衡量值。页面加载结束时间通过 performance.timing.navigationStart 获取，两个值相加，就可以得到执行 performance.now() 的具体值，该值比 Date.now() 精度要高。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20201210133940.png"/>
+
+
+
+
+
+### 如何获取首屏渲染时间
+
+基于Performance API来完成，具体api细节请参考[Web 性能优化-首屏和白屏时间 | lizhen's blog](https://lz5z.com/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E9%A6%96%E5%B1%8F%E5%92%8C%E7%99%BD%E5%B1%8F%E6%97%B6%E9%97%B4/)，或者参考我封装过的sdk：[web-monitor-sdk/page.ts at master · brizer/web-monitor-sdk](https://github.com/brizer/web-monitor-sdk/blob/master/src/page.ts#L29)
 
 
 ### 列举常见dom api
@@ -1967,6 +2376,26 @@ const Message = (text) => {
 const helloMessage = new Message('Hello World!');
 ```
 
+
+### new Function语法用过没？
+
+一种创建函数的方法，基本用法如下：
+
+``` js
+let sum = new Function('a', 'b', 'return a + b');
+
+alert( sum(1, 2) ); // 3
+```
+
+使用 new Function 创建函数的应用场景非常特殊，比如在复杂的 Web 应用程序中，我们需要从服务器获取代码或者动态地从模板编译函数时才会使用。
+
+
+
+
+参考：
+
+["new Function" 语法](https://zh.javascript.info/new-function)
+
 ---
 
 ## 原理
@@ -2045,6 +2474,9 @@ setTimeout
 宏任务一般是：包括 script(整体代码)、setTimeout、setInterval、I/O、UI 交互事件、postMessage、MessageChannel、setImmediate(Node.js 环境)
 
 微任务：原生 Promise(有些实现的 promise 将 then 方法放到了宏任务中)、process.nextTick、Object.observe(已废弃)、 MutationObserver 记住就行了。
+
+这里需要注意requestAnimationFrame不是宏任务也不是微任务，requestAnimationFrame是GUI渲染之前执行，但在Micro-Task之后，不过requestAnimationFrame不一定会在当前帧必须执行，由浏览器根据当前的策略自行决定在哪一帧执行。
+
 
 **一个EventLoop只有一个宏任务和一组微任务列表。**
 
@@ -2256,6 +2688,8 @@ CommonJS 加载的是一个对象（即 module.exports 属性），该对象只�
 [require() 源码解读 - 阮一峰的网络日志](http://www.ruanyifeng.com/blog/2015/05/require.html)
 
 
+### 为什么es6不使用nodejs的require()而发明了import/export语法（todo）
+
 
 
 ### 在同一段代码中，ES6是如何做到既要支持变量提升的特性，又要支持块级作用域的呢？
@@ -2300,30 +2734,199 @@ CommonJS 加载的是一个对象（即 module.exports 属性），该对象只�
 
 
 
-### JavaScript 中的数组为什么可以不需要分配固定的内存空间？（todo）
+### JavaScript 中的数组为什么可以不需要分配固定的内存空间？
 
-### JavaScript 中数组的存储和 C / C++ / Java 中数组的存储有什么区别？（todo）
+传统意义上的数组有两个特点：相同类型、连续内存。
 
-### JavaScript 中数组是否可以理解为特殊的对象？（todo）
+C、C++、Java、Scala 等语言中数组的实现，是通过在内存中划分一串连续的、固定长度的空间，来实现存放一组有限个相同数据类型的数据结构。这里面也涉及到了几个重要的概念：连续、固定长度、相同数据类型，与数据结构中的定义是类似的。
 
-### JavaScript 中数组和 C / C++ / Java 中数组存储在性能上有什么区别？（todo）
-
-### JavaScript 中的 Array 和 Node.js 中的 Buffer 有什么区别？（todo）
-
-### JavaScript 中的数组何时是连续存储的，何时是哈希存储的？（todo）
-
-### 哈希存储的键冲突（散列碰撞）可以有哪些解决方案（开链法、线性探测法、红黑树等）（todo）？
+V8源码中，JSArray 是继承自JSObject，也就是说，数组是一个特殊的对象。那这就好解释为什么JS的数组可以存放不同的数据类型，它是个对象嘛，内部也是key-value的存储形式。
 
 
-### 聊聊继承以及说说 ES5 和 ES6 继承的区别？（todo）
+参考：
+
+[探究JS V8引擎下的“数组”底层实现](https://juejin.cn/post/6844903943638794248)
 
 
-### 条件比较多的时候 if-else 和 switch 性能哪个高？（todo）
 
-### 字面量 / 数组 / 对象存储性能有没有什么区别？（todo）
+### JavaScript 中数组的存储和 C / C++ / Java 中数组的存储有什么区别？
 
-### 如何提升 JavaScript 变量的存储性能？(todo)
+C、C++、Java、Scala 等语言中数组的实现，是通过在内存中划分一串连续的、固定长度的空间，来实现存放一组有限个相同数据类型的数据结构。这里面也涉及到了几个重要的概念：连续、固定长度、相同数据类型，与数据结构中的定义是类似的。
 
+V8源码中，JSArray 是继承自JSObject，也就是说，数组是一个特殊的对象。
+
+JS 数组有两种表现形式，fast 和 slow。快速的后备存储结构是 FixedArray ，并且数组长度 <= elements.length();FixedArray 是 V8 实现的一个类似于数组的类，它表示一段固定长度的连续的内存。缓慢的后备存储结构是一个以数字为键的 HashTable 。散列表（Hash table，也叫哈希表），是根据键（Key）而直接访问在内存存储位置的数据结构。也就是说，它通过计算一个关于键值的函数，将所需查询的数据映射到表中一个位置来访问记录，这加快了查找速度。这个映射函数称做散列函数，存放记录的数组称做散列表。
+
+快数组是一种线性的存储方式。新创建的空数组，默认的存储方式是快数组，快数组长度是可变的，可以根据元素的增加和删除来动态调整存储空间大小，内部是通过扩容和收缩机制实现。
+
+慢数组是一种哈希表的内存形式。不用开辟大块连续的存储空间，节省了内存，但是由于需要维护这样一个 HashTable，其效率会比快数组低。
+
+快数组就是以空间换时间的方式，申请了大块连续内存，提高效率。 慢数组以时间换空间，不必申请连续的空间，节省了内存，但需要付出效率变差的代价。V8会以一定的算法来决定快慢数组的转化过程。 
+
+
+
+参考：
+
+[探究JS V8引擎下的“数组”底层实现](https://juejin.cn/post/6844903943638794248)
+
+### JavaScript 中数组是否可以理解为特殊的对象？
+
+V8源码中，JSArray 是继承自JSObject，也就是说，数组是一个特殊的对象。
+
+
+参考：
+
+[探究JS V8引擎下的“数组”底层实现](https://juejin.cn/post/6844903943638794248)
+
+
+### JavaScript 中的数组何时是连续存储的，何时是哈希存储的？
+
+首先需要了解到数组在v8中的实现：[javascript-中数组的存储和-c-c-java-中数组的存储有什么区别？](/language/javascript.html#javascript-%E4%B8%AD%E6%95%B0%E7%BB%84%E7%9A%84%E5%AD%98%E5%82%A8%E5%92%8C-c-c-java-%E4%B8%AD%E6%95%B0%E7%BB%84%E7%9A%84%E5%AD%98%E5%82%A8%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)。
+
+连续存储的就是快数组，哈希存储的就是慢数组。
+
+快->慢
+
+当对数组赋值时使用远超当前数组的容量+ 1024时（这样出现了大于等于 1024 个空洞，这时候要对数组分配大量空间则将可能造成存储空间的浪费，为了空间的优化，会转化为慢数组。
+
+比如：
+
+``` js
+let a = [1, 2]
+a[1030] = 1;
+
+```
+
+慢->快
+
+处于哈希表实现的数组，在每次空间增长时， V8 的启发式算法会检查其空间占用量， 若其空洞元素减少到一定程度，则会将其转化为快数组模式。 当慢数组的元素可存放在快数组中且长度在 smi 之间且仅节省了50%的空间,则会转变为快数组。
+
+比如：
+
+``` js
+let a = [1,2];
+a[1030] = 1;
+for (let i = 200; i < 1030; i++) {
+    a[i] = i;
+}
+```
+
+在 1030 的位置上面添加一个值，会造成多于 1024 个空洞，数组会使用为 Dictionary 模式来实现。
+
+那么我们现在往这个数组中再添加几个值来填补空洞，往 200-1029 这些位置上赋值，使慢数组不再比快数组节省 50% 的空间，数组变成了快数组的 Fast Holey Elements 模式。
+
+
+[探究JS V8引擎下的“数组”底层实现](https://juejin.cn/post/6844903943638794248)
+
+
+### JavaScript 中的 TypeArray 和 Node.js 中的 Buffer 有什么区别？
+
+在ECMAScript 2015(ES6)推出TypeArray标准之前，JavaScript语言处理二进制数据非常困难，这在后端开发中使用很不方便。Node.js中的Buffer类就是为了解决二进制数据处理的问题，该类为Node.js带来了如TCP流操作和文件系统流操作的能力。ECMAScript 2015中TypeArray做为语言标准被引入，使JavaScript可以原生处理二进制数据。
+
+1、Buffer是对Uint8Array的实现
+
+Buffer类实现了Uint8Array相关API。但Node对Buffer类进行了优化，其更适合在Node.js环境中使用。
+
+2、Buffer并不完全兼容类型数组
+
+Buffer同样是一个Uint8Array类型数组实例。但它与ES6中的类型数组规范并不完全兼容，如：ArrayBuffer#slice()会创建一个分隔部分数据的拷贝，而Buffer#slice()会创建一个从Buffer中拷贝数据的视图，相对来说Buffer#slice()更高效。
+
+3、Buffer可以与类型数组共享内存区
+
+可以从TypedArray的.buffer属性或new ArrayBuffer()创建一个Buffer对象。该对象会与类型数组共享内存区
+
+参考：
+
+[Node.js Buffer与JavaScript TypeArray类型数组的异同 - IT笔录](https://itbilu.com/nodejs/core/NyIjmp0wZ.html)
+
+
+
+### javascript ES5 继承的6种方法
+
+1. 原型链继承
+2. 借用构造函数继承
+3. 组合继承(原型+借用构造)
+4. 原型式继承
+5. 寄生式继承
+6. 寄生组合式继承
+
+具体实现可以参考我之前写的博客：[深入理解javascript之继承_brizer的博客-CSDN博客](https://blog.csdn.net/mevicky/article/details/49443543)
+
+也可以看看简单实现一个继承：[简单实现继承](/language/javascript.html#%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0%E7%BB%A7%E6%89%BF)
+
+
+参考：
+
+[原型继承](https://zh.javascript.info/prototype-inheritance)
+
+
+
+### 聊聊继承以及说说 ES5 和 ES6 继承的区别？
+
+先理解[javascript-es5-继承的6种方法](/language/javascript.html#javascript-es5-%E7%BB%A7%E6%89%BF%E7%9A%846%E7%A7%8D%E6%96%B9%E6%B3%95)后，再来看这个问题。
+
+ES5 的继承，实质是先创造子类的实例对象this，然后再将父类的方法添加到this上面（Parent.apply(this)）。
+
+ES6 的继承机制完全不同，实质是先创建父类实例this 通过class丶extends丶super关键字定义子类，并改变this指向,super本身是指向父类的构造函数但做函数调用后返回的是子类的实例，实际上做了父类.prototype.constructor.call(this)，做对象调用时指向父类.prototype,从而实现继承。
+
+
+参考：
+
+[ES5和ES6及继承机制](https://juejin.cn/post/6844903701685993485#heading-10)
+
+
+### 条件比较多的时候 if-else 和 switch 性能哪个高？
+
+switch语句的工作速度比等效的if-else阶梯要快得多。这是因为编译器会在编译过程中为开关生成跳转表。结果，在执行过程中，仅检查必须执行哪种情况，而不检查是否满足哪种情况。
+
+与if-else语句相比，它更具可读性。
+
+但是部分场景下ifelse又可以通过抽出高优先级的条件来降低判断次数，参考[如何在代码中优化循环？](/language/javascript.html#%E5%A6%82%E4%BD%95%E5%9C%A8%E4%BB%A3%E7%A0%81%E4%B8%AD%E4%BC%98%E5%8C%96%E5%BE%AA%E7%8E%AF%EF%BC%9F)
+
+
+所以需要具体情况具体分析。
+
+### 字面量 / 数组 / 对象存储性能有没有什么区别？
+
+js中有四种基本的数据存取位置：
+
+字面量
+
+:  字面量只代表本身，不存储在特定位置。
+
+:  有：字符串、数字、布尔、数组、函数、正则表达式、null、undefined
+
+本地变量
+
+:  开发人员使用var、let等定义的数据存储单元
+
+数组元素
+
+:  存储在JS数组对象内部，以数字为索引
+
+对象成员
+
+:  存储在JS对象内部，以字符串为索引
+
+
+性能：访问字面量和局部变量的速度是最快的，访问数组和对象成员相对较慢。
+
+参考：
+
+[【读书笔记】《高性能JavaScript》_OBKoro1分享 - SegmentFault 思否](https://segmentfault.com/a/1190000012858340)
+
+### 如何提升 JavaScript 变量的存储性能？
+
+
+访问字面量和局部变量的速度最快，相反，访问数组元素和对象成员相对较慢。
+
+由于局部变量存在于作用域链的起始位置，因为访问局部变量比访问跨作用域变量更快。这个道理同样适用于数组，对象，跨作用域变量。
+
+把常用的对象，数组，跨域变量保存在局部变量可以改善 js 性能，局部变量访问速度更快。
+
+参考：
+
+[【读书笔记】《高性能JavaScript》_OBKoro1分享 - SegmentFault 思否](https://segmentfault.com/a/1190000012858340)
 
 ---
 
@@ -2521,6 +3124,12 @@ function create() {
 ```
 
 es6 之后更加复杂了，[参考](https://www.ecma-international.org/ecma-262/6.0/#sec-new-operator)。
+
+参考：
+
+[JavaScript深入之new的模拟实现 · Issue #13 · mqyqingfeng/Blog](https://github.com/mqyqingfeng/Blog/issues/13)
+
+
 
 ### 如何实现 call
 
@@ -3109,9 +3718,34 @@ function flatten(arr) {
 }
 ```
 
+或者直接用原生API：
+
+``` js
+
+const arr1 = [1, 2, [3, 4]];
+arr1.flat(); 
+// [1, 2, 3, 4]
+
+const arr2 = [1, 2, [3, 4, [5, 6]]];
+arr2.flat();
+// [1, 2, 3, 4, [5, 6]]
+
+const arr3 = [1, 2, [3, 4, [5, 6]]];
+arr3.flat(2);
+// [1, 2, 3, 4, 5, 6]
+
+const arr4 = [1, 2, [3, 4, [5, 6, [7, 8, [9, 10]]]]];
+arr4.flat(Infinity);
+// [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+```
+
 参考：
 
 [多维数组展开 | effect · Issue #159 · OBKoro1/web_accumulate](https://github.com/OBKoro1/web_accumulate/issues/159)
+
+[JavaScript Demo: Array.flat()](https://interactive-examples.mdn.mozilla.net/pages/js/array-flat.html)
+
+
 
 ### 数组去重
 
@@ -3153,14 +3787,39 @@ console.log(uniqueArray(["a", "c", "b", "z", "A", "K", "d", "D", "a"]));
 });
 ```
 
-### javascript继承的6种方法
+### 对reduce用法的考察，分别用reduce实现forEach、map、filter
 
-1. 原型链继承
-2. 借用构造函数继承
-3. 组合继承(原型+借用构造)
-4. 原型式继承
-5. 寄生式继承
-6. 寄生组合式继承
+
+
+``` js
+// forEach
+function forEachUseReduce(array, handler) {
+  array.reduce(function (pre, item, index) {
+    handler(item, index);
+  });
+}
+// map
+function mapUseReduce(array, handler) { 
+  let result = [];
+  array.reduce(function (pre, item, index) {
+    let mapItem = handler(item, index); 
+    result.push(mapItem);
+  });
+  return result;
+}
+// filter
+function filterUseReduce(array, handler) { 
+  let result = [];
+  array.reduce(function (pre, item, index) {
+    if (handler(item, index)) {
+     result.push(item);
+    }
+  });
+  return result;
+}
+```
+
+
 
 ### 简单实现继承
 
@@ -3936,6 +4595,12 @@ console.log(reverseString("abca"));
 console.log(reverseString("8cchds7"));
 ```
 
+或者利用数组api：
+
+``` js
+newStr.split("").reverse().join(""); // 将字符串反转
+```
+
 ### 千位分隔
 
 一串整数转换成千位分隔形式，例如 10000000000，转换成 10,000,000,000。
@@ -4363,12 +5028,82 @@ scheduleWork();
 
 
 
-### 实现一个简易的模板引擎（todo）
+### 实现一个简易的模板引擎
+
+首先掌握[new-function语法用过没？](/language/javascript.html#new-function%E8%AF%AD%E6%B3%95%E7%94%A8%E8%BF%87%E6%B2%A1%EF%BC%9F)
+
+``` html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Template</title>
+</head>
+<body>
+    <div id="results"></div>
+    <!-- 模板 -->
+    <script type="text/html" id="user_tmpl">
+        <ul>
+            <% for ( var i = 0; i < users.length; i++ ) { %>
+            <li><a href="<%=users[i].url%>"><%=users[i].name%></a></li>
+            <% } %>
+        </ul>
+      </script>
+    <script type="text/javascript">
+    var results = document.getElementById("results");
+    var users=[
+        {"name":"Byron", "url":"http://localhost"},
+        {"name":"Casper", "url":"http://localhost"},
+        {"name":"Frank", "url":"http://localhost"}
+    ];
+    //模板解析方法
+    function tmpl(id,data){
+        var html=document.getElementById(id).innerHTML;
+        //使用 with 关键字改变作用域
+        var result="var p=[];with(obj){p.push('"
+            +html.replace(/[\r\n\t]/g," ")
+            //把 <%=xxx%> 替换为 ');p.push(xxx);p.push('
+            .replace(/<%=(.*?)%>/g,"');p.push($1);p.push('")
+            // 把 <% 替换为 ');
+            .replace(/<%/g,"');")
+            //把 %> 替换为 p.push('
+            .replace(/%>/g,"p.push('")
+            +"');}return p.join('');";
+        //使用 Function 构造函数来创建一个 function
+        var fn=new Function("obj",result);
+        return fn(data);
+    }
+    results.innerHTML = tmpl("user_tmpl", users);
+</script>
+</body>
+</html>
+
+```
+
+参考：
+
+[最简单的JavaScript模板引擎 - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1343513)
+
+
+
 
 ### 求字符串的最长公共前缀（todo）
 
 比如输入: ["flower","flow","flight"]，输出: "fl"
 
+
+### 判断回文字符串
+
+首先掌握[实现字符串反转](/language/javascript.html#%E5%AE%9E%E7%8E%B0%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8F%8D%E8%BD%AC)
+
+``` js
+function isPalindrome(str) {
+  let reg = /[\W_]/g, // 匹配所有非单词的字符以及下划线 
+  newStr = str.replace(reg, "").toLowerCase(), // 替换为空字符并将大写字母转 换为小写
+  reverseStr = newStr.split("").reverse().join(""); // 将字符串反转
+  return reverseStr === newStr;
+}
+
+```
 
 ### 生成随机字符串
 
@@ -4542,9 +5277,8 @@ let obj4 = {a: 1, b: {c: 1}};
 isEqual(obj1, obj2)
 ```
 
-## 执行结果
 
-### 连续赋值
+### 连续赋值的结果
 
 ```js
 var a = {n: 1};
@@ -4554,7 +5288,85 @@ a.x = a = {n: 2};
 console.log(a.x) 	
 console.log(b.x)
 
+```
+
 结果:
 undefined
 {n:2}
+
+
+### 求最大公约数
+
+基本思想是采用辗转相除的方法，用大的数去除以小的那个数，然后再用小的数去除以的得到的 余数，一直这样递归下去，直到余数为 0 时，最后的被除数就是两个数的最大公约数。
+
+
+``` js
+function getMaxCommonDivisor(a, b) {
+  if (b === 0) return a;
+  return getMaxCommonDivisor(b, a % b);
+}
 ```
+
+参考：
+
+[百度web前端面试题之求两个数的最大公约数和最小公倍数 - cssfirefly - 博客园](https://www.cnblogs.com/cssfirefly/archive/2012/10/23/2734936.html)
+
+
+
+### 求最小公倍数
+
+基本思想是采用将两个数相乘，然后除以它们的最大公约数
+
+``` js
+function getMinCommonMultiple(a, b){
+  return a * b / getMaxCommonDivisor(a, b);
+}
+```
+
+参考：
+
+[百度web前端面试题之求两个数的最大公约数和最小公倍数 - cssfirefly - 博客园](https://www.cnblogs.com/cssfirefly/archive/2012/10/23/2734936.html)
+
+
+### 十进制转换成任意进制
+
+``` js
+function tenToOther(num, base) {
+    const baseNumber = '0123456789abcdefghijklmnopqrstuvwxyz'
+    const result = []
+    while (num) {
+        const rest = num % base
+        num = Math.floor(num / base)
+        result.unshift(baseNumber[rest])
+    }
+    return result.join('')
+}
+```
+
+
+### 实现图片懒加载
+
+利用IntersectionObserver来完成。
+
+``` js
+function lazyload() {
+    const observe = new IntersectionObserver(enteris => {
+        enteris.forEach(entry => {
+            const lazyImage = entry.target
+            if (entry.isIntersecting && lazyImage.getAttribute('src') == 'loading.gif') {
+                lazyImage.src = lazyImage.dataset.src
+                observe.unobserve(lazyImage)
+            }
+        })
+    })
+
+    for (let i = 0; i < imgs.length; i++) {
+        observe.observer(imgs[i])
+    }
+}
+```
+
+
+参考：
+
+[Intersection Observer - Web API 接口参考 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/IntersectionObserver)

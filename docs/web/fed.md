@@ -42,6 +42,131 @@ pushState 是 Html5 中引入的新特性，用来修改浏览器的历史记录
 
 [pushState + ajax 实现浏览器无刷新前进后退 - Charley Blog](http://blog.chenxu.me/post/detail?id=ed4f0732-897f-48e4-9d4f-821e82f17fad)
 
+
+### window.open打开页面会被浏览器拦截问题解决
+
+
+> `window.open`是 javascript 函数，该函数的作用是打开一个新窗口或改变原窗口, 如果你直接在 js 中调用`window.open()`去打开一个新窗口，浏览器会拦截。 （注意：`window.open(url,'_self')`在原窗口打开，不会被拦截）。
+
+普通情况下 window.open 不会拦截，但若是在 ajax 的回调里面进行 window.open，会拦截！因为浏览器会认为这是一个骚扰用户的行为。 在网上找到一些解决方案，总结如下。其中只有方案 1、方案 2 个人验证过有效。其他未知 orz...
+
+#### 方案 1： 先 window.open('_blank')，再赋值 location 跳转链接
+
+```
+var  tempWin  = window.open("_blank"); 
+$.ajax({
+            type: "post",
+            url: xxx,
+            data: data,
+            contentType: "application/json;charset=UTF-8",
+            success: function (response) {
+                   
+                  tempWin.kk = "www.baidu.com";  
+            }
+        });
+
+```
+
+这种情况有个缺陷：
+
+1.  若你的新页面需要从 sessionStorage 取值，那这种方式是取不到的。 **解决方法：**采用 url 传参方式。比如`tempWin.kk = "www.baidu.com?id=xxxx";`. 然后通过以下 `getParam`方法获取 url 参数：
+
+```
+function getParam(a) {
+            var b = new RegExp("(^|&)" + a + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(b);
+            if (r != null) return unescape(r[2]);
+            return ""
+        }
+
+```
+
+1.  若你在 ajax 请求成功后还有业务判断，判断后决定是否要跳转。这时候预先打开一个空页签就很鸡肋。 **解决方法**：参考网上方案，只能采用**方案 2**
+
+#### 方案 2：设置 ajax 请求为`async:false`——同步模式。
+
+```
+$.ajax({
+        type: "post",
+        url: "/xxxx/xxxx",
+        async: false，
+        data: data,
+        contentType: "application/json;charset=UTF-8",
+        success: function (data) {
+            if(xxx){
+                window.open(url);
+            }
+        }
+    });
+
+```
+
+异步当然有异步的好处，全部同步那就呵呵哒了，所以局部使用吧。
+
+_（接下来的方案，各自看看试试，不保证管用，只是搜集来 mark 下）_
+
+#### 方案 3：采用 a 标签
+
+```
+ <a href="" target="_blank">click me</a>
+
+ # 点击这个超链接，浏览器会认为它是打开一个新的链接，就不会拦截。
+ <a href="javascript:void(0)" onclick="window.open()"></a>
+
+```
+
+**缺陷**：有时候需要点击时候，进行一些其他设置或操作，再跳转。所以需要在 js 中完成。
+
+#### 方案 4：笨笨的 setTimeout
+
+使用 setTimeout 包装一下，也可以防止被浏览器拦截。注意这里的超时时间不能太短，否则也会被拦截。
+
+```
+ setTimeout('window.open(url);', 500);
+
+```
+
+#### 方案 5：创建 form 标签，js 代码进行提交
+
+创建一个 form 新元素，并赋予响应属性，然后手动代码进行 submit(); 注意：若需传递参数`?id=1`类似这种，需要指定 POST 方法。默认是 GET 方法，无法传递参数。
+
+```
+var form = document.createElement('form');
+form.action = 'www.baidu.com?id=1';
+form.target = '_blank';
+form.method = 'POST';
+
+document.body.appendChild(form);
+form.submit();
+
+```
+
+#### 方案 6：巧用 a 标签的特性：创建一个 a 标签，手动代码进行 click 触发。
+
+```
+function newWin(url, id) {
+      var a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('target', '_blank');
+      a.setAttribute('id', id);
+      
+      if(!document.getElementById(id)) {         
+        document.body.appendChild(a);
+      }
+      a.click();
+}
+
+```
+
+
+
+参考：
+
+[window.open打开页面会被浏览器拦截问题解决 - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1743495)
+
+
+
+
 ## 数据状态管理
 
 ### 前端常见数据状态管理方案有哪些？它们各有什么优缺点？
@@ -322,23 +447,6 @@ socket、cookie等等
 
 [大前端面试宝典 - 图解前端](https://lucifer.ren/fe-interview/#/./topics/design/auto-update)
 
-### H5和APP怎么通信？原理是什么？
-
-
-因为 app 是宿主，可以直接访问 h5，所以这种调用比较简单，就是在 h5 中曝露一些全局对象（包括方法），然后在原生 app 中调用这些对象。
-
-
-因为 h5 不能直接访问宿主 app，所以这种调用就相对复杂一点。
-
-这种调用常用有两种方式：
-
-1、由 app 向 h5 注入一个全局 js 对象，然后在 h5 直接访问这个对象
-
-2、由 h5 发起一个自定义协议请求，app 拦截这个请求后，再由 app 调用 h5 中的回调函数
-
-参考：
-
-[h5 与原生 app 交互的原理 - 前端小站 - SegmentFault 思否](https://segmentfault.com/a/1190000016759517)
 
 
 ### 请求资源的时候不要让它带 cookie 怎么做？
@@ -470,8 +578,6 @@ fragment.appendChild(elem);
 
 用单链表树算法和携程机制，实现任务动态分割和任务暂停、恢复、回滚，动态渲染和处理小球
 
-### 如果你要读取一个特别大的文件应该如何做（todo）
-
 
 ### 了解 SPA 的懒加载么？（todo）
 
@@ -480,9 +586,11 @@ fragment.appendChild(elem);
 
 懒加载也叫延迟加载，指的是在长网页中延迟加载图片的时机，当用户需要访问时，再去加载， 这样可以提高网站的首屏加载速度，提升用户的体验，并且可以减少服务器的压力。它适用于图 片很多，页面很长的电商网站的场景。懒加载的实现原理是，将页面上的图片的 src 属性设置 为空字符串，将图片的真实路径保存在一个自定义属性中，当页面滚动的时候，进行判断，如果 图片进入页面可视区域内，则从自定义属性中取出真实路径赋值给图片的 src 属性，以此来实 现图片的延迟加载。
 
-预加载指的是将所需的资源提前请求加载到本地，这样后面在需要用到时就直接从缓存取资源。 通过预加载能够减少用户的等待时间，提高用户的体验。我了解的预加载的最常用的方式是使用 js 中的 image 对象，通过为 image 对象来设置 scr 属性，来实现图片的预加载。
+预加载指的是将所需的资源提前请求加载到本地，这样后面在需要用到时就直接从缓存取资源。 通过预加载能够减少用户的等待时间，提高用户的体验。我了解的预加载的最常用的方式是使用 js 中的 image 对象，通过为 image 对象来设置 src 属性，来实现图片的预加载。
 
 这两种方式都是提高网页性能的方式，两者主要区别是一个是提前加载，一个是迟缓甚至不加载。 懒加载对服务器前端有一定的缓解压力作用，预加载则会增加服务器前端压力。
+
+图片预加载的实现可以参考[FunnyLiu/preloader at readsource](https://github.com/FunnyLiu/preloader/tree/readsource#%E8%BF%90%E8%90%A5%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F)以及[@tomato-js](https://github.com/tomato-js/tomato/blob/master/packages/preload/src/Preload.ts)我的实现。
 
 参考：
 
@@ -491,6 +599,25 @@ fragment.appendChild(elem);
 
 
 ---
+
+
+
+
+## 异常
+
+### 怎么做异常监控？
+
+私有化部署sentry。
+
+### 能聊一聊Script error出现的原因么？
+
+跨域脚本的异常是捕获不到的，只是抛出来Script error，增加crossorigin="anonymous"属性就好了，当然脚本cdn那边跨域请求头也是需要的
+
+参考：
+
+[“Script error.”的产生原因和解决办法_“Script error.”的产生原因和解决办法_前端监控_应用实时监控服务ARMS - 阿里云](https://help.aliyun.com/knowledge_detail/88579.html)
+
+
 
 ## 移动适配
 
@@ -661,6 +788,94 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 [移动端300ms点击延迟和点击穿透 - 掘金](https://juejin.im/post/5b3cc9836fb9a04f9a5cb0e0)
 
 
+### 你有做过Hybrid APP开发吗？说说你的经验（todo）
+
+在公司移动端和PC端都做过相应的开发，然后就介绍了移动端开发的一些东西，然后说了下H5是如何和客户端进行交互的，最后说了下自己参与的一些weex开发项目，说了下weex与H5的区别。
+
+
+### Hybrid离线方案你们是怎么做
+
+可以通过把整个前端资源加载到app内去，由app渲染，最后h5只发请求数据即可、jscsshtml均存在与app内。
+
+也可以通过前端打包提供元数据，在app启动时去预加载来映射。
+
+离线化技术可以将网页的网络加载时间变为 0，在离线化的选型上美团点评内部有很多选择，我们也在不同的方向进行尝试。其中我们的选择包括：
+
+标准技术：
+
+Application Cache：实现上各个平台各个浏览器有一些差异，即使把“无法更新的坑”踩过还是会有很多“无法离线”的坑，PASS
+
+Service Workers：Service Workers 是团队一直跟进的技术，目前在测试已经接近正式发布，只是在 iOS 上还无法大范围使用，长期看好，暂时 PASS
+借助 Native 能力的自有技术：
+
+美团平台技术团队的类 Service Workers 的被动离线化技术
+
+美团旅行技术团队的离线包技术
+
+留下来的只剩下两个自有技术，这两个技术的最大区别是，是否解决了首次加载问题？离线化方案的首次加载问题是一个很难的技术领域，我认为其最核心的问题是何时加载，提前加载会不会用户在很长一段时间内都不会用到导致浪费流量？使用包含首次加载优化的离线化技术的项目多了会不会造成加载拥塞？是不是需要分析用户行为数据去更精准的进行离线包的提前加载？这当中存在太多不确定性，不过我相信我们的技术团队一定能够想出优美的解决方案去解决这个问题。
+
+另外基于 Native 能力的离线化技术还存在一些来自平台的限制，如 iOS 的 WKWebView 不支持请求拦截，而请求拦截是离线化的关键技术，这个原因导致在 WKWebView 上无法实现离线化。
+
+WKWebView 的优势是：运行和渲染速度更快，与 Safari 内核一致 Apple 重点迭代跟进问题；劣势是：启动速度慢，无法拦截请求进而使用自有的离线化技术。
+
+权衡离线化所带来的巨大优势和 WKWebView 的速度优势，我们选择继续使用 UIWebView。（曾经在 iOS 11 发布前业界一度认为 Apple 会在 iOS 11 中支持 WKWebView 的请求拦截）
+
+参考：
+
+[Hybrid App 离线包方案实践 · Issue #63 · mcuking/blog](https://github.com/mcuking/blog/issues/63)
+
+### 唤起app的原理
+
+1、URL Scheme
+
+就像给服务器资源分配一个 URL，以便我们去访问它一样，我们同样也可以给手机APP分配一个特殊格式的 URL，用来访问这个APP或者这个APP中的某个功能(来实现通信)。APP得有一个标识，好让我们可以定位到它，它就是 URL 的 Scheme 部分。
+
+2、Universal Link
+
+Universal Link 是苹果在 WWDC2015 上为 iOS9 引入的新功能，通过传统的 HTTP 链接即可打开 APP。如果用户未安装 APP，则会跳转到该链接所对应的页面。
+
+通过iframe/a/window.top.location.href等多种方式来尝试赋值唤起。具体实现可以参考：[callapp-lib的实现](https://github.com/FunnyLiu/callapp-lib/blob/readsource/src/index.ts#L92)
+
+
+
+
+### 如何判断唤起是否成功
+
+通过判断当前页面是否被激活页面来判断，至于如何判断当前页面被激活状态，APP 如果被唤起的话，页面就会进入后台运行，setInterval 在 ios 中不会停止运行，在 android 中停止运行。
+
+每 20ms 执行一次，执行 100次 在页面中实际耗费与 2000 ms 不会相差多少。
+
+我们的判断条件比预期时间多设置了 500ms，所以如果安卓中 setInterval 内的函数执行 100 次以内所费时间超过 2500ms，则说明 APP 唤起成功，反之则代表失败。
+
+我们通过 document.hidden 和 document.webkitHidden 属性来判断 APP 在 ios 中是否被正常唤起，2000ms 内，页面转入后台运行，document.hidden 会返回 true，代表唤端成功，反之则代表失败。
+
+
+
+
+参考：
+
+[H5唤起APP指南 | 拾壹小筑](https://suanmei.github.io/2018/08/23/h5_call_app/)
+
+### h5怎么和app通信的
+
+JavaScript 调用 Native 的方式，主要有两种：注入 API 和 拦截 URL SCHEME。
+
+注入 API 方式的主要原理是，通过 WebView 提供的接口，向 JavaScript 的 Context（window）中注入对象或者方法，让 JavaScript 调用时，直接执行相应的 Native 代码逻辑，达到 JavaScript 调用 Native 的目的。
+
+拦截 URL SCHEME 的主要流程是：Web 端通过某种方式（例如 iframe.src）发送 URL Scheme 请求，之后 Native 拦截到请求并根据 URL SCHEME（包括所带的参数）进行相关操作。
+
+
+参考：
+
+[JSBridge的原理](https://juejin.cn/post/6844903585268891662#heading-11)
+
+
+
+
+
+
+### webview请求预加载（todo）
+
 ---
 
 ## 框架选型
@@ -680,9 +895,32 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 ## 组件库建设
 
 
+### 组件包版本是怎么维护的，3位数分别代表什么？
+
+一般是通过[语义化版本 2.0.0 | Semantic Versioning](https://semver.org/lang/zh-CN/)，这套规范来维护的。
+
+版本格式：主版本号.次版本号.修订号，版本号递增规则如下：
+
+主版本号：当你做了不兼容的 API 修改，
+
+次版本号：当你做了向下兼容的功能性新增，
+
+修订号：当你做了向下兼容的问题修正。
+
+先行版本号及版本编译元数据可以加到“主版本号.次版本号.修订号”的后面，作为延伸。
+
+
 ### 业务组件的单元测试一般需要测试什么内容？
 
+可以参考[FunnyLiu/element at readsource](https://github.com/FunnyLiu/element/tree/readsource)，也就是elementui的单元测试部分。
+
+主要通过不同的参数传递后、或者执行了组件的不同api后，组件dom是否有对应的class或text来判断流程是否正确。
+
+
+
+
 ---
+
 
 
 ## 兼容性
@@ -705,9 +943,9 @@ Polyfill 指的是用于实现浏览器并不支持的原生 API 的代码。
 
 ## 其他
 
-### SSR解决了什么问题？（todo）
+### SSR解决了什么问题？
 
-首屏时间与SEO
+首屏时间与SEO，SSR 本质上是用服务端压力换取首屏体验的提升。
 
 ### SSR会有哪些坑以及如何解决？（todo）
 
@@ -781,3 +1019,31 @@ const p = new Proxy(window,{});
 [面试必备之乐观锁与悲观锁 - 掘金](https://juejin.im/post/5b4977ae5188251b146b2fc8)
 
 [一种diff算法：Myers](http://mcll.top/2019/05/23/diff%E7%AE%97%E6%B3%95/)
+
+
+---
+
+
+## 微信相关
+
+### 了解微信小程序开发么，能说一说么，和常规的Hybrid有什么区别吗
+
+参考官方文档：[小程序简介 | 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/framework/quickstart/#%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%AE%80%E4%BB%8B)
+
+网页开发渲染线程和脚本线程是互斥的，这也是为什么长时间的脚本运行可能会导致页面失去响应，而在小程序中，二者是分开的，分别运行在不同的线程中。网页开发者可以使用到各种浏览器暴露出来的 DOM API，进行 DOM 选中和操作。而如上文所述，小程序的逻辑层和渲染层是分开的，逻辑层运行在 JSCore 中，并没有一个完整浏览器对象，因而缺少相关的DOM API和BOM API。
+
+
+### 简单描述下小程序的原理
+
+1. 微信小程序采用 JavaScript、WXML、WXSS 三种技术进行开发,本质就是一个单页面应用，所有的页面渲染和事件处理，都在一个页面内进行，但又可以通过微信客户端调用原生的各种接口
+
+2. 微信小程序的架构，是数据驱动的架构模式，它的 UI 和数据是分离的，所有的页面更新，都需要通过对数据的更改来实现
+
+3. 小程序分为两个部分 webview和 appService 。其中 webview 主要用来展现UI ，appService 有来处理业务逻辑、数据及接口调用。它们在两个进程中运行，通过系统层 JSBridge 实现通信，实现 UI 的渲染、事件的处理
+
+参考：
+
+[13. 微信小程序 - 前端高频面试题 - 尚硅谷](http://www.atguigu.com/mst/html/gp/17642.html)
+
+
+

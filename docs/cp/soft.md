@@ -30,8 +30,9 @@
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20190710190123.png"/>
 
-### 平常在哪些地方有使用到观察者或发布 / 订阅模式？（todo）
+### 平常在哪些地方有使用到观察者或发布 / 订阅模式？
 
+前端一般在事件通信和响应式数据管理的情况下会用到观察者模式，具体可以参考[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/observer/index?id=_1%e3%80%81%e4%ba%8b%e4%bb%b6%e9%80%9a%e4%bf%a1)
 
 ### 适配器模式是什么？
 

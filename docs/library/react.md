@@ -85,6 +85,8 @@ class组件经历了`React.createClass`，`React.Component`,也经历了construc
 
 参考：
 
+[Why React Hooks? - DEV Community](https://dev.to/tylermcginnis/why-react-hooks-51lj)
+
 [Why React Hooks? - YouTube](https://www.youtube.com/embed/eX_L39UvZes)
 
 

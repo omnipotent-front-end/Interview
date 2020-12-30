@@ -135,6 +135,10 @@ npm 会用此地址检查本地缓存（根目录的.npm文件存有所有的模
 
 [【Node进阶】你应该知道的NPM知识都在这！](https://mp.weixin.qq.com/s/h4uYa1BW7bUQCpt3iGqWUA)
 
+### 自己写的npm包需要调试，怎么办？
+
+一般会在需要调试的地方，通过npm link 包名来进行软连接的处理。
+
 ### npm link相关原理
 
 参考[npm link原理分析](https://github.com/FunnyLiu/cli/tree/readsource#npm-link-%E5%8E%9F%E7%90%86)，
@@ -150,6 +154,33 @@ npm link 主要做了两件事：
 以上具体逻辑在link.js中。
 
 npm unlink的本质就是 npm uninstall，没有单独文件，直接指向uninstall.js文件
+
+
+### node模块缓存是否了解？
+
+所有缓存的模块保存在require.cache之中。
+
+[有没有办法取消 node.js 对 require 模块的缓存？ - CNode技术社区](https://cnodejs.org/topic/52aa6e78a9526bff2232aaa9)
+
+### require文件时，希望文件内容变化后，下一次不需要重启应用就生效。
+
+如果是require会走到node对模块的缓存里，所以直接通过fsapi来读取文件内容，从而绕过这个缓存。
+
+### 在node里怎么实现一个单例
+
+参考：[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/singleton/index?id=node%e6%a8%a1%e5%9d%97%e4%b8%ad%e7%9a%84%e5%8d%95%e4%be%8b)
+
+利用require时会去读取module的cache这一流程，来实现了以模块出口为class实例的单例模式。
+
+``` js
+class A {
+}
+module.exports = new A();
+```
+
+
+
+
 
 ## 底层原理
 
@@ -580,6 +611,21 @@ const readFileCallback = util.callbackify(readFilePromise); // callback
 参考：
 
 [Node.js Interview](https://elemefe.github.io/node-interview/#/sections/zh-cn/module?id=%e7%83%ad%e6%9b%b4%e6%96%b0)
+
+
+### 如果你要读取一个特别大的文件应该如何做
+
+通过readline模块来完成逐行的操作，通过stream来完成大文件的分布pipe操作。因为v8默认内存大小是有上限的，所以大文件不能直接fs.readFile来读取。
+
+
+
+参考：
+
+[NodeJs-stream操作大文件 - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1588579?from=information.detail.node.js+%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8B%E8%BD%BD)
+
+
+
+### vm模块是否安全？举例几种逃逸方式？你能否封装一个安全的vm模块？（todo）
 
 
 ---

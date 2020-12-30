@@ -32,3 +32,5 @@
 [在阿里我是如何当面试官的（持续更新） - 掘金](https://juejin.im/post/5e6ebfa86fb9a07ca714d0ec#heading-10)
 
 [三年前端寒冬入大厂，收获蚂蚁、字节 offer 面经分享](https://mp.weixin.qq.com/s/CFoTRNDXHbqenmW7jFVczg)
+
+[阿里、腾讯、美团以及网易等一线互联网公司面试总结](https://mp.weixin.qq.com/s/M56GlPmqEY66tgl7_PwCGA)

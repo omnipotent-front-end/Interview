@@ -4,6 +4,29 @@
 
 ## 应用
 
+### webpack中打包文件名的hash/chunkhash/contenthask有什么区别？
+
+hash 所有文件哈希值相同； chunk hash 根据不同的入口文件(Entry)进行依赖文件解析、构建对应的 chunk，生成对应的哈希值； contenthash 计算与文件内容本身相关，主要用在css抽取css文件时。
+
+在webpack中有三种hash可以配置，分别是hash、chunk hash、contenthash他们是不对的可以针对不同的配置，首相要搞清楚这三种的hash的区别，什么场景下，适合用哪种。
+
+hash
+
+所有文件哈希值相同，只要改变内容跟之前的不一致，所有哈希值都改变，没有做到缓存意义
+
+chunk hash
+
+当有多个chunk，形成多个bundle时，如果只有一个chunk和一个bundle内容变了，其他的bundle的hash都会发生变化，因为大家都是公用的一个hash，这个时候chunk hash的作用就出来了。它根据不同的入口文件(Entry)进行依赖文件解析、构建对应的 chunk，生成对应的哈希值。
+
+contenthash
+
+在打包的时候我们会在js中导入css文件，因为他们是同一个入口文件，如果我只改了js得代码，但是他的css抽取生成css文件时候hash也会跟着变换。这个时候contenthash的作用就出来了。
+
+
+参考：
+
+[webpack中的hash、chunkhash、contenthash分别是什么](https://juejin.cn/post/6844903935812059144)
+
 ### loader和plugin有什么区别？具体举一些常用的和其作用。
 
 - loader 用于对模块的源代码进行转换。loader 可以使你在 import 或"加载"模块时**预处理文件**。因此，loader 类似于其他构建工具中“任务(task)”，并提供了处理前端构建步骤的强大方法。loader 可以将文件从不同的语言（如 TypeScript）转换为 JavaScript，或将内联图像转换为 data URL。loader 甚至允许你直接在 JavaScript 模块中 import CSS文件！ 因为 webpack 本身只能处理 JavaScript，如果要处理其他类型的文件，就需要使用 loader 进行转换，**loader 本身就是一个函数，接受源文件为参数，返回转换的结果**。
@@ -128,8 +151,7 @@ loader的执行顺序是从后往前的，而plugin是作用于webpack整个生�
 
 ### 是否写过loader？简单说明下原理？
 
-是否写过 Loader？简单描述一下编写 loader 的思路？
-------------------------------------
+
 
 Loader 支持链式调用，所以开发上需要严格遵循 “单一职责”，每个 Loader 只负责自己需要负责的事情。
 
@@ -253,3 +275,8 @@ https://www.webpackjs.com/api/plugins
 
 [Webpack揭秘——走向高阶前端的必经之路 - 腾讯Web前端 IMWeb 团队社区 | blog | 团队博客](https://imweb.io/topic/5baca58079ddc80f36592f1a)
 
+
+
+### 使用webpack tree shaking有什么限制条件(todo)
+
+1

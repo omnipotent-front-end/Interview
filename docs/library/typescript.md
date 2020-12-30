@@ -112,3 +112,9 @@ r = undefined; // Error
 参考：
 
 [ecmascript 6 - Difference between 'object' and {} in TypeScript - Stack Overflow](https://stackoverflow.com/questions/49464634/difference-between-object-and-in-typescript)
+
+
+### 有没有了解过ts-node？ts-node是ts的运行时吗？为什么？（todo）
+
+
+

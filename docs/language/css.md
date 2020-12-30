@@ -187,71 +187,47 @@ inherit 规定应该从父元素继承 display 属性的值。
 
 移除空格、使用 margin 负值、使用 font-size:0、letter-spacing、word-spacing
 
-### 浮动元素和绝对定位元素的区别和应用?(todo)
 
-### CSS 中解决浮动中高度塌陷的方案有哪些？(todo)
+### position有哪些取值？
 
-解题思路
+static,relative,absolute,sticky,fixed,initial,inherit,unset。
 
-可以先概括解决高度塌陷问题的两种类型：clear 属性 和 BFC 法
+* static 默认值。没有定位，元素出现在正常的流中
 
-然后可以介绍两种类型的具体方案：
+* relative 生成相对定位的元素，相对于其在普通流中的位置进行定位。
 
-追加元素并设置 clear 属性
+* absolute :生成绝对定位的元素， 相对于最近一级的 定位不是 static 的父元素来进行定位。
 
-使用 CSS 样式插入伪元素
+* sticky 生成粘性定位的元素，容器的位置根据正常文档流计算得出
 
-Bootstrap 的解决高度塌陷方案（BFC）
+* fixed （老IE不支持）生成绝对定位的元素，通常相对于浏览器窗口或 frame 进行定位。
 
-### 高度塌陷产生的原因是什么？(todo)
 
-### clear 属性清除浮动的原理是什么？
+### position的定位原点是什么？
 
-使用 clear 属性清除浮动，其语法如下: clear:none|left|right|both
+relative 定位的元素，是相对于元素本身的正常位置来进行定位的。
 
-如果单看字面意思，clear:left 应该是“清除左浮动”，clear:right 应该是“清除右浮动”的意思， 实际上，这种解释是有问
-题的，因为浮动一直还在，并没有清除。
+absolute 定位的元素，是相对于它的第一个 position 值不为 static 的祖先元素的 paddingbox 来进行定位的。
 
-官方对 clear 属性的解释是:“元素盒子的边不能和前面的浮动元素相邻。”，我们对元素设 置 clear 属性是为了避免浮动元素
-对该元素的影响，而不是清除掉浮动。
+这句话我们可以这样来理解，我们首先需要找到绝对定位元素的一个 position 的值不为 static 的祖 先元素，然后相对于这个祖先元素的 paddingbox 来定位，也就是说在计算定位距离的时候，padding 的值也要算进去。
 
-还需要注意的一点是 clear 属性指的是元素盒子的边不能和前面的浮动元素相邻，注意这里 “前面的”3 个字，也就是 clear 属
-性对“后面的”浮动元素是不闻不问的。考虑到 float 属性要么是 left，要么是 right，不可能同 时存在，同时由于 clear
-属性对“后面的”浮动元素不闻不问，因此，当 clear:left 有效的时候，clear:right 必定无效， 也就是此时 clear:left
-等同于设置 clear:both;同样地，clear:right 如果有效也是等同于设置 clear:both。由此可见， clear:left 和 cle
-ar:right 这两个声明就没有任何使用的价值，至少在 CSS 世界中是如此，直接使用 clear:both 吧。
-一般使用伪元素的方式清除浮动
 
-``` css
-.clear::after{
-  content:''; display:table;//也可以是'block'，或者是'list-item' clear:both;
-}
+### 浮动元素和绝对定位元素的区别和应用?
 
-```
-clear 属性只有块级元素才有效的，而::after 等伪元素默认都是内联水平，这就是借助伪元素 清除浮动影响时需要设置 disp
-lay 属性值的原因。
+虽然浮动和绝对定位都是脱离文本流，但是绝对定位是彻底脱离的，而且它不会影响其他元素的布局。而浮动是会影响的，会导致文本环绕它。
 
-### 采用 BFC 解决高度塌陷和clear 属性清除浮动相比的优势是什么？(todo)
+浮动应用场景：
 
-### CSS 中的 vertical-align 有哪些值？它在什么情况下才能生效？
+多列布局、左右自适应布局等等。
 
-vertical-align属性值：
+绝对定位应用场景：
 
-线类：baseline、top、middle、bottom
+全局居中、动画移动特效、相对间距样式如多行省略的...
 
-文本类：text-top、text-bottom
+参考：
 
-上标下标类：sub、super
+[浮动的应用场景](https://juejin.cn/post/6844904098936913928)
 
-数值百分比类：20px、2em、20%等（对于基线往上或往下偏移）
-
-vertical-align**生效前提**  ：
-
-内联元素span、strong、em、img、button、input等
-
-display值为inline、inline-block、inline-table或table-cell的元素
-
-需要注意**浮动和绝对定位**会让元素块状化，因此此元素绝对不会生效
 
 
 ### 如何理解BFC？
@@ -284,7 +260,92 @@ IFC 指的是行级格式化上下文，它有这样的一些布局规则:
 
 (3)行级上下文的高度由内部最高的内联盒子的高度决定
 
-### 了解 Flex 布局么？平常有使用 Flex 进行布局么？(todo)
+### 高度塌陷产生的原因是什么？
+
+当父元素未设置高度时，所有子元素浮动后，会造成子元素脱离文档流进而无法把父元素撑开，父元素高度为0产生高度塌陷，称为高度塌陷问题。
+
+父元素高度塌陷后，父元素以下的元素都会向上移动，导致布局混乱。
+
+参考：
+
+[高度塌陷的产生原因及解决方法_Mencre的博客-CSDN博客_高度塌陷解决方法](https://blog.csdn.net/qq_17497931/article/details/104463298)
+
+
+### CSS 中解决浮动中高度塌陷的方案有哪些？
+
+1、直接定高
+
+2、触发BFC
+
+可以通过给box添加overflow: hidden;等声明触发BFC。还有其他触发BFC的手段可以参考[如何理解bfc？](/language/css.html#%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3bfc%EF%BC%9F)
+
+3、清除浮动
+
+比如在所有浮动元素后面增加空div clear both，或者增加after伪元素来完成浮动的清除。
+
+参考：
+
+[高度塌陷的产生原因及解决方法_Mencre的博客-CSDN博客_高度塌陷解决方法](https://blog.csdn.net/qq_17497931/article/details/104463298)
+
+
+### clear 属性清除浮动的原理是什么？
+
+使用 clear 属性清除浮动，其语法如下: clear:none|left|right|both
+
+如果单看字面意思，clear:left 应该是“清除左浮动”，clear:right 应该是“清除右浮动”的意思， 实际上，这种解释是有问
+题的，因为浮动一直还在，并没有清除。
+
+官方对 clear 属性的解释是:“元素盒子的边不能和前面的浮动元素相邻。”，我们对元素设 置 clear 属性是为了避免浮动元素
+对该元素的影响，而不是清除掉浮动。
+
+还需要注意的一点是 clear 属性指的是元素盒子的边不能和前面的浮动元素相邻，注意这里 “前面的”3 个字，也就是 clear 属
+性对“后面的”浮动元素是不闻不问的。考虑到 float 属性要么是 left，要么是 right，不可能同 时存在，同时由于 clear
+属性对“后面的”浮动元素不闻不问，因此，当 clear:left 有效的时候，clear:right 必定无效， 也就是此时 clear:left
+等同于设置 clear:both;同样地，clear:right 如果有效也是等同于设置 clear:both。由此可见， clear:left 和 cle
+ar:right 这两个声明就没有任何使用的价值，至少在 CSS 世界中是如此，直接使用 clear:both 吧。
+一般使用伪元素的方式清除浮动
+
+``` css
+.clear::after{
+  content:''; display:table;//也可以是'block'，或者是'list-item' clear:both;
+}
+
+```
+clear 属性只有块级元素才有效的，而::after 等伪元素默认都是内联水平，这就是借助伪元素 清除浮动影响时需要设置 display 属性值的原因。
+
+### 采用 BFC 解决高度塌陷和clear 属性清除浮动相比的优势是什么？
+
+当子元素有定位属性时，设置 overflow: hidden; 容器以外的部分会被裁剪掉。
+
+空div clear在页面中添加无意义的div，容易造成代码冗余。
+
+伪元素方法最为灵活，不会造成代码冗余。
+
+[什么是高度塌陷？ 页面布局中高度塌陷的四种解决方法_tiankai100的专栏-CSDN博客_高度塌陷](https://blog.csdn.net/tiankai100/article/details/83054061?utm_medium=distribute.pc_relevant.none-task-blog-baidulandingword-2&spm=1001.2101.3001.4242)
+
+### CSS 中的 vertical-align 有哪些值？它在什么情况下才能生效？
+
+vertical-align属性值：
+
+线类：baseline、top、middle、bottom
+
+文本类：text-top、text-bottom
+
+上标下标类：sub、super
+
+数值百分比类：20px、2em、20%等（对于基线往上或往下偏移）
+
+vertical-align**生效前提**  ：
+
+内联元素span、strong、em、img、button、input等
+
+display值为inline、inline-block、inline-table或table-cell的元素
+
+需要注意**浮动和绝对定位**会让元素块状化，因此此元素绝对不会生效
+
+
+
+### 了解 Flex 布局么？平常有使用 Flex 进行布局么？
 
 Flex 是 FlexibleBox 的缩写，意为"弹性布局"，用来为盒状模型提供最大的灵活性。
 
@@ -323,14 +384,20 @@ align-self 属性允许单个项目有与其他项目不一样的对齐方式，
 
 
 
-### flex: 0 1 auto 表示什么意思？(todo)
+### flex: 0 1 auto 表示什么意思？
 
 flex: 0 1 auto 其实就是弹性盒子的默认值，表示 flex-grow, flex-shrink 和 flex-basis 的简写，分别表示放大比例、缩小比例、分配多余空间之前占据的主轴空间。
 
+flex-grow属性定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。如果所有项目的flex-grow属性都为 1，则它们将等分剩余空间（如果有的话）。如果一个项目的flex-grow属性为 2，其他项目都为 1，则前者占据的剩余空间将比其他项多一倍。
+
+flex-shrink属性定义了项目的缩小比例，默认为 1，即如果空间不足，该项目将缩小。如果所有项目的flex-shrink属性都为 1，当空间不足时，都将等比例缩小。如果一个项目的flex-shrink属性为 0，其他项目都为 1，则空间不足时，前者不缩小。
+
+lex-basis属性定义了在分配多余空间之前，项目占据的主轴空间（main size）。浏览器根据这个属性，计算主轴是否有多余空间。它的默认值为auto，即项目的本来大小。它可以设为跟width或height属性一样的值（比如 350px），则项目将占据固定空间。
 
 
+参考：[Flex 布局教程：语法篇 - 阮一峰的网络日志](http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html)
 
-
+ 
 
 ### grid布局了不了解，简单说下？
 
@@ -347,29 +414,6 @@ Flex 布局是轴线布局，只能指定"项目"针对轴线的位置，可以�
 ### 如果使用了flex，grid等新特性，怎么解决浏览器兼容性？
 
 通过postcss，autoprefix，browserslist来在构建的阶段通过分析语法树，自动加到前缀中。
-
-### position有哪些取值？
-
-static,relative,absolute,sticky,fixed,initial,inherit,unset。
-
-* static 默认值。没有定位，元素出现在正常的流中
-
-* relative 生成相对定位的元素，相对于其在普通流中的位置进行定位。
-
-* absolute :生成绝对定位的元素， 相对于最近一级的 定位不是 static 的父元素来进行定位。
-
-* sticky 生成粘性定位的元素，容器的位置根据正常文档流计算得出
-
-* fixed （老IE不支持）生成绝对定位的元素，通常相对于浏览器窗口或 frame 进行定位。
-
-
-### position的定位原点是什么？
-
-relative 定位的元素，是相对于元素本身的正常位置来进行定位的。
-
-absolute 定位的元素，是相对于它的第一个 position 值不为 static 的祖先元素的 paddingbox 来进行定位的。
-
-这句话我们可以这样来理解，我们首先需要找到绝对定位元素的一个 position 的值不为 static 的祖 先元素，然后相对于这个祖先元素的 paddingbox 来定位，也就是说在计算定位距离的时候，padding 的值也要算进去。
 
 
 ### 常见的元素隐藏方式?
@@ -538,11 +582,23 @@ css3新增伪类：
 [浅谈CSS伪类和伪元素及CSS3新增伪类_筱葭的博客-CSDN博客](https://blog.csdn.net/zhouziyu2011/article/details/58605705)
 
 
-### CSS 中的 background 的 background-image 属性可以和 background-color 属性一起生效么？(todo)
+### CSS 中的 background 的 background-image 属性可以和 background-color 属性一起生效么？
+
+background：color url（）；
+
+合并起来写 只有只有这样的顺序才有效，分开写也可以，不过color必须写在前面，image必须写在后面才生效。
 
 
-### background-color 属性可以覆盖 background-image 属性吗？(todo)
+参考：
 
+[background-color和background-image一起用的问题_aa2635aaa的博客-CSDN博客](https://blog.csdn.net/aa2635aaa/article/details/78652220)
+
+
+
+### background-color 属性可以覆盖 background-image 属性吗？
+
+
+当背景图片和背景色同时作用的时候，背景图片会覆盖背景色，没有覆盖到的就显示背景色
 
 ### 隐藏元素的 background-image 到底加不加载?
 
@@ -778,7 +834,38 @@ letter-spacing 作用于所有字符，但 word-spacing 仅作用于空格字符
 
 •pre-line:合并空白字符，但只在有换行符的地方换行，允许文本环绕
 
-### 了解 CSS 3 动画的硬件加速么？在重绘和重流方面有什么需要注意的点？(todo)
+### 了解 CSS 3 动画的硬件加速么？在重绘和重流方面有什么需要注意的点？
+
+1. 使用css3硬件加速，可以让transform、opacity、filters这些动画不会引起回流重绘 。
+
+2. 对于动画的其它属性，比如background-color这些，还是会引起回流重绘的，不过它还是可以提升这些动画的性能。
+
+如何使用
+
+常见的触发硬件加速的css属性：
+
+transform
+
+opacity
+
+filters
+
+Will-change
+
+当然，任何美好的东西都是会有对应的代价的，过犹不及。css3硬件加速还是有坑的:
+
+如果你为太多元素使用css3硬件加速，会导致内存占用较大，会有性能问题。
+
+在GPU渲染字体会导致抗锯齿无效。这是因为GPU和CPU的算法不同。因此如果你不在动画结束的时候关闭硬件加速，会产生字体模糊。
+
+具体原理可以参考[如何避免重排和重绘？](/cp/browser.html#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E9%87%8D%E6%8E%92%E5%92%8C%E9%87%8D%E7%BB%98%EF%BC%9F)
+
+参考：
+
+[第 22 题：介绍下重绘和回流（Repaint & Reflow），以及如何进行优化 · Issue #24 · Advanced-Frontend/Daily-Interview-Question](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/24)
+
+
+
 
 ### 如果需要手动写动画，你认为最小时间间隔是多久，为什么?
 
@@ -1164,13 +1251,25 @@ div {
 
 上面的 div 宽 100%，下面的两个 div 分别宽 50%，然后用 float 或者 inline 使其不换行即可。
 
-### 多列等高布局如何实现？（todo）
+参考：
+
+[一个满屏品字布局怎么设计？_sjinsa的博客-CSDN博客_一个满屏品字布局如何设计](https://blog.csdn.net/sjinsa/article/details/70903940)
+
+
+
+### 多列等高布局如何实现？
 
 (1)利用 padding-bottom|margin-bottom 正负值相抵，不会影响页面布局的特点。设置父 容器设置超出隐藏(overflow:hidden)，这样父容器的高度就还是它里面的列没有设定 padding-bottom 时的高度，当它里 面的任一列高度增加了，则 父容器的高度被撑到里面最高那列的高度，其他比这列矮的列会用它们的 padding-bottom 补偿这部分高度差。
 
 (2)利用 table-cell 所有单元格高度都相等的特性，来实现多列等高。
 
 (3)利用 flex 布局中项目 align-items 属性默认为 stretch，如果项目未设置高度或设为 auto， 将占满整个容器的高度的特性，来实现多列等高。
+
+参考：
+
+[常用的多列等高布局收藏](https://juejin.cn/post/6844903615182667789)
+
+
 
 
 ### CSS 如何实现三列布局，左侧和右侧固定宽度，中间自适应宽度？
@@ -1243,8 +1342,11 @@ body {
 }
 ```
 
-### 如何设计一个 4 列等宽布局，各列之间的边距是 10px（考虑浏览器的兼容性）？(todo)
+### 如何设计一个 4 列等宽布局，各列之间的边距是 10px（考虑浏览器的兼容性）？
 
+如果直接给p设置width为25%，然后设置间距，这样会使一排排不下，最后一个p会被挤到换行，所以要设置p的box-sizing为border-box，使width的值以IE盒子模型的标准解析，即width=border+padding-left+padding-right+content，然后通过设置内边距来产生间距，最后通过设置parent的左右margin为负值来抵消两侧的间距。
+
+[实现4列等分布局，每列之间有间距_DreamFJ的博客-CSDN博客](https://blog.csdn.net/DreamFJ/article/details/68922929)
 
 ### 有一个高度自适应的 div，里面有两个 div，一个高度 100px，希望另一 个填满剩下的高度
 

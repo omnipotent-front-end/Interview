@@ -168,5 +168,66 @@ koa-bodyparser依赖co-body依赖raw-body；express依赖body-parser依赖raw-bo
 
 ## 编码实现
 
-### 手写 Koa 的 compose 方法（todo）
+### 手写 Koa 的 compose 方法
+
+koa的compose源码实现参考：[FunnyLiu/compose at readsource](https://github.com/FunnyLiu/compose/tree/readsource)
+
+简单手写:
+
+``` js
+
+// 合并多个中间件
+function compose (middleware) {
+  if (!Array.isArray(middleware)) throw new TypeError('Middleware stack must be an array!')
+  for (const fn of middleware) {
+    if (typeof fn !== 'function') throw new TypeError('Middleware must be composed of functions!')
+  }
+
+  /**
+   * @param {Object} context
+   * @return {Promise}
+   * @api public
+   */
+
+  return function (context, next) {
+    // last called middleware #
+    // index闭包出去，中间件队列中需要作为标识位判断
+    let index = -1
+    return dispatch(0)
+    function dispatch (i) {
+      if (i <= index) return Promise.reject(new Error('next() called multiple times'))
+      index = i
+      // middleware是所有的中间件列表
+      let fn = middleware[i]
+      // 最后一个中间件
+      if (i === middleware.length) fn = next
+      // 没有下一个了，直接正常返回
+      if (!fn) return Promise.resolve()
+      try {
+        // 将当前函数递归传递给next的下一个next，并使i+1
+        return Promise.resolve(fn(context, dispatch.bind(null, i + 1)));
+      } catch (err) {
+        return Promise.reject(err)
+      }
+    }
+  }
+}
+```
+
+或者实现一个同步版本：
+
+``` js
+function compose(middlewares) {
+    return function() {
+        dispatch(0)
+        function dispatch(i) {
+            const fn = middlewares[i]
+            if (!fn) return
+            return fn(function next() {
+                dispatch(i + 1)
+            })
+        }
+    }
+}
+```
 

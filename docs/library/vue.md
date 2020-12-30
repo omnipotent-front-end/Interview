@@ -351,6 +351,7 @@ Vue.use 接受一个 plugin 参数，并且维护了一个 _installedPlugins 数
 
 可以看到 Vue 提供的插件注册机制很简单，每个插件都需要实现一个静态的 install 方法，当我们执行 Vue.use 注册插件的时候，就会执行这个 install 方法，并且在这个 install 方法的第一个参数我们可以拿到 Vue 对象，这样的好处就是作为插件的编写方不需要再额外去import Vue 了。
 
+
 ### Vue中的数据响应式如何实现的？
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200116113829.png"/>
@@ -545,16 +546,4 @@ vue options->{ mixins: [] }：在组件的配置对象中挂载mixins的成员�
 ## 编码
 
 ### 实现一个vue的懒加载指令（todo）
-
-
-## 聊聊 Vue 的响应式，Model 如何改变 View，View 又是如何改变 Model 的
-
-参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/34#issuecomment-519823665)
-
-此题和下题同样可参考 [一题](https://juejin.im/post/5e93e1ea51882573cb72277a#heading-7) 
-
-## Vue 的响应式原理中 Object.defineProperty 有什么缺陷？为什么在 Vue3.0 采用了 Proxy，抛弃了 Object.defineProperty？
-
-参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/90#issue-431244246)
-参考
 

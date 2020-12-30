@@ -71,6 +71,10 @@ preset就是一群plugins的集合。常见的几个可以参考[Babel | Awesome
 ## 原理
 
 
+### babel生态下有哪些包，分别在做什么？
+
+参考源码阅读系列：[FunnyLiu/babel at readsource](https://github.com/FunnyLiu/babel/tree/readsource#%E7%94%9F%E6%80%81%E5%8C%85%E4%BB%8B%E7%BB%8D)
+
 ### babel的完整工作流程
 
 Babel 的功能很纯粹，它只是一个编译器。

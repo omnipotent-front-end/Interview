@@ -568,3 +568,18 @@ HTTP参考：[https的握手过程是什么样子的？](/cp/network.html#https%
 [你应该知道的requestIdleCallback - 掘金](https://juejin.im/post/5ad71f39f265da239f07e862)
 
 
+### 如何暂停和恢复一个函数？
+
+首先了解[简单说下generator的用法？](/language/javascript.html#%E7%AE%80%E5%8D%95%E8%AF%B4%E4%B8%8Bgenerator%E7%9A%84%E7%94%A8%E6%B3%95%EF%BC%9F)
+
+然后了解[什么是协程，和线程什么关系？](/cp/os.html#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8D%8F%E7%A8%8B%EF%BC%8C%E5%92%8C%E7%BA%BF%E7%A8%8B%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F)
+
+看看generator是怎么和协程联系起来的？
+
+1、通过调用生成器函数genDemo来创建一个协程gen，创建之后，gen协程并没有立即执行。 
+
+2、要让gen协程执行，需要通过调用gen.next。 
+
+3、当协程正在执行的时候，可以通过yield关键字来暂停gen协程的执行，并返回主要信息给父协 程。 
+
+4、如果协程在执行期间，遇到了return关键字，那么JavaScript引擎会结束当前协程，并将 return后面的内容返回给父协程。

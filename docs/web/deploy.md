@@ -108,11 +108,24 @@ wormhole主要消耗性能的地方就在模板引擎渲染这部分，在并发
 
 比如用 sentry 监控异常，elk 打日志，prometheus 监控性能并用 alertmanager 报警，再写一个webhook到钉钉。
 
-### 线上出现问题时如何在应用层面监控cpu和memory的信息？（todo）
+### 线上出现问题时如何在应用层面监控cpu和memory的信息？
 
-### 如何查看一个node的服务端应用的内存和CPU（todo）
+利用各种第三方工具，参考[如何回答性能优化的问题，才能打动阿里面试官？ - 知乎](https://zhuanlan.zhihu.com/p/92910466)
 
-ps / pidstat
+
+
+### 如何查看一个node的服务端应用的内存和CPU
+
+可以参考普罗米修斯的node客户端实现：[FunnyLiu/prom-client at readsource](https://github.com/FunnyLiu/prom-client/tree/readsource#%E7%9F%A5%E8%AF%86%E7%82%B9)，基本就是运用各种node原生api来完成
+
+ps / pidstat等传统linux命令，配合node内建的process.memoryUsage返回一个对象，包含了 Node 进程的内存占用信息。该对象包含四个字段，单位是字节。主要看heapUsed：
+
+``` js
+{ rss: 130772992,  // 总内存占用
+  heapTotal: 121925632, // 堆占用的内存，包括用到的和没用到的。
+  heapUsed: 106210400, // 用到的堆的部分
+  external: 2984477 } // V8 引擎内部的 C++ 对象占用的内存。
+```
 
 ### 当服务端的内存发生了OOM问题如何排查？
 
@@ -176,3 +189,9 @@ ps / pidstat
 ### 一般如何进行压力测试
 
 简单的话用apachebench，系统性的可以考虑jmeter，用goreplay来回放线上流量。
+
+
+### 设计一个node应用远程调试方案（todo）
+
+### k8s了解吗？基于k8s，设计一个node serverless方案（todo）
+

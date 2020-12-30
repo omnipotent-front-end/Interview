@@ -1,5 +1,20 @@
 # Axios
 
+
+## axios能够用于浏览器端和node端吗？这是什么设计模式？
+
+可以的，是基于适配器模式，能使接口不兼容的对象能够相互合作。参考[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/adapter/index)。
+
+其实现：
+
+[在浏览器端如何实现的](/library/axios.html#%E5%9C%A8%E6%B5%8F%E8%A7%88%E5%99%A8%E7%AB%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84)
+
+[在nodejs端如何实现的](/library/axios.html#%E5%9C%A8nodejs%E7%AB%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84)
+
+
+
+
+
 ## 原理
 
 ### 拦截器执行顺序是怎么样的？原理是什么？
@@ -60,9 +75,6 @@ while (chain.length) {
 参考：
 
 [FunnyLiu/axios at readsource](https://github.com/FunnyLiu/axios/tree/readsource#%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9B%B8%E5%85%B3%E5%8E%9F%E7%90%86)
-
-
-## 实现
 
 ### 在浏览器端如何实现的
 
