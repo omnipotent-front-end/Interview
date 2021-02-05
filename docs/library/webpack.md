@@ -204,6 +204,16 @@ https://www.webpackjs.com/api/plugins
 *   异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
     
 
+关于tapable可以参考demo：[FunnyLiu/tapableDemo: tapableDemo](https://github.com/FunnyLiu/tapableDemo)，及其源码[FunnyLiu/tapable at readsource](https://github.com/FunnyLiu/tapable/tree/readsource)。
+
+整个tapable的插件模式是基于发布订阅模式来完成的，也就是说在整个生命周期中会触发不同的事件，而插件则对这些事件的进行监听，从而回调。
+
+
+参考：
+
+[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/observer/index?id=_2%e3%80%81%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e7%ad%89%e8%ae%be%e8%ae%a1)
+
+
 
 ---
 
@@ -277,6 +287,17 @@ https://www.webpackjs.com/api/plugins
 
 
 
-### 使用webpack tree shaking有什么限制条件(todo)
+### 使用webpack tree shaking有什么限制条件
 
-1
+1、使用 ES2015 模块语法（即 import 和 export）。
+
+2、在项目 package.json 文件中，添加一个 "sideEffects" 入口。
+
+3、引入一个能够删除未引用代码(dead code)的压缩工具(minifier)（例如 UglifyJSPlugin）
+
+至于tree shaking是什么，可以参考[模块依赖管理-import，import-from-和-require-等的区别？](/language/javascript.html#%E6%A8%A1%E5%9D%97%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86-import%EF%BC%8Cimport-from-%E5%92%8C-require-%E7%AD%89%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F)
+
+参考：
+
+[tree shaking | webpack 中文网](https://www.webpackjs.com/guides/tree-shaking/)
+

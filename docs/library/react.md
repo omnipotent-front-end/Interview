@@ -89,6 +89,114 @@ class组件经历了`React.createClass`，`React.Component`,也经历了construc
 
 [Why React Hooks? - YouTube](https://www.youtube.com/embed/eX_L39UvZes)
 
+### React中高阶组件的应用场景
+
+1、权限控制
+
+利用高阶组件的 条件渲染 特性可以对页面进行权限控制，权限控制一般分为两个维度：页面级别 和 页面元素级别。这里以页面级别来举一个栗子：
+
+``` js
+// HOC.js
+function withAdminAuth(WrappedComponent) {
+    return class extends React.Component {
+        state = {
+            isAdmin: false,
+        }
+        async componentWillMount() {
+            const currentRole = await getCurrentUserRole();
+            this.setState({
+                isAdmin: currentRole === 'Admin',
+            });
+        }
+        render() {
+            if (this.state.isAdmin) {
+                return <WrappedComponent {...this.props} />;
+            } else {
+                return (<div>您没有权限查看该页面，请联系管理员！</div>);
+            }
+        }
+    };
+}
+
+```
+
+2、组件渲染性能追踪
+
+借助父组件子组件生命周期规则捕获子组件的生命周期，可以方便的对某个组件的渲染时间进行记录：
+
+``` js
+class Home extends React.Component {
+    render() {
+        return (<h1>Hello World.</h1>);
+    }
+}
+function withTiming(WrappedComponent) {
+    return class extends WrappedComponent {
+        constructor(props) {
+            super(props);
+            this.start = 0;
+            this.end = 0;
+        }
+        componentWillMount() {
+            super.componentWillMount && super.componentWillMount();
+            this.start = Date.now();
+        }
+        componentDidMount() {
+            super.componentDidMount && super.componentDidMount();
+            this.end = Date.now();
+            console.log(`${WrappedComponent.name} 组件渲染时间为 ${this.end - this.start} ms`);
+        }
+        render() {
+            return super.render();
+        }
+    };
+}
+
+export default withTiming(Home);
+```
+
+withTiming 是利用 反向继承 实现的一个高阶组件，功能是计算被包裹组件（这里是 Home 组件）的渲染时间。
+
+3、页面复用
+
+部分公共逻辑的抽取，比如fetch：
+
+``` js
+const withFetching = fetching => WrappedComponent => {
+    return class extends React.Component {
+        state = {
+            data: [],
+        }
+        async componentWillMount() {
+            const data = await fetching();
+            this.setState({
+                data,
+            });
+        }
+        render() {
+            return <WrappedComponent data={this.state.data} {...this.props} />;
+        }
+    }
+}
+
+// pages/page-a.js
+export default withFetching(fetching('science-fiction'))(MovieList);
+// pages/page-b.js
+export default withFetching(fetching('action'))(MovieList);
+// pages/page-other.js
+export default withFetching(fetching('some-other-type'))(MovieList);
+```
+
+参考：
+
+[React 中的高阶组件及其应用场景](https://juejin.cn/post/6844903782355042312#heading-23)
+
+### 使用 React Hooks 的同时为什么需要使用高阶组件？（todo）
+
+### 完全用 Hooks 的写法是否可以摒弃高阶组件的写法？（todo）
+
+### 怎么使用 Hooks 替代高阶组件？（todo）
+
 
 ### React 中的 setState 为什么需要异步操作？（todo）
 
@@ -98,11 +206,6 @@ class组件经历了`React.createClass`，`React.Component`,也经历了construc
 
 ### React 中 setState 后想要拿到更新的state值应该怎么处理？（todo）
 
-### 使用 React Hooks 的同时为什么需要使用高阶组件？（todo）
-
-### 完全用 Hooks 的写法是否可以摒弃高阶组件的写法？（todo）
-
-### 怎么使用 Hooks 替代高阶组件？（todo）
 
 
 ### Ajax 请求放在 componentDidMount 里进行处理还是放在componentWillMount 里进行处理比较合适？（todo）

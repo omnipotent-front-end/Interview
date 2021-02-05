@@ -505,6 +505,7 @@ http 请求的解析速度。
 
 ### 无限滚动列表
 
+首先了解[如何判断dom在视窗范围内？](/language/javascript.html#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%ADdom%E5%9C%A8%E8%A7%86%E7%AA%97%E8%8C%83%E5%9B%B4%E5%86%85%EF%BC%9F)
 1.保证DOM数量不会溢出
 
 元素太多会影响页面性能，主要原因有两重：一是浏览器占用内存过多（1000张 50KB 的图片需要50MB 内存，10000张就会占用 0.5GB 内存，足以让 Chrome 崩溃）；我们认为没有必要一次性把所有的图片都加载进页面，而是监听用户对页面的操作，当滚动页面时，再显示出对应位置上的图片。
@@ -941,6 +942,21 @@ Polyfill 指的是用于实现浏览器并不支持的原生 API 的代码。
 
 ---
 
+
+## 命令行工具
+
+### 有哪些常见的用到过的命令行交互包？
+
+yargs或者commander来控制命令的注册和转发；
+
+chalk来控制字体的颜色；
+
+inquirer来控制一些选择或者提问；
+
+ora来控制一些加载等状态
+
+
+
 ## 其他
 
 ### SSR解决了什么问题？
@@ -1019,6 +1035,61 @@ const p = new Proxy(window,{});
 [面试必备之乐观锁与悲观锁 - 掘金](https://juejin.im/post/5b4977ae5188251b146b2fc8)
 
 [一种diff算法：Myers](http://mcll.top/2019/05/23/diff%E7%AE%97%E6%B3%95/)
+
+
+
+### 简单介绍下怎么实现一套前端水印系统
+
+明水印的生成方式主要可以归为两类，一种是 纯 html 元素(纯div)，另一种则为背景图（canvas/svg）。
+
+div实现的话，可以通过shadow dom来隔离和优化性能，通过mutationObserver来防止删除。
+
+canvas的实现很简单，主要是利用canvas 绘制一个水印，然后将它转化为 base64 的图片，通过canvas.toDataURL() 来拿到文件流的 url ， 然后将获取的 url 填充在一个元素的背景中，然后我们设置背景图片的属性为重复。
+
+一个业界比较好的明水印实现：[watermark-dom源码分析](https://github.com/FunnyLiu/watermark-dom/tree/readsource)
+
+明水印的破解方案为：
+
+如果没有MutationObserver，则直接删除；
+
+如果有MutationObserver，可以先通过浏览器设置disable javascript再控制台手动delete dom;
+
+或者复制一个 body 元素，然后将原来 body 元素的删除；
+
+或者直接通过charles拦截将水印相关的逻辑去除。
+
+
+暗水印是指一种肉眼不可见的水印方式，可以保持图片美观的同时，保护你的资源版权。通过微小的改动RGB，RGB 分量值的小量变动，是肉眼无法分辨的，不影响对图片的识别。
+
+配合加密解密算法来完成用户的识别。
+
+实例demo可以参考：[pageDemo/blackWater at main · FunnyLiu/pageDemo](https://github.com/FunnyLiu/pageDemo/tree/main/blackWater)
+
+
+
+
+
+参考：
+
+[从破解某设计网站谈前端水印(详细教程) - 前端开发博客 - OSCHINA - 中文开源技术交流社区](https://my.oschina.net/frontendblog/blog/4779797)
+
+[不能说的秘密——前端也能玩的图片隐写术 | AlloyTeam](http://www.alloyteam.com/2016/03/image-steganography/)
+
+
+
+
+
+### 设计一套插件系统，或者说业界的插件系统都是基于什么方案模式的？
+
+首先了解[是否写过-plugin？简单描述一下编写-plugin-的思路？](/library/webpack.html#%E6%98%AF%E5%90%A6%E5%86%99%E8%BF%87-plugin%EF%BC%9F%E7%AE%80%E5%8D%95%E6%8F%8F%E8%BF%B0%E4%B8%80%E4%B8%8B%E7%BC%96%E5%86%99-plugin-%E7%9A%84%E6%80%9D%E8%B7%AF%EF%BC%9F)，和[有没有写过babel插件，是什么模式解析的？](/library/babel.html#%E6%9C%89%E6%B2%A1%E6%9C%89%E5%86%99%E8%BF%87babel%E6%8F%92%E4%BB%B6%EF%BC%8C%E6%98%AF%E4%BB%80%E4%B9%88%E6%A8%A1%E5%BC%8F%E8%A7%A3%E6%9E%90%E7%9A%84%EF%BC%9F)，[vue-use使用插件，是如何实现的？](/library/vue.html#vue-use%E4%BD%BF%E7%94%A8%E6%8F%92%E4%BB%B6%EF%BC%8C%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84%EF%BC%9F)。
+
+webpack的基于tapable完成一套有序的可拓展的事件系统，也就是发布订阅模式；
+
+babel是基于访问者模式，来隔离对AST的直接遍历；
+
+egg是基于事件完成生命周期的通知，和通过规约拿到原型注入；
+
+vue是简单的注入原型。
 
 
 ---

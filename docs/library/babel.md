@@ -68,6 +68,66 @@ preset就是一群plugins的集合。常见的几个可以参考[Babel | Awesome
 3. Preset 配置项，按照声明**逆序执行**。
 
 
+
+### 有没有写过babel插件，是什么模式解析的？
+
+自己做过比较简单的demo：[babelDemo/easyPlugin at master · FunnyLiu/babelDemo](https://github.com/FunnyLiu/babelDemo/tree/master/easyPlugin)。
+
+``` js
+module.exports = function testPlugin(babel) {
+    return {
+      visitor: {
+        Identifier(path) {
+        // 将所有的foo改成bar
+          if (path.node.name === 'foo') {
+            path.node.name = 'bar';
+          }
+        }
+      }
+    };
+  };
+```
+
+``` js
+module.exports = function testPlugin(babel) {
+  return {
+    visitor: {
+      Identifier(path) {
+        // 将所有的bar2改成bar3
+        if (path.node.name === "bar2") {
+          path.node.name = "bar3";
+        }
+      },
+      //将==变成===
+      BinaryExpression(path) {
+        if (path.node.operator == "==") {
+          path.node.operator = "===";
+        }
+        // ...
+      },
+    },
+  };
+};
+```
+
+也做过一些特定AMD转ESM的插件。
+
+这里的visitor其实就是具体访问者。而在解析AST的过程中，babel会将每一个符合type的语法树node，交给访问者队列来处理。比如Identifier就会顺序交给上面两个插件对应的方法来处理。之所以这样就为了将算法和真正的对象隔离，从而解耦方便扩展。
+
+想象一下，Babel 有那么多插件，如果每个插件自己去遍历AST，对不同的节点进行不同的操作，维护自己的状态。这样子不仅低效，它们的逻辑分散在各处，会让整个系统变得难以理解和调试， 最后插件之间关系就纠缠不清，乱成一锅粥。
+
+
+
+
+参考：
+
+[FunnyLiu/babel at readsource](https://github.com/FunnyLiu/babel/tree/readsource#%E6%8F%92%E4%BB%B6%E7%9A%84%E5%BC%80%E5%8F%91)
+
+[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/visitor/index?id=babel%e6%8f%92%e4%bb%b6%e4%b8%ad%e5%af%b9ast%e7%9a%84%e6%93%8d%e4%bd%9c)
+
+[深入浅出 Babel 上篇：架构和原理 + 实战](https://juejin.cn/post/6844903956905197576)
+
+
 ## 原理
 
 

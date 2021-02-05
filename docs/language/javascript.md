@@ -2171,6 +2171,8 @@ querySelector();querySelectorAll();
 getAttribute(key);setAttribute(key, value);hasAttribute(key);removeAttribute(key);
 
 
+
+
 ### innerHTML 和 outerHTML的区别？
 
 对于这样一个 HTML 元素:`<div>content<br/></div>`。 
@@ -2178,6 +2180,34 @@ getAttribute(key);setAttribute(key, value);hasAttribute(key);removeAttribute(key
 innerHTML:内部 HTML，`content<br/>`; 
 
 outerHTML:外部 HTML，`<div>content<br/></div>`; 
+
+
+### 如何判断dom在视窗范围内？
+
+第一种方式是通过`　Element.getBoundingClientRect()`　拿到元素的相关位置信息后进行手动的判断，但是这种方法由于运行在　JavaScript的主进程上，所以当需要监听的元素较多时，可能会造成性能问题。
+
+第二种方式是 `Intersection Observer API` 进行注册回调实现的效果。
+
+
+
+参考：
+
+[判断元素是否在视窗之内 - 腾讯Web前端 IMWeb 团队社区 | blog | 团队博客](https://imweb.io/topic/5c7bc84ebaf81d7952094978)
+
+[Intersection Observer API - Web API 接口参考 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/Intersection_Observer_API)
+
+
+
+
+### shadow dom相比dom的优势是？
+
+shadow dom相关隔离，不能被外部js影响到，其局部样式也不会和外部发生样式污染。
+
+参考：
+
+[shadow-dom 现代javascript教程](https://zh.javascript.info/shadow-dom)
+
+
 
 
 ### escape,encodeURI,encodeURIComponent 有什么区别?
