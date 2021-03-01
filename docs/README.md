@@ -34,3 +34,5 @@
 [三年前端寒冬入大厂，收获蚂蚁、字节 offer 面经分享](https://mp.weixin.qq.com/s/CFoTRNDXHbqenmW7jFVczg)
 
 [阿里、腾讯、美团以及网易等一线互联网公司面试总结](https://mp.weixin.qq.com/s/M56GlPmqEY66tgl7_PwCGA)
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)

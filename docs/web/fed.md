@@ -447,6 +447,18 @@ socket、cookie等等
 
 [大前端面试宝典 - 图解前端](https://lucifer.ren/fe-interview/#/./topics/design/auto-update)
 
+### Websocket相比http有什么优势？
+
+客户端与服务器只需要一个TCP连接，比http长轮询使用更少的连接
+
+webSocket服务端可以推送数据到客户端
+
+更轻量的协议头，减少数据传输量
+
+参考：
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
+
 
 
 ### 请求资源的时候不要让它带 cookie 怎么做？

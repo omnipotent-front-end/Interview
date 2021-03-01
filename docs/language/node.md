@@ -78,6 +78,58 @@ Node界有一些常用的守护进程库如forever/pm2/nodemon/Egg-Cluster等。
 [forever的原理也是类似](https://github.com/foreversd/forever-monitor/blob/master/lib/forever-monitor/monitor.js#L229)
 
 
+### 创建子进程的方式有哪些？有什么区别？
+
+创建子进程的方法大致有：
+
+spawn()：启动一个子进程来执行命令
+
+exec(): 启动一个子进程来执行命令，与spawn()不同的是其接口不同，它有一个回调函数获知子进程的状况
+
+execFlie(): 启动一个子进程来执行可执行文件
+
+fork(): 与spawn()类似，不同点在于它创建Node子进程需要执行js文件
+
+spawn()与exec()、execFile()不同的是，后两者创建时可以指定timeout属性设置超时时间，一旦创建的进程超过设定的时间就会被杀死
+
+exec()与execFile()不同的是，exec()适合执行已有命令，execFile()适合执行文件。
+
+
+
+参考：
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
+
+### 请问你知道spawn在创建子进程的时候，第三个参数有一个stdio选项吗，这个选项的作用是什么，默认的值是什么。
+
+选项用于配置在父进程和子进程之间建立的管道。
+
+默认情况下，子进程的 stdin、 stdout 和 stderr 会被重定向到 ChildProcess 对象上相应的 subprocess.stdin、subprocess.stdout 和 subprocess.stderr 流。
+
+这相当于将 options.stdio 设置为 ['pipe', 'pipe', 'pipe']。
+
+
+参考：
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
+
+### 请问实现一个node子进程被杀死，然后自动重启代码的思路
+
+在创建子进程的时候就让子进程监听exit事件，如果被杀死就重新fork一下
+
+``` js
+var createWorker = function(){
+    var worker = fork(__dirname + 'worker.js')
+    worker.on('exit', function(){
+        console.log('Worker' + worker.pid + 'exited');
+        // 如果退出就创建新的worker
+        createWorker()
+    })
+}
+```
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
+
 ## npm
 
 ### npm install的流程到底是什么样子的？越具体越好
@@ -505,6 +557,18 @@ Node.js 的事件监听也可能出现的内存泄漏。例如**对同一个事�
 
 **如何排查内存泄漏**呢？和浏览器端一样，使用chromedevtools进行heapdump快照，对比。
 
+想要定位内存泄漏，通常会有两种情况：
+
+对于只要正常使用就可以重现的内存泄漏，这是很简单的情况只要在测试环境模拟就可以排查了。
+
+对于偶然的内存泄漏，一般会与特殊的输入有关系。想稳定重现这种输入是很耗时的过程。如果不能通过代码的日志定位到这个特殊的输入，那么推荐去生产环境打印内存快照了。
+
+需要注意的是，打印内存快照是很耗 CPU 的操作，可能会对线上业务造成影响。快照工具推荐使用 heapdump 用来保存内存快照，使用 devtool 来查看内存快照。
+
+使用 heapdump 保存内存快照时，只会有 Node.js 环境中的对象，不会受到干扰(如果使用 node-inspector 的话，快照中会有前端的变量干扰)。
+
+PS：安装 heapdump 在某些 Node.js 版本上可能出错，建议使用 npm install heapdump -target=Node.js 版本来安装。
+
 **如何避免内存泄漏**呢？
 
 ESLint 检测代码检查非期望的全局变量。
@@ -535,6 +599,24 @@ Buffer是一个典型的javascript与C++结合的模块，与性能有关的用C
 [Node.js Buffer(缓冲区)](https://juejin.im/post/5b5a85b4e51d45162679d20a)
 
 [认识node核心模块--从Buffer、Stream到fs](https://juejin.im/post/5a07bdfc51882531bb6c4ad0)
+
+
+### 新建Buffer会占用V8分配的内存吗？
+不会，Buffer属于堆外内存，不是V8分配的。
+
+### Buffer.alloc和Buffer.allocUnsafe的区别？
+
+Buffer.allocUnsafe创建的 Buffer 实例的底层内存是未初始化的。新创建的 Buffer 的内容是未知的，可能包含敏感数据。使用 Buffer.alloc() 可以创建以零初始化的 Buffer 实例。
+
+### Buffer的内存分配机制
+
+为了高效的使用申请来的内存，Node采用了slab分配机制。slab是一种动态的内存管理机制。Node以8kb为界限来来区分Buffer为大对象还是小对象，如果是小于8kb就是小Buffer，大于8kb就是大Buffer。
+
+例如第一次分配一个1024字节的Buffer，Buffer.alloc(1024),那么这次分配就会用到一个slab，接着如果继续Buffer.alloc(1024),那么上一次用的slab的空间还没有用完，因为总共是8kb，1024+1024 = 2048个字节，没有8kb，所以就继续用这个slab给Buffer分配空间。
+
+如果超过8bk，那么直接用C++底层地宫的SlowBuffer来给Buffer对象提供空间。
+
+
 
 ### Nodejs为什么不适合CPU密集型操作？如果遇到了，需要怎么处理呢？
 
@@ -623,6 +705,24 @@ const readFileCallback = util.callbackify(readFilePromise); // callback
 
 [NodeJs-stream操作大文件 - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1588579?from=information.detail.node.js+%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8B%E8%BD%BD)
 
+### 如何查看v8内存占用？
+
+搞懂[如何查看一个node的服务端应用的内存和cpu](/web/deploy.html#%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E4%B8%80%E4%B8%AAnode%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%BA%94%E7%94%A8%E7%9A%84%E5%86%85%E5%AD%98%E5%92%8Ccpu)
+
+使用process.memoryUsage(),返回如下
+``` json
+{
+  rss: 4935680,
+  heapTotal: 1826816,
+  heapUsed: 650472,
+  external: 49879
+}
+```
+heapTotal 和 heapUsed 代表V8的内存使用情况。 external代表V8管理的，绑定到Javascript的C++对象的内存使用情况。 rss, 驻留集大小, 是给这个进程分配了多少物理内存(占总分配内存的一部分) 这些物理内存中包含堆，栈，和代码段。
+
+参考：
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
 
 
 ### vm模块是否安全？举例几种逃逸方式？你能否封装一个安全的vm模块？（todo）

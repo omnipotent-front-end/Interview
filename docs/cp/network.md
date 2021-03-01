@@ -287,6 +287,20 @@ XMLHttpRequest 阻止
 cookie会加密，可能导致其它请求无法通过身份验证。
 
 
+### https用哪些端口？
+
+443端口用来验证服务器端和客户端的身份，比如验证证书的合法性
+
+80端口用来传输数据（在验证身份合法的情况下，用来数据传输）
+
+
+参考：
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
+
+
+
+
 
 ### get和post有什么区别？越底层越好。
 
@@ -912,4 +926,50 @@ MAC 地址可以通过软件进行修改，而第三方的山寨厂商不会在 
 [为什么 Mac 地址不需要全球唯一 - 面向信仰编程](https://draveness.me/whys-the-design-non-unique-mac-address/)
 
 
+## WebSocket
 
+### 发起webSocket的流程，能简述一下吗？
+
+首先，WebSocket连接必须由浏览器发起，因为请求协议是一个标准的HTTP请求，格式如下：
+
+```
+GET ws://localhost:3000/ws/chat HTTP/1.1
+Host: localhost
+Upgrade: websocket
+Connection: Upgrade
+Origin: http://localhost:3000
+Sec-WebSocket-Key: client-random-string
+Sec-WebSocket-Version: 13
+
+```
+
+
+该请求和普通的HTTP请求有几点不同：
+
+
+GET请求的地址不是类似/path/，而是以ws://开头的地址；
+
+请求头Upgrade: websocket和Connection: Upgrade表示这个连接将要被转换为WebSocket连接；
+
+Sec-WebSocket-Key是用于标识这个连接，并非用于加密数据；
+
+Sec-WebSocket-Version指定了WebSocket的协议版本。
+
+随后，服务器如果接受该请求，就会返回如下响应：
+
+```
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: server-random-string
+```
+
+
+该响应代码101表示本次连接的HTTP协议即将被更改，更改后的协议就是Upgrade: websocket指定的WebSocket协议。
+
+
+
+
+参考：
+
+[Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)

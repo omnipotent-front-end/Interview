@@ -127,6 +127,7 @@ ps / pidstat等传统linux命令，配合node内建的process.memoryUsage返回�
   external: 2984477 } // V8 引擎内部的 C++ 对象占用的内存。
 ```
 
+
 ### 当服务端的内存发生了OOM问题如何排查？
 
 比如看 promethues，查看监控的突然高峰，看日志那段时候发生了什么，看有没有提交代码。然后可以具体分析代码片段，通过node自建的profiling和apachebench配合[配合node内建profiling进行性能排查](https://nodejs.org/zh-cn/docs/guides/simple-profiling/)，其本质是基于[v8的profiling](https://v8.dev/docs/profile)。
