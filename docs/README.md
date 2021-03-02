@@ -36,3 +36,5 @@
 [阿里、腾讯、美团以及网易等一线互联网公司面试总结](https://mp.weixin.qq.com/s/M56GlPmqEY66tgl7_PwCGA)
 
 [Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
+
+[小伙伴新鲜出炉面试题目总结(含中大厂，已拿offer)](https://mp.weixin.qq.com/s/y-ggYwM4VUHDlCycL18C8Q)
