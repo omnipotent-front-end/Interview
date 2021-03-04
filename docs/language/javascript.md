@@ -1582,6 +1582,49 @@ promise.then((result) => {
 //{code:0}
 ```
 
+
+### 实现函数异步请求成功后就返回，失败后重试max次
+
+本质上就是重试机制
+
+``` js
+//重试函数
+function retry(fn, count = 10) {
+  return new Promise(async (resolve, reject) => {
+    //本质上就是一个计时器
+    while (count) {
+      try {
+        let res = await fn();
+        resolve(res);
+        return;
+      } catch (e) {
+        if (!count) reject(e);
+        count--;
+      }
+    }
+  });
+}
+
+let n = 10;
+function getProm() {
+    n--;
+    return new Promise((resolve, reject) => {
+        console.log(n);
+        n < 4 ? resolve(n) : reject(n)
+    });
+}
+//重试到成功为止
+retry(getProm).then(data=>console.log(`final is ${data}`));
+```
+
+当然如果是和一些基础库一起比如说axios，可以参考[axios-retry的实现](https://github.com/FunnyLiu/axios-retry/tree/readsource)。
+
+如果是要用于生产环境，建议使用p-retry，其底层是基于node-retry。
+
+参考：
+
+[第 159 题：实现 Promise.retry，成功后 resolve 结果，失败后重试，尝试超过一定次数才真正的 reject · Issue #387 · Advanced-Frontend/Daily-Interview-Question](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/387)
+
 ### 如何实现 decorator
 
 在用[nest](https://github.com/nestjs/nest)写 node 服务的时候，我们会用到很多的装饰器语法，可以参考[nestDemo](https://github.com/FunnyLiu/nestDemo/blob/master/serve-data/src/user/user.controller.ts#L51)。
