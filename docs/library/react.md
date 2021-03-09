@@ -302,6 +302,336 @@ setState 的批量更新优化也是建立在“异步”（合成事件、钩�
 
 
 
+### useCallback用过没？使用场景是？
+
+#### 1、普通情况下不需要使用
+
+比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Simple.jsx#L1)
+
+``` js
+import React, { useCallback, useState, useEffect } from "react";
+
+
+function Simple() {
+  const [val, setVal] = useState("");
+  //这种简单套个壳的意义没有，适得其反
+  const onChange = useCallback((evt) => {
+    setVal(evt.target.value);
+  }, []);
+  //普通场景下下面的方式性能更好
+//   const onChange = (evt) => {
+//     setVal(evt.target.value);
+//   };
+
+  return <input val={val} onChange={onChange} />;
+}
+
+export default Simple;
+
+```
+
+这种情况下用了反而性能更低
+
+#### 2、解决引用问题
+
+比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Effect.jsx#L1)
+
+``` js
+import React, { useCallback, useState, useMemo } from "react";
+
+function Effect() {
+  //   return <Blub />;
+  // return <Blub2 />;
+  return <Blub3 />;
+}
+let num = 0;
+
+function Foo({ bar, baz }) {
+  const options = { bar, baz };
+  //useEffect 将对每次渲染中对 options 进行引用相等性检查，并且由于JavaScript的工作方式，
+  //每次渲染 options 都是新的，所以当React测试 options 是否在渲染之间发生变化时，
+  //它将始终计算为 true，意味着每次渲染后都会调用 useEffect 回调，而不是仅在 bar 和 baz 更改时调用
+  React.useEffect(() => {
+    console.log(options);
+  }, [options]);
+  return <div>foobar</div>;
+}
+function Blub() {
+  const [val, setVal] = useState(0);
+
+  function onClick() {
+    num = num + 1;
+    //每一次Foo组件重新渲染，其子组件Child都会重新useEffect
+    setVal(num);
+    console.log(val);
+  }
+  return (
+    <div>
+      <Foo bar="bar value" baz={3} val={val} />
+      <button onClick={onClick}>click</button>
+    </div>
+  );
+}
+//有两种方式解决上面的问题
+
+// 第一种方式是
+function Foo2({ bar, baz }) {
+  React.useEffect(() => {
+    const options = { bar, baz };
+    console.log(options);
+    //但是有一种情况下：如果 bar 或者 baz 是（非原始值）对象、数组、函数等，这不是一个实际的解决方案
+  }, [bar, baz]); // we want this to re-run if bar or baz change
+  return <div>foobar</div>;
+}
+function Blub2() {
+  const [val, setVal] = useState(0);
+
+  function onClick() {
+    num = num + 1;
+    setVal(num);
+    console.log(val);
+  }
+  return (
+    <div>
+      <Foo2 bar="bar value" baz={3} val={val} />
+      {/* 但是有一种情况下：如果 bar 或者 baz 是（非原始值）对象、数组、函数等，这不是一个实际的解决方案 */}
+      {/* <Foo2 bar="bar value" baz={[3]} val={val} /> */}
+      <button onClick={onClick}>click</button>
+    </div>
+  );
+}
+
+//第二种方式就是useMemo和useCallback了
+function Foo3({ bar, baz }) {
+  React.useEffect(() => {
+    const options = { bar, baz };
+    console.log(options);
+  }, [bar, baz]); // we want this to re-run if bar or baz change
+  return <div>foobar</div>;
+}
+function Blub3() {
+  const [val, setVal] = useState(0);
+
+  function onClick() {
+    num = num + 1;
+    setVal(num);
+    console.log(val);
+  }
+
+//   const bar = () => {};
+//   const baz = [3];
+  // 通过这种方法解决引用类型的重新渲染问题
+  const bar = useCallback(() => {}, [])
+  const baz = useMemo(() => [3], [])
+  return (
+    <div>
+      {/* <Foo3 bar="bar value" baz={3} val={val} /> */}
+      {/* 故意使用引用类型 */}
+      <Foo2 bar={bar} baz={baz} val={val} />
+      <button onClick={onClick}>click</button>
+    </div>
+  );
+}
+
+export default Effect;
+
+```
+
+当使用useEffect等hooks的变化依赖是引用类型值时，即使变化的不是依赖项，也会导致重复渲染。可以通过useCallback和useMemo来解决。
+
+#### 3、配合React.memo优化不必要的渲染
+
+比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Memo.jsx#L1)
+
+``` js
+import React, { useCallback, useState, useEffect } from "react";
+
+function Memo() {
+//   return <DualCounter />;
+  return <DualCounter2 />;
+}
+
+function CountButton({ onClick, count }) {
+  console.log("render");
+  return <button onClick={onClick}>{count}</button>;
+}
+//这种情况下，每点击一个按钮，都会引起两个组件的重新渲染
+function DualCounter() {
+  const [count1, setCount1] = React.useState(0);
+  const increment1 = () => setCount1((c) => c + 1);
+
+  const [count2, setCount2] = React.useState(0);
+  const increment2 = () => setCount2((c) => c + 1);
+
+  return (
+    <>
+      <CountButton count={count1} onClick={increment1} />
+      <CountButton count={count2} onClick={increment2} />
+    </>
+  );
+}
+//React.memo和useCallback的组合下，就可以达到只渲染自己的目的
+const CountButton2 = React.memo(function CountButton({ onClick, count }) {
+    console.log('render')
+  return <button onClick={onClick}>{count}</button>;
+});
+
+function DualCounter2() {
+  const [count1, setCount1] = React.useState(0);
+  const increment1 = React.useCallback(() => setCount1((c) => c + 1), []);
+
+  const [count2, setCount2] = React.useState(0);
+  const increment2 = React.useCallback(() => setCount2((c) => c + 1), []);
+
+  return (
+    <>
+      <CountButton2 count={count1} onClick={increment1} />
+      <CountButton2 count={count2} onClick={increment2} />
+    </>
+  );
+}
+
+export default Memo;
+
+```
+
+使用两个相同组件，count变化后，两个组件都会渲染，其实我们只想渲染其中的一个，这种情况下利用React.memo和useCallback，就可以优化性能。
+
+
+参考：
+
+[【译】什么时候使用 useMemo 和 useCallback - 键落云起](https://jancat.github.io/post/2019/translation-usememo-and-usecallback/)
+
+
+### useMemo用过没？使用场景是？
+
+#### 1、惰性计算
+
+部分复杂的计算依赖项变化再执行
+
+
+
+
+``` js
+import React, { useCallback, useState, useEffect, useMemo } from "react";
+
+function UseMemo() {
+  return <WithMemo />;
+}
+
+const WithMemo = function() {
+  const [count, setCount] = useState(1);
+  const [val, setValue] = useState("");
+  const expensive = () => {
+    console.log("执行了expensive");
+    let sum = 0;
+    for (let i = 0; i < count * 100; i++) {
+      sum += i;
+    }
+    return sum;
+  };
+  const expensive2 = React.useMemo(() => {
+    // 加入此处是一段大量运算的逻辑，实现了只有依赖项count变化时才会重新触发。达 到了性能优化的目的
+    console.log("执行了expensive2");
+    let sum = 0;
+    for (let i = 0; i < count * 100; i++) {
+      sum += i;
+    }
+    return sum;
+  }, [count]);
+  return (
+    <div>
+      {" "}
+      <h4>
+        {count}-{val}-{expensive()}
+      </h4>
+      <h4>
+        {count}-{val}-{expensive2}
+      </h4>{" "}
+      <div>
+        <button onClick={() => setCount(count + 1)}>+c1</button>
+        <input
+          value={val}
+          onChange={(event) => setValue(event.target.value)}
+        />{" "}
+      </div>
+      用能性化优来用般一
+    </div>
+  );
+};
+
+export default UseMemo;
+
+```
+
+#### 2、配合React.memo优化不必要的渲染
+
+比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Memo.jsx#L1)
+
+``` js
+import React, { useCallback, useState, useEffect } from "react";
+
+function Memo() {
+//   return <DualCounter />;
+  return <DualCounter2 />;
+}
+
+function CountButton({ onClick, count }) {
+  console.log("render");
+  return <button onClick={onClick}>{count}</button>;
+}
+//这种情况下，每点击一个按钮，都会引起两个组件的重新渲染
+function DualCounter() {
+  const [count1, setCount1] = React.useState(0);
+  const increment1 = () => setCount1((c) => c + 1);
+
+  const [count2, setCount2] = React.useState(0);
+  const increment2 = () => setCount2((c) => c + 1);
+
+  return (
+    <>
+      <CountButton count={count1} onClick={increment1} />
+      <CountButton count={count2} onClick={increment2} />
+    </>
+  );
+}
+//React.memo和useCallback的组合下，就可以达到只渲染自己的目的
+const CountButton2 = React.memo(function CountButton({ onClick, count }) {
+    console.log('render')
+  return <button onClick={onClick}>{count}</button>;
+});
+
+function DualCounter2() {
+  const [count1, setCount1] = React.useState(0);
+  const increment1 = React.useCallback(() => setCount1((c) => c + 1), []);
+
+  const [count2, setCount2] = React.useState(0);
+  const increment2 = React.useCallback(() => setCount2((c) => c + 1), []);
+
+  return (
+    <>
+      <CountButton2 count={count1} onClick={increment1} />
+      <CountButton2 count={count2} onClick={increment2} />
+    </>
+  );
+}
+
+export default Memo;
+
+```
+
+使用两个相同组件，count变化后，两个组件都会渲染，其实我们只想渲染其中的一个，这种情况下利用React.memo和useCallback，就可以优化性能。
+
+
+
+
+
+参考：
+
+[理解useMemo与useCallback的使用场景_ass_ace-CSDN博客](https://blog.csdn.net/baidu_39067385/article/details/111412255)
+
+
+
 ### react可以写命令行？体验怎么样？
 
 最近有一个库[ink](https://github.com/vadimdemedes/ink)，赋予了react写命令行UI的操作。下面提供一个本人在[yoso](https://github.com/Linjovi/yoso)开发时封装的一套流程：
