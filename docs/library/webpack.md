@@ -176,6 +176,74 @@ https://www.webpackjs.com/api/loaders
     
 *   ResolveLoader
 
+参考：
+
+[Follow @gwuhaolin on GitHub](https://ghbtns.com/github-btn.html?user=gwuhaolin&type=follow&count=false&size=small)
+
+
+### loader支持异步的吗，异步loader怎么处理？
+
+loader既可以是同步的，也可以是异步的。
+
+异步 loader 需要调用 webpack 的 async() 生成一个 callback，它的第一个参数是 error，这里可设为 null，第二个参数就是处理后的源码。当你异步处理完源码后，调用 callback 即可
+
+``` js
+module.exports = function (source) {
+    const callback = this.async()
+
+    // 由于有 3 秒延迟，所以打包时需要 3+ 秒的时间
+    setTimeout(() => {
+        callback(null, `${source.replace(/;/g, '')}`)
+    }, 3000)
+}
+```
+
+参考：
+
+[实现一个 webpack loader 和 webpack plugin - SegmentFault 思否](https://segmentfault.com/a/1190000024431022)
+
+### loader是一种什么设计模式？
+
+职责链模式。参考[职责链模式应用场景](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/chain/index?id=%e5%ba%94%e7%94%a8%e5%9c%ba%e6%99%af)
+
+
+由于 Webpack 是运行在 Node.js 之上的，一个 Loader 其实就是一个 Node.js 模块，这个模块需要导出一个函数。 这个导出的函数的工作就是获得处理前的原内容，对原内容执行处理后，返回处理后的内容。
+
+一个最简单的 Loader 的源码如下：
+
+
+``` js
+module.exports = function(source) {
+  // source 为 compiler 传递给 Loader 的一个文件的原内容
+  // 该函数需要返回处理后的内容，这里简单起见，直接把原内容返回了，相当于该 Loader 没有做任何转换
+  return source;
+};
+```
+
+由于 Loader 运行在 Node.js 中，你可以调用任何 Node.js 自带的 API，或者安装第三方模块进行调用：
+
+``` js
+const sass = require('node-sass');
+module.exports = function(source) {
+  return sass(source);
+};
+```
+
+Loader 就像是一个翻译员，能把源文件经过转化后输出新的结果，并且一个文件还可以链式的经过多个翻译员翻译。
+
+以处理 SCSS 文件为例：
+
+1、SCSS 源代码会先交给 sass-loader 把 SCSS 转换成 CSS；
+
+2、把 sass-loader 输出的 CSS 交给 css-loader 处理，找出 CSS 中依赖的资源、压缩 CSS 等；
+
+3、把 css-loader 输出的 CSS 交给 style-loader 处理，转换成通过脚本加载的 JavaScript 代码；
+
+可以看出以上的处理过程需要有顺序的链式执行，先 sass-loader 再 css-loader 再 style-loader
+
+这就是职责链模式的一种体现。
+
+
 ### 是否写过 Plugin？简单描述一下编写 Plugin 的思路？
 ------------------------------------
 
@@ -214,6 +282,13 @@ https://www.webpackjs.com/api/plugins
 [design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/observer/index?id=_2%e3%80%81%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e7%ad%89%e8%ae%be%e8%ae%a1)
 
 
+### plugin中有异步请求会阻塞后面的plugin吗？
+
+webpack的插件是基于tapable的发布订阅模式，如果是在同步的hooks里去发异步请求，是不会阻塞的。
+
+而异步的hooks也是可以通过tap或者tapAsync等api的区分，来实现到底是异步并行还是异步串行的。可以参考[tapableDemo/index.js at master · FunnyLiu/tapableDemo](https://github.com/FunnyLiu/tapableDemo/blob/master/AsyncParallelHook/index.js)
+
+所以这个问题是答案是不一定的。
 
 ---
 
@@ -300,4 +375,16 @@ https://www.webpackjs.com/api/plugins
 参考：
 
 [tree shaking | webpack 中文网](https://www.webpackjs.com/guides/tree-shaking/)
+
+### 简单说下treeshaking的原理
+
+ES6 Module引入进行静态分析，故而编译的时候正确判断到底加载了那些模块，
+
+静态分析程序流，判断那些模块和变量未被使用或者引用，进而删除对应代码。
+
+至于tree shaking是什么，可以参考[模块依赖管理-import，import-from-和-require-等的区别？](/language/javascript.html#%E6%A8%A1%E5%9D%97%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86-import%EF%BC%8Cimport-from-%E5%92%8C-require-%E7%AD%89%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F)
+
+参考：
+
+[小红书面试官：介绍一下 tree shaking 及其工作原理](https://mp.weixin.qq.com/s?__biz=Mzg3MTU4NTI3OA==&mid=2247488667&idx=1&sn=dd80743749694b7c32d31524edada740&source=41#wechat_redirect)
 

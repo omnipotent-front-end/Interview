@@ -78,6 +78,20 @@ Node界有一些常用的守护进程库如forever/pm2/nodemon/Egg-Cluster等。
 [forever的原理也是类似](https://github.com/foreversd/forever-monitor/blob/master/lib/forever-monitor/monitor.js#L229)
 
 
+### 链路追踪是否了解？在node中如何实现？
+
+传统单机系统在使用过程中，如果某个请求响应过慢或是响应出错，开发人员可以清楚知道 某个请求出了问题，查看日志可以定位到具体方法。但是在分布式系统中，倘若客户端一个 请求到达服务器后，由多个服务协作完成。随着系统越来越壮大，服务越来越 多，一个请求对应处理的服务调用链越来越长，这种排查方式何其艰难。为了解决这种问 题，便诞生了各种分布式场景中追踪问题的解决方案，zipkin就是其中之一。
+
+node中接入zipkin客户端，请求会去注册到zipkin提供的中间件服务。
+
+
+
+参考：
+
+[NodeJs web项目集成调用链追踪 | 王柏元的博客 | 博学广问，自律静思](https://wangbaiyuan.cn/nodejs-web%E9%A1%B9%E7%9B%AE%E9%9B%86%E6%88%90%E8%B0%83%E7%94%A8%E9%93%BE%E8%BF%BD%E8%B8%AA.html)
+
+
+
 ### 创建子进程的方式有哪些？有什么区别？
 
 创建子进程的方法大致有：

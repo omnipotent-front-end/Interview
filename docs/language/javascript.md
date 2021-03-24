@@ -4437,6 +4437,91 @@ for (let i = 0; i < 5; i++) {
 }
 ```
 
+### 写一个简单的缓存函数
+
+最简单的一种缓存算法，设置缓存上限，当达到了缓存上限的时候，按照先进先出的策略进行淘汰，再增加进新的 k-v 。
+
+使用了一个对象作为缓存，一个数组配合着记录添加进对象时的顺序，判断是否到达上限，若到达上限取数组中的第一个元素key，对应删除对象中的键值。
+
+``` js
+/**
+ * FIFO队列算法实现缓存
+ * 需要一个对象和一个数组作为辅助
+ * 数组记录进入顺序
+ */
+class FifoCache{
+    constructor(limit){
+        this.limit = limit || 10
+        this.map = {}
+        this.keys = []
+    }
+    set(key,value){
+        let map = this.map
+        let keys = this.keys
+        if (!Object.prototype.hasOwnProperty.call(map,key)) {
+            if (keys.length === this.limit) {
+                delete map[keys.shift()]//先进先出，删除队列第一个元素
+            }
+            keys.push(key)
+        }
+        map[key] = value//无论存在与否都对map中的key赋值
+    }
+    get(key){
+        return this.map[key]
+    }
+}
+
+```
+
+
+
+### 实现一个LRU缓存函数
+
+LRU（Least recently used）算法算是最常见的缓存淘汰算法，根据数据的历史访问记录来进行淘汰数据，其核心思想是**如果数据最近被访问过，那么将来被访问的几率也更高**。
+
+这里稍微注意的是淘汰的方向，有的是淘汰数组最前的，有的是淘汰最后的。可最后的效果都差不多，这里的话我就以淘汰首位的数据来举例编写。
+
+通过Map来完成：
+
+``` js
+class Mem {
+    constructor(max = 10) {
+        this.max = max;
+        this.cache = new Map();
+    }
+
+    get(key) {
+        let item = this.cache.get(key);
+        // 如果被访问到，就重新设置到cache的最后面，防止被删除
+        // 这样map的第一个永远是访问次数最少的
+        if (item) {
+            // refresh key
+            this.cache.delete(key);
+            this.cache.set(key, item);
+        }
+        return item;
+    }
+
+    set(key, val) {
+        // refresh key
+        if (this.cache.has(key)) this.cache.delete(key);
+        // evict oldest
+        else if (this.cache.size == this.max) this.cache.delete(this.first());
+        this.cache.set(key, val);
+    }
+
+    first() {
+        //获取map中key的第一个
+        return this.cache.keys().next().value;
+    }
+}
+```
+
+参考：
+
+[JS简单实现(FIFO 、LRU、LFU)缓存淘汰算法 - 简书](https://www.jianshu.com/p/50f4ae569238)
+
+
 
 ### 函数节流
 

@@ -38,3 +38,5 @@
 [Node.js 有难度的面试题，你能答对几个？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1514668)
 
 [小伙伴新鲜出炉面试题目总结(含中大厂，已拿offer)](https://mp.weixin.qq.com/s/y-ggYwM4VUHDlCycL18C8Q)
+
+[金三银四的前端社招面经](https://juejin.cn/post/6939774328858738696#heading-6)
