@@ -1334,6 +1334,23 @@ function wrapComponent (WrappedComponent: FC) {
 }
 ```
 
+
+### 服务端路由和客户端路由在处理上有什么区别？
+
+以react-router为例，服务端路由需要用StaticRouter，客户端需要用BrowserRouter。
+
+因为服务器端渲染是一种无状态的渲染。将服务器上接收到的URL传递给StaticRouter路由用来匹配，同时支持传入context特性。当在浏览器上渲染一个`<Redirect>`时，浏览器历史记录会改变状态，同时将屏幕更新。在静态的服务器环境中，无法直接更改应用程序的状态。在这种情况下，可以在context特性中标记要渲染的结果。如果出现了context.url，就说明应用程序需要重定向。从服务器端发送一个恰当的重定向链接即可。
+
+而BrowserRouter则是通过history API来管理的客户端路由。所以a标签的都是走的SSR，而自由pushState的才会走CSR。
+
+总体来看就是在服务端通过redirect来跳转走SSR，客户端通过pushState来跳转走CSR。
+
+
+
+参考：
+
+[Disqus 评论](https://disqus.com/embed/comments/?base=default&f=testudy&t_i=%2Ftech%2F2017%2F11%2F24%2Freact-router-server-rendering&t_u=https%3A%2F%2Ftestudy.cc%2Ftech%2F2017%2F11%2F24%2Freact-router-server-rendering.html&t_e=React%20Router%201%20-%20%E6%8C%87%E5%8D%97%EF%BC%9A%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%B8%B2%E6%9F%93%EF%BC%88Server%20Rendering%EF%BC%89&t_d=React%20Router%201%20-%20%E6%8C%87%E5%8D%97%EF%BC%9A%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%B8%B2%E6%9F%93%EF%BC%88Server%20Rendering%EF%BC%89&t_t=React%20Router%201%20-%20%E6%8C%87%E5%8D%97%EF%BC%9A%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%B8%B2%E6%9F%93%EF%BC%88Server%20Rendering%EF%BC%89&s_o=default#version=a658a7c16140d8728cc859daf581cbbc)
+
 ### 如何高效稳定的部署
 
 

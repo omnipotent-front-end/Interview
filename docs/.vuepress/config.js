@@ -65,6 +65,13 @@ module.exports = {
             "/practice/iq.md",
             "/practice/person.md"
           ]
+        },
+        {
+          title: '企业',
+          children: [
+            '/company/it.md',
+            '/company/party.md'
+          ]
         }
       ]
     }
