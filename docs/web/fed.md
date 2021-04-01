@@ -730,6 +730,7 @@ background-image:
 ``` css
 border-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAECAYAAABP2FU6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5JREFUeNpiPnH8zH/G////MzAxAAHTyRNn/wMEGABpvQm9g9TJ1QAAAABJRU5ErkJggg==") 2 0 stretch;
 border-width:0px 0px 1px;
+border-style: solid;
 ```
 
 缺点：边框颜色不便修改
@@ -770,18 +771,34 @@ border-width:0px 0px 1px;
 
 ### 逻辑像素和物理像素的区别？
 
-物理像素：设备屏幕实际拥有的像素点。比如iPhone 6的屏幕在宽度方向有750个像素点，高度方向有1334个像素点，所以iPhone 6 总共有750*1334个物理像素。
+相同问题：[设备像素、css-像素、设备独立像素、dpr、ppi-之间的区别](/language/css.html#设备像素、css-像素、设备独立像素、dpr、ppi-之间的区别)
 
-逻辑像素：也叫“设备独立像素”（Device Independent Pixel, DIP），可以理解为反映在CSS/JS代码里的像素点数。
 
-设备像素比（Device Pixel Ratio, DPR）：一个设备的宽或高方向上，物理像素与逻辑像素之比，即：
+**物理像素**：设备屏幕实际拥有的像素点。
+
+> 比如iPhone 6的屏幕在宽度方向有750个像素点，高度方向有1334个像素点，所以iPhone 6 总共有750\*1334个物理像素。
+
+**逻辑像素**：也叫“设备独立像素”（Device Independent Pixel, DIP），可以理解为反映在CSS/JS代码里的像素点数。
+
+**设备像素比**（Device Pixel Ratio, DPR）：一个设备的宽或高方向上，物理像素与逻辑像素之比，即：
 
 DPR = width物理 / width逻辑 = height物理 / height逻辑。
 
 
-举个例子，iPhone 6的物理像素上面已经说了，是750*1334，那它的逻辑像素呢？我们只需在iPhone 6的Safari里打印一下screen.width和screen.height就知道了，结果是 375*667，这就是它的逻辑像素，据此很容易计算出DRP为2。当然，我们还可以直接通过window.devicePixelRatio这个值来获取DRP，打印结果是2，符合我们的预期。
+> 举个例子，iPhone 6的物理像素上面已经说了，是750\*1334，那它的逻辑像素呢？我们只需在iPhone 6的Safari里打印一下screen.width和screen.height就知道了，结果是 375\*667，这就是它的逻辑像素，据此很容易计算出DRP为2。当然，我们还可以直接通过window.devicePixelRatio这个值来获取DRP，打印结果是2，符合我们的预期。
 
+**“设计像素”**：(奇葩的iPhone 6 Plus)
 
+现象：以iPhone 6 Plus为例，它的实际物理像素点个数是1080\*1920，但如果你截个屏，你会发现截屏图片的宽高是1242\*2208；浏览器的screen对象会告诉你，6 Plus的逻辑像素是414\*736，正好是截屏宽度的三分之一，DPR值也为3。
+
+原因：iPhone 6 Plus系统定义的屏幕像素就是1242*2208，系统会自动把这些像素点塞进1080*1920个实际像素点来渲染。对于前端来说，可以直接把1242视为6 Plus的 **“物理像素”**，包括UE小姐姐们出图也是以1242为标准的，因此不妨把1242*2208称为6 Plus的 **“设计像素”**。
+
+> 苹果这是要闹那样？
+> 其实，当初苹果公司在确定6 Plus的DRP时，纠结了半天：选2吧，同样的字号在6 Plus上看起来比6更小，不好；选3吧，字又显得太大了，导致一屏能展示的内容还没有6多；最适合视觉的DRP值是2.46，但这样一个数字能把设计师和程序员们逼疯。最后就想出了引入“设计像素”这样一个两全其美的方案，既让开发者开心，又让用户爽，岂不美哉？
+
+**PPI**：每英寸拥有的物理像素的数量
+
+[一张便于理解上述名词的图](https://www.paintcodeapp.com/news/ultimate-guide-to-iphone-resolutions)
 
 参考：
 
@@ -793,8 +810,9 @@ DPR = width物理 / width逻辑 = height物理 / height逻辑。
 
 在苹果的带动下，Retina技术在移动设备上已经成了标配，所以前端攻城狮必须直面如下事实：
 
-你想画个1px的下边框，但屏幕硬是塞给你一条宽度为2—3个物理像素的线。
-你没法像安卓或iOS的同事那样直接操纵物理像素点。
+1. 你想画个1px的下边框，但屏幕硬是塞给你一条宽度为2—3个物理像素的线，看起来比较粗。
+2. 你没法像安卓或iOS的同事那样直接操纵物理像素点。
+
 这就是初级前端面试必考题之“1px边框问题”的由来。
 
 1px边框问题的解法千奇百怪，各显神通，但以我的实践经验，最推崇的方法还是利用CSS3的transform: scale，因为简单直接、适用性和兼容性好。
@@ -845,6 +863,98 @@ DPR = width物理 / width逻辑 = height物理 / height逻辑。
 (3)rem 在多屏幕尺寸适配上与当前两大平台的设计哲学不一致。即大屏的出现到底是为 了看得又大又清楚，还是为了看的更多的问
 题。
 
+### 视觉视口（visual viewport）和布局视口（layout viewport）的区别
+
+移动端出现这两个viewport的原因：
+
+移动端的viewport比桌面的viewport小，导致移动端的网页显示有问题。（桌面浏览器上viewport是严格等于浏览器的窗口）现实中很少会有网站去特别迎合移动端。所以就出现这两个viewport
+
+**visual viewport:**
+
+visual viewport是当前显示在屏幕上的页面的一部分。用户可以滚动来改变他看到的页面部分，或者缩放来改变visual viewport的大小。
+
+**layout viewport:**
+
+CSS布局，尤其是百分比宽度，是相对于layout viewport计算的，layout viewport可以比visual viewport宽得多。
+
+`<html>`元素最初采用layout viewport的宽度（不用style指定的话），而您的CSS被解释为屏幕明显比手机屏幕宽。这可以确保你的网站布局和在桌面浏览器上一样。
+
+> layout viewport有多宽?每个浏览器的情况都不一样。Safari iPhone使用980px, Opera 850px, Android WebKit 800px, IE 974px。
+
+
+**缩放**
+
+这两个viewport单位都是CSS像素。visual viewport的尺寸会随着缩放而改变，但layout viewport的尺寸保持不变。(如果改变，页面会重排，因为百分比宽度需重新计算)
+
+
+**layout viewport大小**
+
+`document.documentElement.clientWidth`和`-Height`为layout viewport的尺寸。
+`document.documentElement.offsetWidth/Height`是HTML的尺寸。
+`document.documentElement`实际上就是`<html>`元素。
+
+> 在pc端`document. documentElement. clientWidth/Height`只会给出viewport的尺寸，而不管`<html>`元素尺寸如何改变
+
+**visual viewport大小**
+
+visual viewport为`window.innerWidth/innerHeight`。当用户缩小或缩小时，测量值会发生变化，因为屏幕上的CSS像素大小不同。**不幸的是，它的兼容性没有得到很好的支持。**
+
+
+**指定layout viewport的大小**
+
+添加标签：
+```
+<!-- 1.设为设备大小 -->
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<!-- 2.确定的大小 -->
+<meta name="viewport" content="width=320">
+```
+
+*如果指定html的大小，而这个大小若小于layout viewport，会导致初始时界面上有很大一块空白。所以大小需设在layout viewport*
+
+参考
+
+[viewports剖析](https://www.w3cplus.com/css/viewports.html)
+
+[Difference between visual viewport and layout viewport?](https://stackoverflow.com/questions/6333927/difference-between-visual-viewport-and-layout-viewport)
+
+[A tale of two viewports — part two](https://www.quirksmode.org/mobile/viewports2.html)
+
+
+### Flexible方案
+
+* 使用一款 postcss 插件[postcss-pxtorem](https://github.com/cuth/postcss-pxtorem)将px单位转化为rem（依据配置的rootValue）
+* 用[lib-flexible](https://github.com/amfe/lib-flexible) 判断设备设置 rem 基准值，做的事如下：
+  * 动态改写`<meta>`标签
+  * 给`<html>`元素添加data-dpr属性，并且动态改写data-dpr的值
+  * 给`<html>`元素添加font-size属性，并且动态改写font-size的值
+
+> 将视觉稿宽度分为100份（主要为了以后能更好的兼容vh和vw），总宽为100a=10rem。375px的视觉稿就设置rootValue为37.5px（即1rem的大小）
+
+参考
+[使用Flexible实现手淘H5页面的终端适配](https://github.com/amfe/article/issues/17)
+
+[vue-h5-template](https://github.com/sunniejs/vue-h5-template)
+
+[Rem 布局适配配置](https://youzan.github.io/vant/#/zh-CN/advanced-usage#rem-bu-ju-gua-pei)
+
+rem方案的配置[如这次提交](https://github.com/codeless-js/vue-h5-flexible/commit/299ce65c1e6bbc4e2beeab67c4f8f9ff4da4202e)
+
+### viewport方案
+
+
+使用一款 PostCSS 插件[postcss-px-to-viewport](https://github.com/evrone/postcss-px-to-viewport)将 px 单位转化为 vw/vh 单位。（依据配置的viewportWidth）
+
+
+参考
+
+[再聊移动端页面的适配](https://www.w3cplus.com/css/vw-for-layout.html)
+
+[如何在Vue项目中使用vw实现移动端适配](https://www.w3cplus.com/mobile/vw-layout-in-vue.html)
+
+[Viewport布局配置](https://youzan.github.io/vant/#/zh-CN/advanced-usage#viewport-bu-ju)
+
+viewport方案的配置[如这次提交](https://github.com/codeless-js/vue-h5-viewport/commit/60e6fc985e193e41625559a7fe61c7edb12c486c)
 
 
 ### 移动web为什么有300ms延迟，怎么解决？
