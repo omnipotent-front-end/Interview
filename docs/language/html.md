@@ -200,6 +200,14 @@ js监听后设置为视口宽高
 
 (3)async 属性表示异步执行引入的 JavaScript，与 defer 的区别在于，如果已经加载好，就会开始执行，也就是说它的执行仍然会阻塞文档的解析，只是它的加载过程不会阻塞。多个脚本的执行顺序无法保证。
 
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210331104833.png"/>
+
+### script的async属性使用场景是？
+
+不依赖dom的各个独立sdk适合async。因为他下载了就执行，其如果和dom有关会阻塞文档的解析。
+
+
+
 ### style 标签写在 body 后与 body 前有什么区别?
 
 页面加载自上而下当然是先加载样式。写在 body 标签后由于浏览器以逐行方式对 HTML 文 档进行解析，当解析到写在尾部的样式

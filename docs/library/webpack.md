@@ -290,6 +290,49 @@ webpack的插件是基于tapable的发布订阅模式，如果是在同步的hoo
 
 所以这个问题是答案是不一定的。
 
+
+### tapable中的异步串行事件，通过tap注册会阻塞吗？
+
+不会的，没有做额外的处理。所以是并行的。
+
+
+### tapable中的异步串行事件，通过tapAsync注册为什么会阻塞？
+
+用的时候需要通过callback来确定完成，比如：
+
+``` js
+let queue2 = new AsyncParallelHook(['name']);
+console.time('cost1');
+//一步步阻塞
+queue2.tapAsync('1', function (name, cb) {
+    setTimeout(() => {
+        console.log(name, 1);
+        cb();
+    }, 1000);
+});
+queue2.tapAsync('2', function (name, cb) {
+    setTimeout(() => {
+        console.log(name, 2);
+        cb();
+    }, 2000);
+});
+queue2.tapAsync('3', function (name, cb) {
+    setTimeout(() => {
+        console.log(name, 3);
+        cb();
+    }, 3000);
+});
+
+queue2.callAsync('webpack', () => {
+    console.log('over');
+    console.timeEnd('cost1');
+});
+```
+
+只有执行了cb才会进行队列中下一个任务。本质上还是个队列。
+
+
+
 ---
 
 ## 原理

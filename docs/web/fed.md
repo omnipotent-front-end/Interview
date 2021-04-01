@@ -1677,6 +1677,11 @@ egg是基于事件完成生命周期的通知，和通过规约拿到原型注�
 vue是简单的注入原型。
 
 
+### 自建图标库怎么建设的，原理是什么？（todo）
+
+
+
+
 ---
 
 
@@ -1933,3 +1938,78 @@ SDK根据DOM拿到组件的key及版本。如果有版本指定，就直接从cr
 #### nest方案
 
 nest天然支持了module，所以相对会简单，后端暴露独立的module，进行组装即可。
+
+
+---
+
+
+## 打包工具
+
+### vite、snowpack这类bundleless的打包工具是否了解？
+
+bundleless的理念是减少或避免整个 bundle 的打包，每次保存单个文件时，传统的 JavaScript 构建工具（例如 Webpack 和 Parcel）都需要重新构建和重新打包应用程序的整个 bundle。重新打包时增加了在保存更改和看到更改反映在浏览器之间的时间间隔。在开发过程中， Snowpack 为你的应用程序提供 unbundled server。每个文件只需要构建一次，就可以永久缓存。文件更改时，Snowpack 会重新构建该单个文件。在重新构建每次变更时没有任何的时间浪费，只需要在浏览器中进行 HMR 更新。
+
+vite自己提出相比snowpack的优势是：
+
+
+1.  Snowpack 的 build 默认是不打包的，好处是可以灵活选择 Rollup、Webpack 等打包工具，坏处就是不同打包工具带来了不同的体验，当前 ESbuild 作为生产环境打包尚不稳定，Rollup 也没有官方支持 Snowpack，不同的工具会产生不同的配置文件；
+
+2.  Vite 支持多 page 打包；
+
+3.  Vite 支持 Library Mode；
+
+4.  Vite 支持 CSS 代码拆分，Snowpack 默认是 CSS in JS；
+
+5.  Vite 优化了异步代码加载；
+
+6.  Vite 支持动态引入 polyfill；
+
+7.  Vite 官方的 legacy mode plugin，可以同时生成 ESM 和 NO ESM；
+
+8.  First Class Vue Support。
+
+综合对比：
+
+
+#### Snowpack
+
+缺点：
+
+1.  社区不够完善，无法支撑我们后续的业务演进；
+2.  编译速度提效不明显。
+
+#### Vite
+
+优点：
+
+1.  因其与 rollup 联合，社区里 rolllup 的插件基本都可以直接使用，社区相对完善；
+2.  编译速度快。
+
+缺点：
+
+1.  目前 Vite 处于 2.0 初期，BUG 比较多；
+2.  本地的 ESbuild 与生产环境的 babel 编译结果差距较大，可能会导致功能差异。
+
+#### Webpack5
+
+优点：
+
+1.  从实际测试要比 Webpack4 快许多；
+2.  可借助 ESbuild 的代码压缩机制。
+
+缺点：
+
+1.  相较 Vite 的本地开发编译速度有写不足（其实算不上缺点，因为解决了生产环境差异）。
+
+
+参考：
+
+[深度分析前端构建工具：Vite2 v.s Snowpack3 v.s. Webpack5 - SegmentFault 思否](https://segmentfault.com/a/1190000039370642)
+
+### bundleless构建时间为什么不随着项目规模增长而增长？
+
+
+bundleless方案的不会立即编译。
+
+而是，在你访问一个js的时候才去编译它。
+
