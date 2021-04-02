@@ -407,7 +407,7 @@ queue2.callAsync('webpack', () => {
 
 ### 使用webpack tree shaking有什么限制条件
 
-1、使用 ES2015 模块语法（即 import 和 export）。
+1、使用 ES2015 模块语法（即 import 和 export），注意不要export default 和直接import所有。
 
 2、在项目 package.json 文件中，添加一个 "sideEffects" 入口。
 

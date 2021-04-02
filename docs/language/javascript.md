@@ -2722,6 +2722,66 @@ js 中现在比较成熟的有四种模块加载方案。
 
 第四种方案是 ES6 提出的方案，使用 import 和 export 的形式来导入导出模块。这种方案 和上面三种方案都不同。
 
+
+### esmodule的怎么工作的？
+
+通过script标签，type为module时，以esm加载js文件。
+
+浏览器静态分析，编译时用AST找到import和export，构成依赖图，导出变量保存在依赖图中，内存是引用，实时更新（在不是export default的情况下）。
+
+### commonjs是怎么工作的？
+
+node运行时构成依赖图，每个模块是闭包，依赖图中保存的是快照，也就是拷贝的一份，不会实时更新。
+
+### esmodule和commonjs引用和拷贝的区别是指？
+
+
+以commonjs为例：
+
+``` js
+let b = 1;
+exports.a = b;
+
+setTimeout(() => b = 3, 3000);
+
+```
+
+``` js
+const value = require('./d').a;
+setTimeout(() => {
+  console.log(value);
+}, 4000);
+
+```
+
+输出的结果是1，因为被引入的d只是真正的d的闭包快照。
+
+而esmodule中：
+
+``` js
+export let b = 1;
+
+
+setTimeout(() => b = 3, 3000);
+//如果是export default 导出整个对象，就不能精细化实时同步了
+```
+
+
+``` js
+import {b} from "./d1.mjs";
+setTimeout(() => {
+  console.log(b);//3
+}, 5000);
+
+```
+
+输出结果是3，也就是说引用的b生效了。
+
+需要注意的是export default的情况下是不能正常更新的，因为export default是导出整个对象，引入的时候就是引入所有，不能精细化区分。
+
+
+
+
 ### 模块依赖管理 import，import from 和 require 等的区别？
 
 首先 import 和 export 是 ES module 的标准语法。
@@ -2761,8 +2821,46 @@ CommonJS 加载的是一个对象（即 module.exports 属性），该对象只�
 [require() 源码解读 - 阮一峰的网络日志](http://www.ruanyifeng.com/blog/2015/05/require.html)
 
 
-### 为什么es6不使用nodejs的require()而发明了import/export语法（todo）
+### AMD和esmodule的区别？
 
+AMD和esmodule很相似，只不过esm是语法层面支持，可以在静态分析阶段构建依赖图，而AMD不行，需要在运行时。
+
+对于AMD，从加载到执行过程是：
+
+```
+main加载
+main解析
+main执行 - 1
+dep1加载
+dep2加载
+dep1解析
+dep1执行
+dep2解析
+dep2执行
+main执行 - 2
+```
+
+对于esm，过程是：
+
+```
+main加载
+main解析
+dep1加载
+dep2加载
+dep1解析
+dep2解析
+main执行
+```
+
+
+其中的main执行 - 1和dep执行都是类似Nej.define这样的模块加载器逻辑。所以会相对慢一点。
+
+
+
+
+### 为什么es6不使用nodejs的require()而发明了import/export语法
+
+前面的问题已经提到了esm是编译时解析，所以效率会更快。再者就是可以精确动态的定位依赖关系，所以可以treeshaking。
 
 
 ### 在同一段代码中，ES6是如何做到既要支持变量提升的特性，又要支持块级作用域的呢？

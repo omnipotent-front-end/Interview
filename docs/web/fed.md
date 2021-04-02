@@ -940,7 +940,18 @@ visual viewport为`window.innerWidth/innerHeight`。当用户缩小或缩小时�
 
 rem方案的配置[如这次提交](https://github.com/codeless-js/vue-h5-flexible/commit/299ce65c1e6bbc4e2beeab67c4f8f9ff4da4202e)
 
-### viewport方案
+### 使用vm方案怎么做移动端适配？
+
+vw：是Viewport's width的简写,1vw等于window.innerWidth的1%
+
+vh：和vw类似，是Viewport's height的简写，1vh等于window.innerHeihgt的1%
+
+vmin：vmin的值是当前vw和vh中较小的值
+
+vmax：vmax的值是当前vw和vh中较大的值
+
+如果设计稿用750px宽度的，100vw = 750px，即1vw = 7.5px。那么我们可以根据设计图上的px值直接转换成对应的vw值。
+
 
 
 使用一款 PostCSS 插件[postcss-px-to-viewport](https://github.com/evrone/postcss-px-to-viewport)将 px 单位转化为 vw/vh 单位。（依据配置的viewportWidth）
@@ -948,9 +959,7 @@ rem方案的配置[如这次提交](https://github.com/codeless-js/vue-h5-flexib
 
 参考
 
-[再聊移动端页面的适配](https://www.w3cplus.com/css/vw-for-layout.html)
-
-[如何在Vue项目中使用vw实现移动端适配](https://www.w3cplus.com/mobile/vw-layout-in-vue.html)
+[使用viewport中的vm来适配移动端页面 - 简书](https://www.jianshu.com/p/35e81bb5c997)
 
 [Viewport布局配置](https://youzan.github.io/vant/#/zh-CN/advanced-usage#viewport-bu-ju)
 
@@ -2123,3 +2132,112 @@ bundleless方案的不会立即编译。
 
 而是，在你访问一个js的时候才去编译它。
 
+bundleless的方案均是依赖esmodule来完成的，esmodule的特性参考[esmodule的怎么工作的？](/language/javascript.html#esmodule%E7%9A%84%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84%EF%BC%9F)，其实esm和amd非常接近可以参考[amd和esmodule的区别？](/language/javascript.html#amd%E5%92%8Cesmodule%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F)。
+
+只不过esm是语法层面支持，可以在静态分析阶段构建依赖图，而AMD不行，需要在运行时。所以esm更快一些。
+
+## 播放器相关
+
+
+### 有哪些常见的视频格式？
+
+MP4、AVI、FLV、TS/M3U8、WebM、OGV、MOV...
+
+### 有哪些常见的视频编码格式？
+
+<table width="741"><tbody><tr><td rowspan="1" colspan="1"><strong>H.264</strong></td><td rowspan="1" colspan="1">目前最流行的编码格式。</td></tr><tr><td rowspan="1" colspan="1"><strong>H.265</strong></td><td rowspan="1" colspan="1">新型的编码格式，高效的视频编码。用来以替代 H.264/AVC 编码标准。</td></tr><tr><td><p data-lake-id="1aab75131137596dc340353283361716"><strong>VP9</strong></p></td><td rowspan="1" colspan="1">VP9 是 WebM Project 开发的下一代视频编码格式 。VP9 支持从低比特率压缩到高质量超高清的所有 Web 和移动用例，并额外支持 10/12 位编码和 HDR</td></tr><tr><td rowspan="1" colspan="1"><strong>AV1</strong></td><td rowspan="1" colspan="1">AOM（Alliance for Open Media，开放媒体联盟）制定的一个开源、免版权费的视频编码格式。AV1 是 google 制定的 VP9 标准的继任者，也是 H265 强有力的竞争者。</td></tr></tbody></table>
+
+### 各种流格式，以及他们的特点是什么
+
+每一个你在网络上观看的视频或音频媒体都是依靠特定的网络协议进行数据传输，基本分布在会话层（Session Layer）、表示层（Presentation Layer）、应用层（Application Layer）。
+
+常用协议：RTMP、RTP/RTCP/RTSP、HTTP-FLV、HLS、DASH。各个协议都有自己优势与劣势。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210402102758.png"/>
+
+
+接下来对每一个进行详细介绍：
+
+#### FLV
+
+FLV 是 FLASH Video 的简称，FLV 流媒体格式是随着 Flash MX 的推出发展而来的视频格式。
+
+在浏览器中 HTML5 的 `<video>` 是不支持直接播放 FLV 视频格式，需要借助 flv.js 这个开源库来实现播放 FLV 视频格式的功能。flv.js 是用纯 JavaScript 编写的 HTML5 Flash Video（FLV）播放器，它底层依赖于 Media Source Extensions。在实际运行过程中，它会自动解析 FLV 格式文件并喂给原生 HTML5 Video 标签播放音视频数据，使浏览器在不借助 Flash 的情况下播放 FLV 成为可能。
+
+
+#### HLS
+
+HLS（HTTP Live Streaming全称）是一个基于HTTP的视频流协议，由Apple公司实现，Mac OS上的QuickTime、Safari 以及iOS上的 Safari都能很好的支持 HLS，高版本 Android 也增加了对 HLS 的支持。其工作原理是服务端把整个流切分成一片片小的媒体流片段，客户端通过下载一个包含源数据的extended M3U（m3u8）playlist文件用于寻找可用的媒体流，随后开始下载格式为MPEG-TS的媒体片段。
+
+一些常见的客户端如：MPlayerX、VLC 也都支持HLS协议，如果需要在chrome上播放，需要使用[hls.js](https://github.com/video-dev/hls.js/)或者[http-streaming](https://github.com/videojs/http-streaming)
+
+#### RTMP
+
+Real Time Messaging Protocol（简称 RTMP）是 Macromedia 开发的一套视频直播协议，现在属于 Adobe。这套方案需要搭建专门的 RTMP 流媒体服务如 Adobe Media Server，并且在浏览器中只能使用 Flash 实现播放器。它的实时性非常好，延迟很小，但无法支持移动端 WEB 播放是它的硬伤。
+
+浏览器端，HTML5 video标签无法播放 RTMP 协议的视频，可以通过 video.js 来实现。
+
+#### DASH
+
+「基于 HTTP 的动态自适应流（英语：Dynamic Adaptive Streaming over HTTP，缩写 DASH，也称 MPEG-DASH）是一种自适应比特率流技术，使高质量流媒体可以通过传统的 HTTP 网络服务器以互联网传递。」 类似苹果公司的 HTTP Live Streaming（HLS）方案，MPEG-DASH 会将内容分解成一系列小型的基于 HTTP 的文件片段，每个片段包含很短长度的可播放内容，而内容总长度可能长达数小时。
+
+不同于 HLS、HDS 和 Smooth Streaming，DASH 不关心编解码器，因此它可以接受任何编码格式编码的内容，如 H.265、H.264、VP9 等。
+
+虽然 HTML5 不直接支持 MPEG-DASH，但是已有一些 MPEG-DASH 的 JavaScript 实现允许在网页浏览器中通过 HTML5 Media Source Extensions（MSE）使用 MPEG-DASH。另有其他 JavaScript 实现，如 bitdash 播放器支持使用 HTML5 加密媒体扩展播放有 DRM 的MPEG-DASH。当与 WebGL 结合使用，MPEG-DASH 基于 HTML5 的自适应比特率流还可实现 360° 视频的实时和按需的高效流式传输。
+
+
+B站就是使用的这种视频格式：https://juejin.im/post/6844903968284360717
+
+
+
+
+
+
+
+
+参考：
+
+[一张图概括淘宝直播背后的前端技术 | 赠送多媒体前端手册](https://mp.weixin.qq.com/s/oDuwbncq9B1wC0wmp83zpQ)
+
+
+### MSE是什么？如何使用MSE
+
+媒体源扩展 API（MSE） 提供了实现无插件且基于 Web 的流媒体的功能。使用 MSE，媒体串流能够通过 JavaScript 创建，并且能通过使用 `<audio>` 和 `<video>` 元素进行播放。
+
+MSE 使我们可以**把通常的单个媒体文件的 src 值替换成引用 MediaSource 对象（一个包含即将播放的媒体文件的准备状态等信息的容器），以及引用多个 SourceBuffer 对象（代表多个组成整个串流的不同媒体块）的元素**。MSE 让我们能够根据内容获取的大小和频率，或是内存占用详情（例如什么时候缓存被回收），进行更加精准地控制。 它是基于它可扩展的 API 建立自适应比特率流客户端（例如DASH 或 HLS 的客户端）的基础。
+
+flv.js/hls.js/底层均基于此API完成对流媒体的兼容。
+
+
+
+参考：
+
+[Media Source Extensions API - Web API 接口参考 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/Media_Source_Extensions_API)
+
+
+### 防盗链怎么做？
+
+打个比方，引用一个视频mp4文件，直接在浏览器中打开却不起效果，必须挂着study.163.com域下才能成功。这就是防盗链。
+
+原理：
+
+http请求头部有一个表头字段叫referer，采用URL的格式来表示从哪儿链接到当前的网页或文件。
+
+在服务器上设置白名单即可。
+
+
+
+
+### web视频怎么加密（todo）
+
+### 设计一个播放器框架（todo）
+
+
+
+### 有哪些常见的音频格式
+
+音频格式也比较常见：WAV、AIFF、AMR、MP3、Ogg...
+
+### 有哪些场景的音频编码格式
+
+<table width="741"><tbody><tr><td rowspan="1" colspan="1"><strong>PCM</strong></td><td rowspan="1" colspan="1">脉冲编码调制 (Pulse Code Modulation,PCM)，PCM 是数字通信的编码方式之一。</td></tr><tr><td rowspan="1" colspan="1"><strong>AAC-LC(MPEG AAC Low Complexity)</strong></td><td rowspan="1" colspan="1">低复杂度编码解码器（AAC-LC — 低复杂度高级音频编码）是低比特率、优质音频 的高性能音频编码解码器。</td></tr><tr><td rowspan="1" colspan="1"><strong>AAC-LD</strong></td><td rowspan="1" colspan="1">（又名 AAC 低延迟或 MPEG-4 低延迟音频编码器），为电话会议和 OTT 服务量身打造的低延迟音频编解码器</td></tr><tr><td rowspan="1" colspan="1"><strong>LAC（Free Lossless Audio Codec）</strong></td><td rowspan="1" colspan="1">免费无损音频编解码器。是一套著名的自由音频压缩编码，其特点是无损压缩。2012 年以来它已被很多软件及硬件音频产品（如 CD 等）所支持。</td></tr></tbody></table>
