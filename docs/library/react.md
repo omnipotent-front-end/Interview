@@ -134,6 +134,45 @@ react 17之后componentWillMount会被废弃,仅仅保留UNSAFE_componentWillMou
 
 [2019年17道高频React面试题及详解](https://juejin.cn/post/6844903922453200904#heading-3)
 
+
+### 函数组件和类组件有什么区别？
+
+
+
+class组件特点：
+
+有组件实例
+
+有生命周期
+
+有 state 和 setState
+
+函数组件特点：
+
+没有组件实例
+
+没有生命周期
+
+没有 state 和 setState，只能接收 props
+
+函数组件是一个纯函数，执行完即销毁，无法存储 state
+
+class 组件存在的问题：
+
+大型组件很难拆分和重构，变得难以测试
+
+相同业务逻辑分散到各个方法中，可能会变得混乱
+
+复用逻辑可能变得复杂，如 HOC 、Render Props
+
+React 中更提倡函数式编程，因为函数更灵活，更易拆分，但函数组件太简单，所以出现了hook，hook就是用来增强函数组件功能的。
+
+参考：
+
+[React 函数组件和class组件区别 - 知乎](https://zhuanlan.zhihu.com/p/339547131)
+
+
+
 ### 为什么要使用Hooks，解决了class什么问题？
 
 class组件经历了`React.createClass`，`React.Component`,也经历了constructor的super，bind this到class filed的坑。
@@ -258,8 +297,126 @@ export default withFetching(fetching('some-other-type'))(MovieList);
 ### 怎么使用 Hooks 替代高阶组件？（todo）
 
 
+
+### useEffect对标哪些生命周期？
+
+你可以把 useEffect Hook 看做 componentDidMount，componentDidUpdate 和 componentWillUnmount 这三个函数的组合。
+
+具体的对应表可以参考：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210510111644.png"/>
+
+具体的实例：
+
+``` js
+
+import React, { useState, useEffect, useRef, memo } from 'react';
+
+// 使用 React.memo 实现类似 shouldComponentUpdate 的优化， React.memo 只对 props 进行浅比较
+const UseEffectExample = memo((props) => {
+    console.log("===== UseStateExample render=======");
+    // 声明一个叫 “count” 的 state 变量。
+    const [count, setCount] = useState(0);
+    const [count2, setCount2] = useState(0);
+    const [fatherCount, setFatherCount] = useState(props.fatherCount)
+
+    console.log(props);
+
+    // 模拟 getDerivedStateFromProps
+    useEffect(() => {
+        // props.fatherCount 有更新，才执行对应的修改，没有更新执行另外的逻辑
+        if(props.fatherCount == fatherCount ){
+            console.log("======= 模拟 getDerivedStateFromProps=======");
+            console.log(props.fatherCount, fatherCount);
+        }else{
+            setFatherCount(props.fatherCount);
+            console.log(props.fatherCount, fatherCount);
+        }
+    })
+
+    // 模拟DidMount
+    useEffect(() => {
+        console.log("=======只渲染一次(相当于DidMount)=======");
+        console.log(count);
+    }, [])
+
+    // 模拟DidUpdate
+    const mounted = useRef();
+    useEffect(() => {
+        console.log(mounted);
+        if (!mounted.current) {
+            mounted.current = true;
+          } else {
+            console.log("======count 改变时才执行(相当于DidUpdate)=========");
+            console.log(count);
+          }
+    }, [count])
+
+    // 模拟 Didmount和DidUpdate 、 unmount
+    useEffect(() => {
+    	// 在 componentDidMount，以及 count 更改时 componentDidUpdate 执行的内容
+        console.log("======初始化、或者 count 改变时才执行(相当于Didmount和DidUpdate)=========");
+        console.log(count);
+        return () => {
+        	
+            console.log("====unmount=======");
+            console.log(count);
+        }
+    }, [count])
+
+    return (
+        <div>
+            <p>You clicked {count} times</p>
+            <button onClick={() => setCount(count + 1)}>
+                Click me
+            </button>
+
+            <button onClick={() => setCount2(count2 + 1)}>
+                Click me2
+            </button>
+        </div>
+    );
+});
+
+export default UseEffectExample;
+
+```
+
+参考：
+
+[使用 Effect Hook – React](https://zh-hans.reactjs.org/docs/hooks-effect.html)
+
+[React Hooks 介绍及与传统 class 组件的生命周期函数对比_诗渊的博客-CSDN博客](https://blog.csdn.net/u014607184/article/details/109744910)
+
+### React合成事件和原生事件的区别是？
+
+React事件绑定时，发现React绑定时间有其自身的一套机制，那就是合成事件。
+
+``` js
+<div className="testDom" onClick={this.testDomClick()}><div>
+```
+
+React合成事件一套机制：React并不是将click事件直接绑定在dom上面，而是采用事件冒泡的形式冒泡到document上面，然后React将事件封装给正式的函数处理运行和处理。
+
+React合成事件理解
+
+如果DOM上绑定了过多的事件处理函数，整个页面响应以及内存占用可能都会受到影响。React为了避免这类DOM事件滥用，同时屏蔽底层不同浏览器之间的事件系统差异，实现了一个中间层——SyntheticEvent。
+
+
+当用户在为onClick添加函数时，React并没有将Click时间绑定在DOM上面。
+而是在document处监听所有支持的事件，当事件发生并冒泡至document处时，React将事件内容封装交给中间层SyntheticEvent（负责所有事件合成）
+所以当事件触发的时候，对使用统一的分发函数dispatchEvent将指定函数执行。
+
+
+
+参考：
+
+[React 合成事件和原生事件的区别 - 简书](https://www.jianshu.com/p/8d8f9aa4b033)
+
+
 ### React 中的 setState 是同步还是异步？
 
+首先搞懂[react合成事件和原生事件的区别是？](/library/react.html#react%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E5%92%8C%E5%8E%9F%E7%94%9F%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%EF%BC%9F)
 
 setState只在合成事件和钩子函数中是“异步”的，在原生事件和setTimeout 中都是同步的。
 
@@ -271,14 +428,160 @@ setState 的批量更新优化也是建立在“异步”（合成事件、钩�
 
 [2019年17道高频React面试题及详解](https://juejin.cn/post/6844903922453200904#heading-3)
 
-### React 中 setState 后想要拿到更新的state值应该怎么处理？（todo）
+### React 中 setState 后想要拿到更新的state值应该怎么处理？
+
+可以通过第二个参数 setState(partialState, callback) 中的callback拿到更新后的结果。
 
 
+### setState为何设计成异步的？如何实现的？
 
-### React 中受控组件和非受控组件的区别？(todo)
+为什么react大部分情况setState是异步的呢？假如所有setState是同步的，意味着每执行一次setState时（有可能一个同步代码中，多次setState），都重新vnode diff + dom修改，这对性能来说是极为不好的。如果是异步，则可以把一个同步代码中的多个setState合并成一次组件更新。
 
-### 在哪些场景应该使用非受控组件？(todo)
 
+核心代码实现：
+
+``` js
+ReactComponent.prototype.setState = function(partialState, callback) {
+  this.updater.enqueueSetState(this, partialState);
+  if (callback) {
+    this.updater.enqueueCallback(this, callback, 'setState');
+  }
+};
+
+enqueueSetState: function(publicInstance, partialState) {
+    // 找到需渲染组件
+    var internalInstance = getInternalInstanceReadyForUpdate(
+      publicInstance,
+      'setState',
+    );
+
+    if (!internalInstance) {
+      return;
+    }
+
+    // 每次都把新的state，push到队列中。
+    // 方便后面一次性更新组件时，聚合成最新的state
+    var queue =
+      internalInstance._pendingStateQueue ||
+      (internalInstance._pendingStateQueue = []);
+    queue.push(partialState);
+
+    // 更新
+    enqueueUpdate(internalInstance);
+  },
+```
+
+``` js
+//代码位于ReactUpdateQueue.js
+function enqueueUpdate(internalInstance) {
+  ReactUpdates.enqueueUpdate(internalInstance);
+}
+//代码位于ReactUpdates.js
+function enqueueUpdate(component) {
+  ensureInjected();
+
+  // 未开启事务流程：开启事务 + 更新组件
+  // 在生命周期以及合成事件情况下，isBatchingUpdates=true
+  // 在setTimeout以及原生DOM事件情况下，isBatchingUpdates=false
+  if (!batchingStrategy.isBatchingUpdates) {
+    batchingStrategy.batchedUpdates(enqueueUpdate, component);
+    return;
+  }
+  // 已开启事务流程：放到脏数组中（组件不更新 + this.state不变），等待更新
+  dirtyComponents.push(component);
+
+  if (component._updateBatchNumber == null) {
+    component._updateBatchNumber = updateBatchNumber + 1;
+  }
+}
+
+```
+
+以上是setState的关键代码，batchingStrategy.batchedUpdates里面用到了事务机制。 setState 本身的方法调用是同步的，但是调用了setState不标志这react的 state 立即更新，这个更新是要根据当前环境执行上下文来判断的，如果处于batchedUpadte的情况下，那么state的不是当前立马更新的，而不处于batchedUpadte的情况下，那么他就有可能立马更新的。
+
+参考：
+
+[React setState是异步吗 | springleo's blog](https://lq782655835.github.io/blogs/react/react-code-3.setState.html)
+
+
+### React 中受控组件和非受控组件的区别？
+
+在一个受控组件中，表单数据是由 React 组件来管理的。另一种替代方案是使用非受控组件，这时表单数据将交由 DOM 节点来处理。
+
+举个例子，非受控组件：
+
+``` js
+class Form extends Component {
+  /** 提交时候获取数据 */  
+  handleSubmitClick = () => {
+    const name = this._name.value;
+    // 检测数据提示然后
+  }
+  render() {
+    return  (
+      <div>
+        <input type="text" ref={input => this._name = input} />
+        <button onClick={this.handleSubmitClick}>Sign up</button>
+      </div>
+    );
+  }
+}
+```
+
+受控组件：
+
+``` js
+class NameForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {value: ''};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit(event) {
+    alert('提交的名字: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          名字:
+          <input type="text" value={this.state.value} onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="提交" />
+      </form>
+    );
+  }
+}
+```
+
+非受控组件更方便快捷，代码量小，但是控制能力比较弱。受控组件的控制能力强，但是代码量会比较多，在开发中应该权衡需求，进度进行相应的选择。
+
+参考：
+
+[漫谈受控与非受控组件 - SegmentFault 思否](https://segmentfault.com/a/1190000022925043)
+
+[表单 – React](https://zh-hans.reactjs.org/docs/forms.html#controlled-components)
+
+[非受控组件 – React](https://zh-hans.reactjs.org/docs/uncontrolled-components.html)
+
+### 在哪些场景应该使用非受控组件？
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210510110650.png"/>
+
+非受控组件更方便快捷，代码量小，但是控制能力比较弱，一些简单的功能场景下可以使用，但是还是建议使用受控组件。
+
+参考
+
+[Controlled and uncontrolled form inputs in React don't have to be complicated - Gosha Arinich](https://goshakkk.name/controlled-vs-uncontrolled-inputs-react/?spm=a2c6h.12873639.0.0.1a7665266cJt7d)
 
 ### React组件之间怎么通信？
 
@@ -300,6 +603,418 @@ setState 的批量更新优化也是建立在“异步”（合成事件、钩�
 
 [2019年17道高频React面试题及详解](https://juejin.cn/post/6844903922453200904#heading-3)
 
+
+
+### 是否了解shouldComponentUpdate，做什么的？
+
+在class组件中，我们可以通过shouldComponentUpdate阻止不必要的rerender：
+
+``` js
+class DemoLoader extends React.Component {
+
+  shouldComponentUpdate(nextProps) {
+    return nextProps.demoUrl !== this.props.demoUrl;
+  }
+
+  render() {
+    const { domoUrl } = this.props;
+    return <div className="demoloader">
+      <iframe src={demoUrl} />
+    </div>;
+  }
+}
+
+```
+
+
+### hook函数式组件怎么实现shouldComponentUpdate？
+
+为了解决函数组件中的优化问题，React在16.6版本增加了React.memo。
+
+React.memo是一个高阶组件，类似于React.PureComponent，只不过用于函数组件而非class组件。
+如果你的函数组件在相同props下渲染出相同结果，你可以把它包裹在React.memo中来通过缓存渲染结果来实现性能优化。这意味着React会跳过组件渲染，而使用上次渲染结果。
+
+``` js
+const DemoLoader = React.memo(props => {
+  const { demoUrl } = props;
+  return <div className="demoloader">
+    <iframe src={demoUrl} />
+  </div>;
+}, (prevProps, nextProps) => {
+  return prevProps.demoUrl === nextProps.demoUrl;
+});
+
+```
+
+参考：
+
+[React.memo: 在函数组件中实现'shouldComponentUpdate'](https://juejin.cn/post/6844904006075023367)
+
+
+
+### React怎么控制渲染顺序？
+
+第一种方式使用标识位，在父组件进行控制。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210510103900.png"/>
+
+第二种使用React.lazy在后面的流程中去渲染其他的
+
+``` js
+import React, { lazy, Suspense } from "react";
+const OtherComponent = lazy(() => import("./OtherComponent"));
+
+function MyComponent() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OtherComponent />
+    </Suspense>
+  );
+}
+```
+
+第三种是基于React17的concurrent模式去完成对调度的精细控制。
+
+目前是实验版本：
+
+``` js
+ReactDOM.render(
+  <React.unstable_ConcurrentMode>
+    <App />
+  </React.unstable_ConcurrentMode>,
+  rootElement
+);
+
+```
+
+具体的调度方式待定，由于实验版本就不深究了。
+
+参考：
+
+[React元件渲染的控制順序 - JAVASCRIPT _程式人生](https://www.796t.com/post/NjR6NmU=.html)
+
+[精读《Scheduling in React》](https://juejin.cn/post/6844903821433372680)
+
+
+### 做过哪些React方面的性能优化？
+
+说到性能优化首先需要排查出性能问题。通过开发者工具可以查看组件渲染时间和原因。
+
+[React Profiler 介绍 – React Blog](https://zh-hans.reactjs.org/blog/2018/09/10/introducing-the-react-profiler.html)
+
+
+查看某个组件某次渲染的原因以及花费的时间：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210426174108.png"/>
+
+
+然后找到需要优化的组件，再做优化：
+
+
+#### 使用 React.Memo 来缓存组件
+
+提升应用程序性能的一种方法是实现 memoization。Memoization 是一种优化技术，主要通过存储昂贵的函数调用的结果，并在再次发生相同的输入时返回缓存的结果，以此来加速程序。  
+父组件的每次状态更新，都会导致子组件重新渲染，即使传入子组件的状态没有变化，为了减少重复渲染，我们可以使用 React.memo 来缓存组件，这样只有当传入组件的状态值发生变化时才会重新渲染。如果传入相同的值，则返回缓存的组件。示例如下：
+
+``` js
+export default React.memo((props) => {
+  return (
+    <div>{props.value}</div>  
+  )
+});
+```
+
+
+
+``` js
+import React, { useCallback, useState, useEffect } from "react";
+
+function Memo() {
+//   return <DualCounter />;
+  return <DualCounter2 />;
+}
+
+function CountButton({ onClick, count }) {
+  console.log("render");
+  return <button onClick={onClick}>{count}</button>;
+}
+//这种情况下，每点击一个按钮，都会引起两个组件的重新渲染
+function DualCounter() {
+  const [count1, setCount1] = React.useState(0);
+  const increment1 = () => setCount1((c) => c + 1);
+
+  const [count2, setCount2] = React.useState(0);
+  const increment2 = () => setCount2((c) => c + 1);
+
+  return (
+    <>
+      <CountButton count={count1} onClick={increment1} />
+      <CountButton count={count2} onClick={increment2} />
+    </>
+  );
+}
+//React.memo和useCallback的组合下，就可以达到只渲染自己的目的
+const CountButton2 = React.memo(function CountButton({ onClick, count }) {
+    console.log('render')
+  return <button onClick={onClick}>{count}</button>;
+});
+
+function DualCounter2() {
+  const [count1, setCount1] = React.useState(0);
+  const increment1 = React.useCallback(() => setCount1((c) => c + 1), []);
+
+  const [count2, setCount2] = React.useState(0);
+  const increment2 = React.useCallback(() => setCount2((c) => c + 1), []);
+
+  return (
+    <>
+      <CountButton2 count={count1} onClick={increment1} />
+      <CountButton2 count={count2} onClick={increment2} />
+    </>
+  );
+}
+
+export default Memo;
+
+
+```
+
+#### 使用 useMemo 缓存大量的计算
+
+参考demo：[reactDemo/Memo.jsx at master · FunnyLiu/reactDemo](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Memo.jsx#L1)
+
+有时渲染是不可避免的，但如果您的组件是一个功能组件，重新渲染会导致每次都调用大型计算函数，这是非常消耗性能的，我们可以使用新的 useMemo 钩子来 “记忆” 这个计算函数的计算结果。这样只有传入的参数发生变化后，该计算函数才会重新调用计算新的结果。  
+通过这种方式，您可以使用从先前渲染计算的结果来挽救昂贵的计算耗时。总体目标是减少 JavaScript 在呈现组件期间必须执行的工作量，以便主线程被阻塞的时间更短。
+
+``` js
+// 避免这样做
+function Component(props) {
+  const someProp = heavyCalculation(props.item);
+  return <AnotherComponent someProp={someProp} /> 
+}
+  
+// 只有 `props.item` 改变时someProp的值才会被重新计算
+function Component(props) {
+  const someProp = useMemo(() => heavyCalculation(props.item), [props.item]);
+  return <AnotherComponent someProp={someProp} /> 
+} 
+
+```
+
+#### 使用 React.PureComponent , shouldComponentUpdate
+
+父组件状态的每次更新，都会导致子组件的重新渲染，即使是传入相同 props。但是这里的重新渲染不是说会更新 DOM, 而是每次都会调用 diif 算法来判断是否需要更新 DOM。这对于大型组件例如组件树来说是非常消耗性能的。  
+在这里我们就可以使用 React.PureComponent , shouldComponentUpdate 生命周期来确保只有当组件 props 状态改变时才会重新渲染。如下例子:
+
+``` js
+export default function ParentComponent(props) {
+  return (
+    <div>
+      <SomeComponent someProp={props.somePropValue}
+    <div>
+      <AnotherComponent someOtherProp={props.someOtherPropValue} />
+    </div>
+   </div>
+ )
+}
+
+export default function SomeComponent(props) {
+  return (
+    <div>{props.someProp}</div>  
+  )
+}
+
+// 只要props.somePropValue 发生变化，不论props.someOtherPropValue是否发生变化该组件都会发生变化
+export default function AnotherComponent(props) {
+  return (
+    <div>{props.someOtherProp}</div>  
+  )
+}
+
+```
+
+我们可以使用 React.PureComponent 或 shouldComponentUpdate 进行如下优化：
+
+``` js
+// 第一种优化
+class AnotherComponent extends React.PureComponent {
+  render() {
+    return <div>{this.props.someOtherProp}</div>   
+  }
+}
+
+//第二种优化
+class AnotherComponent extends Component {
+  shouldComponentUpdate(nextProps) {
+    return this.props !== nextProps
+  }
+  render() {
+    return <div>{this.props.someOtherProp}</div>   
+  }
+}
+
+```
+
+  
+PureComponent 会进行浅比较来判断组件是否应该重新渲染，对于传入的基本类型 props，只要值相同，浅比较就会认为相同，对于传入的引用类型 props，浅比较只会认为传入的 props 是不是同一个引用，如果不是，哪怕这两个对象中的内容完全一样，也会被认为是不同的 props。  
+需要注意的是在对于那些可以忽略渲染时间的组件或者是状态一直变化的组件则要谨慎使用 PureComponent，因为进行浅比较也会花费时间，这种优化更适用于大型的展示组件上。大型组件也可以拆分成多个小组件，并使用 memo 来包裹小组件，也可以提升性能。
+
+#### 避免使用内联对象
+
+使用内联对象时，react 会在每次渲染时重新创建对此对象的引用，这会导致接收此对象的组件将其视为不同的对象, 因此，该组件对于 prop 的浅层比较始终返回 false, 导致组件一直重新渲染。  
+许多人使用的内联样式的间接引用，就会使组件重新渲染，可能会导致性能问题。为了解决这个问题，我们可以保证该对象只初始化一次，指向相同引用。另外一种情况是传递一个对象，同样会在渲染时创建不同的引用，也有可能导致性能问题，我们可以利用 ES6 扩展运算符将传递的对象解构。这样组件接收到的便是基本类型的 props，组件通过浅层比较发现接受的 prop 没有变化，则不会重新渲染。示例如下：
+
+``` js
+// Don't do this!
+function Component(props) {
+  const aProp = { someProp: 'someValue' }
+  return <AnotherComponent style={{ margin: 0 }} aProp={aProp} />  
+}
+
+// Do this instead :)
+const styles = { margin: 0 };
+function Component(props) {
+  const aProp = { someProp: 'someValue' }
+  return <AnotherComponent style={styles} {...aProp} />  
+}
+
+
+```
+
+#### 避免使用匿名函数
+
+虽然匿名函数是传递函数的好方法（特别是需要用另一个 prop 作为参数调用的函数），但它们在每次渲染上都有不同的引用。这类似于上面描述的内联对象。为了保持对作为 prop 传递给 React 组件的函数的相同引用，您可以将其声明为类方法（如果您使用的是基于类的组件）或使用 useCallback 钩子来帮助您保持相同的引用（如果您使用功能组件）。  
+当然，有时内联匿名函数是最简单的方法，实际上并不会导致应用程序出现性能问题。这可能是因为在一个非常 “轻量级” 的组件上使用它，或者因为父组件实际上必须在每次 props 更改时重新渲染其所有内容。因此不用关心该函数是否是不同的引用，因为无论如何，组件都会重新渲染。
+
+``` js
+// 避免这样做
+function Component(props) {
+  return <AnotherComponent onChange={() => props.callback(props.id)} />  
+}
+
+// 优化方法一
+function Component(props) {
+  const handleChange = useCallback(() => props.callback(props.id), [props.id]);
+  return <AnotherComponent onChange={handleChange} />  
+}
+
+// 优化方法二
+class Component extends React.Component {
+  handleChange = () => {
+   this.props.callback(this.props.id) 
+  }
+  render() {
+    return <AnotherComponent onChange={this.handleChange} />
+  }
+}
+
+
+```
+
+#### 延迟加载不是立即需要的组件
+
+延迟加载实际上不可见（或不是立即需要）的组件，React 加载的组件越少，加载组件的速度就越快。因此，如果您的初始渲染感觉相当粗糙，则可以在初始安装完成后通过在需要时加载组件来减少加载的组件数量。同时，这将允许用户更快地加载您的平台 / 应用程序。最后，通过拆分初始渲染，您将 JS 工作负载拆分为较小的任务，这将为您的页面提供响应的时间。这可以使用新的 React.Lazy 和 React.Suspense 轻松完成。
+
+``` js
+// 延迟加载不是立即需要的组件
+const MUITooltip = React.lazy(() => import('@material-ui/core/Tooltip'));
+function Tooltip({ children, title }) {
+  return (
+    <React.Suspense fallback={children}>
+      <MUITooltip title={title}>
+        {children}
+      </MUITooltip>
+    </React.Suspense>
+  );
+}
+
+function Component(props) {
+  return (
+    <Tooltip title={props.title}>
+      <AnotherComponent />
+    </Tooltip>
+  )
+}
+
+
+```
+
+#### 调整 CSS 而不是强制组件加载和卸载
+
+渲染成本很高，尤其是在需要更改 DOM 时。每当你有某种手风琴或标签功能，例如想要一次只能看到一个项目时，你可能想要卸载不可见的组件，并在它变得可见时将其重新加载。如果加载 / 卸载的组件 “很重”，则此操作可能非常消耗性能并可能导致延迟。在这些情况下，最好通过 CSS 隐藏它，同时将内容保存到 DOM。  
+尽管这种方法并不是万能的，因为安装这些组件可能会导致问题（即组件与窗口上的无限分页竞争），但我们应该选择在不是这种情况下使用调整 CSS 的方法。另外一点，将不透明度调整为 0 对浏览器的成本消耗几乎为 0（因为它不会导致重排），并且应尽可能优先于更该 visibility 和 display。  
+有时在保持组件加载的同时通过 CSS 隐藏可能是有益的，而不是通过卸载来隐藏。对于具有显著的加载 / 卸载时序的重型组件而言，这是有效的性能优化手段。
+
+``` js
+// 避免对大型的组件频繁对加载和卸载
+function Component(props) {
+  const [view, setView] = useState('view1');
+  return view === 'view1' ? <SomeComponent /> : <AnotherComponent />  
+}
+
+// 使用该方式提升性能和速度
+const visibleStyles = { opacity: 1 };
+const hiddenStyles = { opacity: 0 };
+function Component(props) {
+  const [view, setView] = useState('view1');
+  return (
+    <React.Fragment>
+      <SomeComponent style={view === 'view1' ? visibleStyles : hiddenStyles}>
+      <AnotherComponent style={view !== 'view1' ? visibleStyles : hiddenStyles}>
+    </React.Fragment>
+  )
+}
+
+```
+
+#### 使用 React.Fragment 避免添加额外的 DOM
+
+有些情况下，我们需要在组件中返回多个元素，例如下面的元素，但是在 react 规定组件中必须有一个父元素。
+
+``` html
+            <h1>Hello world!</h1>
+            <h1>Hello there!</h1>
+            <h1>Hello there again!</h1>
+
+
+```
+
+因此你可能会这样做, 但是这样做的话即使一切正常，也会创建额外的不必要的 div。这会导致整个应用程序内创建许多无用的元素：
+
+``` js
+function Component() {
+        return (
+            <div>
+                <h1>Hello world!</h1>
+                <h1>Hello there!</h1>
+                <h1>Hello there again!</h1>
+            </div>
+        )
+}
+
+
+```
+
+实际上页面上的元素越多，加载所需的时间就越多。为了减少不必要的加载时间，我们可以使 React.Fragment 来避免创建不必要的元素。
+
+``` js
+function Component() {
+        return (
+            <React.Fragment>
+                <h1>Hello world!</h1>
+                <h1>Hello there!</h1>
+                <h1>Hello there again!</h1>
+            </React.Fragment>
+        )
+}
+
+
+```
+
+
+参考：
+
+[React性能优化的8种方式了解一下？](https://juejin.cn/post/6844903924302888973)
 
 
 ### useCallback用过没？使用场景是？
@@ -893,6 +1608,138 @@ function RenderFunctionComponent() {
 不需要，因为React自己内部已经做了处理，将所有在JSX上绑定的事件都集中代理到了document上。具体可以参考[官网](https://zh-hans.reactjs.org/docs/events.html)。
 
 这样的好处在于，在底层封装一套event，跨端跨浏览器保持统一的API风格。
+
+
+### React.memo做了什么？怎么做的？
+
+React.memo(...) 对应的是函数组件，React.PureComponent 对应的是类组件。
+
+React.memo 会返回了一个纯组件 MemodFuncComponent。 我们将在 JSX 标记中渲染此组件。 每当组件中的 props 和 state 发生变化时，React 将检查 上一个 state 和 props 以及下一个 props 和 state 是否相等，如果不相等则函数组件将重新渲染，如果它们相等则函数组件将不会重新渲染。
+
+
+从实现的角度来看，React.memo方法只是在组件上增加了一个标识位：[笔记内容](https://github.com/FunnyLiu/react-1/blob/readsource/packages/react/src/ReactMemo.js#L27)
+
+``` js
+  //相当于带上了一个标识的type
+  const elementType = {
+    $$typeof: REACT_MEMO_TYPE,
+    type,
+    compare: compare === undefined ? null : compare,
+  };
+```
+
+然后在Fiber阶段会针对这个类似额外做适配[笔记内容](https://github.com/FunnyLiu/react-1/blob/readsource/packages/react-reconciler/src/ReactFiberBeginWork.new.js#L3603)：
+
+``` js
+    case MemoComponent: {
+
+      //Memo组件会去走这个逻辑
+      return updateMemoComponent(
+        current,
+        workInProgress,
+        type,
+        resolvedProps,
+        updateLanes,
+        renderLanes,
+      );
+    }
+```
+
+该方法会进行compare比较[笔记内容](https://github.com/FunnyLiu/react-1/blob/readsource/packages/react-reconciler/src/ReactFiberBeginWork.new.js#L490)：
+
+``` js
+    // 如果两次props相等
+    if (compare(prevProps, nextProps) && current.ref === workInProgress.ref) {
+      //直接返回，不再进行下面的fiber操作。
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+    }
+```
+
+如果比较结果一致，就不进行后续Fiber流程。
+
+
+
+参考：
+
+[Web 性能优化： 使用 React.memo() 提高 React 组件性能 - SegmentFault 思否](https://segmentfault.com/a/1190000018444604)
+
+
+
+
+### React.memo和PureComponent有什么区别？
+
+React.PureComponent 是 ES6 类的组件
+
+React.memo(...) 是函数组件
+
+React.PureComponent 优化 ES6 类组件中的重新渲染
+
+React.memo(...) 优化函数组件中的重新渲染
+
+
+参考：
+
+[Web 性能优化： 使用 React.memo() 提高 React 组件性能 - SegmentFault 思否](https://segmentfault.com/a/1190000018444604)
+
+### React.lazy做了什么？怎么做的？
+
+它能让你像渲染常规组件一样处理动态引入的组件，配合 webpack 的 Code Splitting ，只有当组件被加载，对应的资源才会导入 ，从而达到懒加载的效果。
+
+``` js
+// 不使用 React.lazy
+import OtherComponent from './OtherComponent';
+// 使用 React.lazy
+const OtherComponent = React.lazy(() => import('./OtherComponent'))
+```
+
+React.lazy 需要配合 Suspense 组件一起使用，在 Suspense 组件中渲染 React.lazy 异步加载的组件。如果单独使用 React.lazy，React 会给出错误提示。
+
+
+React.lazy不支持服务端渲染，使用服务端渲染的同学，请绕行至 react-loadable和 loadable-components。
+
+从实现上来看，React.lazy其实是给组件增加了标识位和回调函数[笔记内容](https://github.com/FunnyLiu/react-1/blob/readsource/packages/react/src/ReactLazy.js#L104)。
+
+``` js
+//React.Lazy实现
+export function lazy<T>(
+  ctor: () => Thenable<{default: T, ...}>,
+): LazyComponent<T, Payload<T>> {
+  const payload: Payload<T> = {
+    // We use these fields to store the result.
+    //用来标记
+    _status: -1,
+    _result: ctor,
+  };
+  //增加标识位
+  const lazyType: LazyComponent<T, Payload<T>> = {
+    $$typeof: REACT_LAZY_TYPE,
+    _payload: payload,
+    _init: lazyInitializer,
+  };
+}
+```
+
+
+然后在fiber的开始阶段，而不是整个项目初始化的阶段。再去执行传入的thenable函数[笔记内容](https://github.com/FunnyLiu/react-1/blob/readsource/packages/react-reconciler/src/ReactFiberBeginWork.new.js#L1278)
+
+``` js
+    //如果是lazy组件的话，走单独的流程
+    case LazyComponent: {
+      const elementType = workInProgress.elementType;
+      return mountLazyComponent(
+        current,
+        workInProgress,
+        elementType,
+        updateLanes,
+        renderLanes,
+      );
+    }
+```
+
+
+参考：
+
+[这就是你日思夜想的 React 原生动态加载 - 政采云前端团队](https://www.zoo.team/article/react-lazy-suspense)
 
 
 

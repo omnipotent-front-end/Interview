@@ -85,6 +85,8 @@ Vue 一共有 8 个生命阶段，分别是创建前、创建后、加载前、�
 nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数组，最后一次性地根据 useMacroTask 条件执行 macroTimerFunc 或者是 microTimerFunc，**useMacroTask条件的判断依据就是传入的回调函数中是否有操作state的行为，如果有就认为ture**。
 
 
+具体源码位于[笔记内容](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/next-tick.js#L78)
+
 [参考](https://ustbhuangyi.github.io/vue-analysis/reactive/next-tick.html#vue-%E7%9A%84%E5%AE%9E%E7%8E%B0)
 
 
@@ -219,7 +221,15 @@ $route 是“路由信息对象”，包括 path，params，hash，query，fullP
 首先是[Vue的初始化](https://github.com/FunnyLiu/vue/tree/readsource#%E7%BB%84%E4%BB%B6%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F)，在其生命周期过程中，对[数据进行监听](https://github.com/FunnyLiu/vue/tree/readsource#%E6%95%B0%E6%8D%AE%E8%A7%82%E5%AF%9F)，对[模板进行编译](https://github.com/FunnyLiu/vue/tree/readsource#%E6%A8%A1%E6%9D%BF%E7%9A%84%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B)生成给render函数的字符串。通过render函数，进入patch阶段，进行[VNode的diff](https://github.com/FunnyLiu/vue/tree/readsource#vnode%E7%9A%84%E6%9B%B4%E6%96%B0%E6%B5%81%E7%A8%8B)以及生成真正的dom进行挂载。
 
 
-### new Vue 发生了什么（todo）？
+### new Vue 发生了什么？
+
+Vue 初始化主要就干了几件事情，合并配置，初始化生命周期，初始化事件中心，初始化渲染，初始化 data、props、computed、watcher 等等。具体源码位于[笔记内容](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/init.js#L54)
+
+参考：
+
+[new Vue 发生了什么 | Vue.js 技术揭秘](https://ustbhuangyi.github.io/vue-analysis/v2/data-driven/new-vue.html#%E6%80%BB%E7%BB%93)
+
+
 
 
 ### virtual DOM有什么用？

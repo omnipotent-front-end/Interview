@@ -4,10 +4,19 @@
 
 ### 主营业务
 
+抖音电商、飞书、Lark、基础平台
 
 
 ### 其他信息
 
+关山大道保利国际中心
+
+https://map.baidu.com/dir/%E4%B8%87%E7%A6%8F%E5%9B%BD%E9%99%85%E5%B9%BF%E5%9C%BA/%E4%BF%9D%E5%88%A9%E5%9B%BD%E9%99%85%E4%B8%AD%E5%BF%83/@12721583.469999999,3548690.8,13z?querytype=nav&c=218&sn=0$$c6f56e4ea3ac1fe722f01770$$12719459.45,3549695.25$$%E4%B8%87%E7%A6%8F%E5%9B%BD%E9%99%85%E5%B9%BF%E5%9C%BA$$0$$$$&en=0$$c89cab01cab266bbc61e5150$$12736957.53,3545844.13$$%E4%BF%9D%E5%88%A9%E5%9B%BD%E9%99%85%E4%B8%AD%E5%BF%83$$0$$$$&sc=218&ec=218&pn=0&rn=5&mrs=1&version=4&route_traffic=1&sy=0&da_src=shareurl
+
+
+挂了后半年无法投递
+
+大小周
 
 ## 头条（杭州）
 

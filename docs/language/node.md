@@ -57,6 +57,49 @@ Node.js的单线程指的是主线程是“单线程”，由主要线程去按�
 
 ---
 
+
+### node中子进程、子线程是如何通信？
+
+如果基于child_process。
+
+子进程是通过父进程fork出来的子进程通过send方法来的，参考：
+
+``` js
+const cp = require('child_process');
+const n = cp.fork(`${__dirname}/sub.js`);
+
+n.on('message', (m) => {
+  console.log('PARENT got message:', m);
+});
+
+// Causes the child to print: CHILD got message: { hello: 'world' }
+n.send({ hello: 'world' });
+```
+
+如果基于worker_thread。
+
+子线程通过parentPort的postMessage来通信。
+
+``` js
+const { Worker, isMainThread, parentPort } = require('worker_threads');
+
+if (isMainThread) {
+  const worker = new Worker(__filename);
+  worker.once('message', (message) => {
+    console.log(message);  // Prints 'Hello, world!'.
+  });
+  worker.postMessage('Hello, world!');
+} else {
+  // When a message from the parent thread is received, send it back:
+  parentPort.once('message', (message) => {
+    parentPort.postMessage(message);
+  });
+}
+```
+
+使用类似jest-worker这样的工具库可能会更加方便一些：[笔记内容](https://github.com/FunnyLiu/jest/blob/readsource/packages/jest-worker/README.md#L1)
+
+
 ### 什么是IPC？IPC的使用场景？Node中如何实现IPC？
 
 IPC (Inter-process communication) ，即进程间通信技术，由于每个进程创建之后都有自己的独立地址空间，实现 IPC 的目的就是为了进程之间资源共享访问，实现 IPC 的方式有多种：**管道、消息队列、信号量、Domain Socket**，Node.js 通过 **pipe** 来实现。

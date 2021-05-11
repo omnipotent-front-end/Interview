@@ -114,7 +114,13 @@ r = undefined; // Error
 [ecmascript 6 - Difference between 'object' and {} in TypeScript - Stack Overflow](https://stackoverflow.com/questions/49464634/difference-between-object-and-in-typescript)
 
 
-### 有没有了解过ts-node？ts-node是ts的运行时吗？为什么？（todo）
+### 有没有了解过ts-node？ts-node是ts的运行时吗？为什么？
+
+ts-node不是将typescript编译成js再执行，而是直接通过hack开启了node的ts运行时。
+
+它通过扩展require.extensions，来完成node版loader的扩展，将ts、tsx等运行时执行赋予node，至于node的loader，也就是module.extensions，可以参考。[FunnyLiu/ts-node at readsource](https://github.com/FunnyLiu/ts-node/tree/readsource)
+
+
 
 
 

@@ -149,6 +149,26 @@ loader的执行顺序是从后往前的，而plugin是作用于webpack整个生�
 [再来一打webpack面试题](https://mp.weixin.qq.com/s/neC8lKFQeaVOEuhgzOytLw)
 
 
+### terser-webpack-plugin等插件的多进程压缩是什么原理？
+
+terser-webpack-plugin是基于[jest-worker](https://www.npmjs.com/package/jest-worker)来完成多进程压缩的。其在node高版本会通过worker_thread来完成多线程工作，而低版本则通过child_process来完成多进程工作。
+
+
+### hard-source-webpack-plugin 是怎么做缓存的？修改文件后会怎么样？
+
+
+[源码分析](https://github.com/FunnyLiu/hard-source-webpack-plugin/tree/readsource)
+
+其本质就是在webpack各个生命周期中，将需要的内容缓存到node_modules/.cache/hard-source下，然后第二次的时候会去取。
+
+修改文件后，.cache文件中的内容会越来越多，会去diff想要的。
+
+
+### 使用多进程压缩时，各个进程是怎么通信的？
+
+
+参考[node中子进程、子线程是如何通信？](/language/node.html#node%E4%B8%AD%E5%AD%90%E8%BF%9B%E7%A8%8B%E3%80%81%E5%AD%90%E7%BA%BF%E7%A8%8B%E6%98%AF%E5%A6%82%E4%BD%95%E9%80%9A%E4%BF%A1%EF%BC%9F)
+
 ### 是否写过loader？简单说明下原理？
 
 

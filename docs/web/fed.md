@@ -669,6 +669,294 @@ fragment.appendChild(elem);
 ---
 
 
+### 做过哪些提高页面加载的性能优化点？
+
+
+1、优化网络等硬件条件
+
+1.1、最小化和压缩网络请求。参考[Minify and compress network payloads](https://web.dev/reduce-network-payloads-using-text-compression/)
+
+代码压缩。
+
+数据压缩（gzip、甚至是Brotli）
+
+
+1.2 使用cdn。参考[Use image CDNs to optimize images](https://web.dev/image-cdns/)
+
+具体可以了解：[谈谈cdn服务](/cp/network.html#%E8%B0%88%E8%B0%88cdn%E6%9C%8D%E5%8A%A1)
+
+
+1.3、增加dns预加载。
+
+``` html
+<link rel="preconnect" href="http://example.com">
+<link rel="dns-prefetch" href="http://example.com">
+```
+
+
+2、优化js的执行
+
+2.1、通过代码拆分减少JavaScript负载；参考[Reduce JavaScript payloads with code splitting](https://web.dev/reduce-javascript-payloads-with-code-splitting/)
+
+路由分隔，基于codesplit，路由或者组件逻辑分隔。
+	
+
+2.2、 使用PRPL模式（Push（或预加载）最重要的资源。参考[Apply instant loading with the PRPL pattern](https://web.dev/apply-instant-loading-with-prpl/)
+
+尽快Render初始路线。Pre-cache剩余资产。Lazyload其他路由和非关键资产。）应用即时加载。
+
+给样式增加preload：`<link rel="preload" as="style" href="css/style.css">`
+
+对不做dom操作的js资源做async异步加载优化。
+
+服务端渲染页面。
+
+使用serviceworker的precache来缓存不变的静态资源。这不仅使用户可以在脱机时使用您的应用程序，而且还可以缩短重复访问时的页面加载时间
+
+懒加载图片和js。
+
+
+
+
+2.3 删除未使用的代码。参考[Remove unused code](https://web.dev/remove-unused-code/)
+
+利用chrome的coverage或者webpack的BundleAnalyzerPlugin来分析依赖使用率。然后进行业务改造。
+
+2.4 缩小和压缩网络负载。参考[Minify and compress network payloads](https://web.dev/reduce-network-payloads-using-text-compression/)
+
+文件大小压缩。数据gzip压缩。
+
+
+2.5 将现代代码提供给现代浏览器，以加快页面加载速度。参考[Serve modern code to modern browsers for faster page loads](https://web.dev/serve-modern-code-to-modern-browsers/)
+
+使用babel/preset-env指定需要兼容的浏览器。
+
+使用esm，也就是`<script type="module">`。
+
+使用现代的库，esm，新语法、treeshaking等等来提高性能。
+
+2.6 优化用户交互逻辑
+
+在最快的情况下，当用户与页面交互时，页面的合成器线程可以获取用户的触摸输入并直接使内容移动。这不需要主线程执行任务，主线程执行的是 JavaScript、布局、样式或绘制。
+
+但是，如果您附加一个输入处理程序，例如 touchstart、touchmove 或 touchend，则合成器线程必须等待此处理程序执行完成，因为您可能选择调用 preventDefault() 并且会阻止触摸滚动发生。即使没有调用 preventDefault()，合成器也必须等待，这样用户滚动会被阻止，这就可能导致卡顿和漏掉帧。
+
+使用requestAnimationFrame节流比如：
+
+``` js
+function onScroll (evt) {
+
+  // Store the scroll value for laterz.
+  lastScrollY = window.scrollY;
+
+  // Prevent multiple rAF callbacks.
+  if (scheduledAnimationFrame)
+    return;
+
+  scheduledAnimationFrame = true;
+  requestAnimationFrame(readAndUpdatePage);
+}
+
+window.addEventListener('scroll', onScroll);
+```
+
+2.7 不要在输入处理程序中进行样式更改。
+
+与滚动和触摸的处理程序相似，输入处理程序被安排在紧接任何 requestAnimationFrame 回调之前运行。
+
+如果在这些处理程序之一内进行视觉更改，则在 requestAnimationFrame 开始时，将有样式更改等待处理。
+
+比如：
+
+``` js
+function onScroll (evt) {
+
+  // Store the scroll value for laterz.
+  lastScrollY = window.scrollY;
+
+  // Prevent multiple rAF callbacks.
+  if (scheduledAnimationFrame)
+    return;
+
+  scheduledAnimationFrame = true;
+  requestAnimationFrame(readAndUpdatePage);
+}
+
+window.addEventListener('scroll', onScroll);
+```
+
+2.8、 使用webworker。参考[Use web workers to run JavaScript off the browser's main thread](https://web.dev/off-main-thread/)
+
+什么代码可以移到webworker：
+
+Web Worker无法访问DOM和许多API，如WebUSB，WebRTC或Web Audio，因此您不能将依赖于此类访问的应用程序片段放入Worker中。尽管如此，移交给工作人员的每一小段代码都会在主线程上留出更多空间来存放必须存在的内容，例如更新用户界面。
+
+数据管理和游戏中的计算逻辑、一些纯粹的算法等等可以放在webworker中。
+
+2.9、 优化关键渲染路径。参考[关键渲染路径  |  Web  |  Google Developers](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/)
+
+从收到 HTML、CSS 和 JavaScript 字节到对其进行必需的处理，从而将它们转变成渲染的像素这一过程中有一些中间步骤，优化性能其实就是了解这些步骤中发生了什么 - 即关键渲染路径。
+
+以图为例：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210412164803.png"/>
+
+优化关键渲染路径的常规步骤如下
+
+对关键路径进行分析和特性描述: 资源数、字节数、长度。
+
+最大限度减少关键资源的数量: 删除它们，延迟它们的下载，将它们标记为异步等。
+
+优化关键字节数以缩短下载时间（往返次数）。
+
+优化其余关键资源的加载顺序: 您需要尽早下载所有关键资产，以缩短关键路径长度。
+
+具体方法可以参考：[PageSpeed 规则和建议  |  Web  |  Google Developers](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/page-speed-rules-and-recommendations)
+
+比如React就可以参考：[react怎么控制渲染顺序？](/library/react.html#react%E6%80%8E%E4%B9%88%E6%8E%A7%E5%88%B6%E6%B8%B2%E6%9F%93%E9%A1%BA%E5%BA%8F%EF%BC%9F)
+
+2.10 async/defer脚本
+
+异步资源不会阻塞文档解析器，让浏览器能够避免在执行脚本之前受阻于 CSSOM。通常，如果脚本可以使用 async 属性，也就意味着它并非首次渲染所必需。可以考虑在首次渲染后异步加载脚本。
+
+2.11 避免服务器同步调用
+
+使用 navigator.sendBeacon() 方法来限制 XMLHttpRequests 在 unload 处理程序中发送的数据。 因为许多浏览器都对此类请求有同步要求，所以可能减慢网页转换速度，有时还很明显。 以下代码展示了如何利用 navigator.sendBeacon() 向 pagehide 处理程序而不是 unload 处理程序中的服务器发送数据。
+
+``` html
+<script>
+  function() {
+    window.addEventListener('pagehide', logData, false);
+    function logData() {
+      navigator.sendBeacon(
+        'https://putsreq.herokuapp.com/Dt7t2QzUkG18aDTMMcop',
+        'Sent by a beacon!');
+    }
+  }();
+</script>
+```
+ 
+
+
+3 样式方面优化
+
+3.1、缩小样式计算的范围并降低其复杂性。参考[缩小样式计算的范围并降低其复杂性  |  Web  |  Google Developers](https://developers.google.com/web/fundamentals/performance/rendering/reduce-the-scope-and-complexity-of-style-calculations)
+
+
+
+通过添加和删除元素，更改属性、类或通过动画来更改 DOM，全都会导致浏览器重新计算元素样式，在很多情况下还会对页面或页面的一部分进行布局（即自动重排）。这就是所谓的计算样式的计算。
+
+降低选择器的复杂性；使用以类为中心的方法，例如 BEM。
+
+减少必须计算其样式的元素数量。
+
+3.2、避免复杂布局和抖动。参考[避免大型、复杂的布局和布局抖动  |  Web  |  Google Developers](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing)
+
+布局的作用范围一般为整个文档。
+
+DOM 元素的数量将影响性能；应尽可能避免触发布局。
+
+评估布局模型的性能；新版 Flexbox 一般比旧版 Flexbox 或基于浮动的布局模型更快。
+
+避免强制同步布局和布局抖动；先读取样式值，然后进行样式更改。（使用类似fastDom的工具）
+
+
+3.3、 确保文本在webfont加载期间保持可见
+
+font-display:swap
+
+
+[Ensure text remains visible during webfont load](https://web.dev/font-display/)
+
+``` js
+@font-face {
+  font-family: 'Pacifico';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Pacifico Regular'), local('Pacifico-Regular'), url(https://fonts.gstatic.com/s/pacifico/v12/FwZY7-Qmy14u9lezJ-6H6MmBp0u-.woff2) format('woff2');
+  font-display: swap;
+}
+```
+
+3.4、控制样式层。参考[坚持仅合成器的属性和管理层计数  |  Web  |  Google Developers](https://developers.google.com/web/fundamentals/performance/rendering/stick-to-compositor-only-properties-and-manage-layer-count)
+
+
+坚持使用 transform 和 opacity 属性更改来实现动画。
+
+使用 will-change 或 translateZ 提升移动的元素。
+
+避免过度使用提升规则；各层都需要内存和管理开销。
+
+3.5、简化绘制的复杂度、减小绘制区域。参考[简化绘制的复杂度、减小绘制区域  |  Web  |  Google Developers](https://developers.google.com/web/fundamentals/performance/rendering/simplify-paint-complexity-and-reduce-paint-areas)
+
+
+
+减少绘制区域往往是编排您的动画和变换，使其不过多重叠，或设法避免对页面的某些部分设置动画。
+
+在谈到绘制时，一些绘制比其他绘制的开销更大。例如，绘制任何涉及模糊（例如阴影）的元素所花的时间将比（例如）绘制一个红框的时间要长。但是，对于 CSS 而言，这点并不总是很明显: background: red; 和 box-shadow: 0, 4px, 4px, rgba(0,0,0,0.5); 看起来不一定有截然不同的性能特性，但确实很不相同。
+
+
+3.6、提取关键css。参考[Extract critical CSS](https://web.dev/extract-critical-css/)
+
+将关键的css内联，不再走外部资源，可以加快。
+
+使用penthouse或者critical等工具，将关键css内联到html中，提高FCP。
+
+3.7、缩小css。参考[Minify CSS](https://web.dev/minify-css/)
+
+压缩css到最小
+
+3.8、延迟非关键css。参考[延迟非关键css](https://web.dev/defer-non-critical-css/)
+
+先加载首屏的css
+
+通过Coverage面板来调试。绿色是关键、红色是非关键。
+
+``` html
+<link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+
+<noscript>
+	<link rel="stylesheet" href="styles.css">
+</noscript>
+```
+
+3.9 将 CSS 置于文档 head 标签内
+尽早在 HTML 文档内指定所有 CSS 资源，以便浏览器尽早发现 `<link> `标记并尽早发出 CSS 请求。
+
+
+
+3.10 避免使用 CSS import
+一个样式表可以使用 CSS import (@import) 指令从另一样式表文件导入规则。不过，应避免使用这些指令，因为它们会在关键路径中增加往返次数: 只有在收到并解析完带有 @import 规则的 CSS 样式表之后，才会发现导入的 CSS 资源。
+
+4 图片资源相关
+
+4.1、响应式图片。参考：[Optimize CSS background images with media queries](https://web.dev/optimize-css-background-images-with-media-queries/)
+
+响应式图片，不同屏幕加载不同图片。
+
+4.2、使用正确的图片格式。参考[Choose the right image format](https://web.dev/choose-the-right-image-format/)
+
+优先使用webp格式，用imagemin-webp这种工具。
+
+png大小会稍微大点，不会压缩，jpg会小点做一定压缩。
+
+4.3、选择正确的压缩级别。参考[Choose the correct level of compression](https://web.dev/compress-images/)
+
+svg图片通过svgo这样的工具来压缩。
+
+png、jpg等进行一定的有损或无损压缩。配合自动化工具。
+
+压缩工具imagemin、jimp、sharp等等、
+
+4.4、使用video取代gif。参考[Replace animated GIFs with video for faster page loads](https://web.dev/replace-gifs-with-videos/)
+
+使用ffmpeg将gif变成mp4和webm格式，提高性能，降低文件大小。
+
+
+5、代码层面的优化
+
+比如[有做过哪些ssr性能方面的优化？](/web/fed.html#%E6%9C%89%E5%81%9A%E8%BF%87%E5%93%AA%E4%BA%9Bssr%E6%80%A7%E8%83%BD%E6%96%B9%E9%9D%A2%E7%9A%84%E4%BC%98%E5%8C%96%EF%BC%9F)中提到的异步优化和缓存优化，和[做过哪些react方面的性能优化？](/library/react.html#%E5%81%9A%E8%BF%87%E5%93%AA%E4%BA%9Breact%E6%96%B9%E9%9D%A2%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%EF%BC%9F)中React防止组件重复渲染的memo等方式。
+
 
 
 ## 异常
@@ -1072,6 +1360,19 @@ WKWebView 的优势是：运行和渲染速度更快，与 Safari 内核一致 A
 
 [Hybrid App 离线包方案实践 · Issue #63 · mcuking/blog](https://github.com/mcuking/blog/issues/63)
 
+
+### hybrid发接口，一般怎么处理？
+
+通过封装sdk，在h5就fetch或xmlhttprequest，在app内就走jsbridge发接口。
+
+之所以要走jsbridge发接口，有以下几点：
+
+1、方便app做统一处理，拦截操作，jwt鉴权；
+
+2、方便app提供下载功能时，能不再发请求而是读取本地数据。
+
+3、方便webview优化，提前预加载接口数据。
+
 ### 唤起app的原理
 
 1、URL Scheme
@@ -1083,6 +1384,8 @@ WKWebView 的优势是：运行和渲染速度更快，与 Safari 内核一致 A
 Universal Link 是苹果在 WWDC2015 上为 iOS9 引入的新功能，通过传统的 HTTP 链接即可打开 APP。如果用户未安装 APP，则会跳转到该链接所对应的页面。
 
 通过iframe/a/window.top.location.href等多种方式来尝试赋值唤起。具体实现可以参考：[callapp-lib的实现](https://github.com/FunnyLiu/callapp-lib/blob/readsource/src/index.ts#L92)
+
+
 
 
 
@@ -1122,7 +1425,33 @@ JavaScript 调用 Native 的方式，主要有两种：注入 API 和 拦截 URL
 
 
 
-### webview请求预加载（todo）
+### webview请求预加载
+
+webview的优化有两个方向，一个是webview控件自己在app启动时预热，一个是webview在启动的同时去请求一些h5需要的接口。
+
+这两个都是客户端开发需要去完成的内容，其中需要前端配合的点在于，webview中页面的接口需要走统一的拦截器发送请求（jsbridge）。
+
+从而告诉客户端页面有哪些请求，方便客户端去提前下载。以及每次请求时可以判断到底去远端拿，还是从app内的缓存去取。
+
+
+参考：
+
+[移动端本地 H5 如何做到秒开？-InfoQ](https://www.infoq.cn/article/2eto4qyx82gd1lvfy56a)
+
+
+
+### 聊一下近一年大前端发展趋势，未来走向，如何关注的，然后请总结下端内前端的核心痛点，你怎么解决？
+
+趋势和方向：跨端和提效，知识结构广度和深度两个方向发展
+
+端内前端核心痛点：在开发效率和性能、兼容性上取得平衡
+
+解决：flutter思路或者小程序思路
+
+flutter思路：自绘引擎
+
+小程序思路：定制语法，定制浏览器
+
 
 ---
 
@@ -1136,6 +1465,15 @@ JavaScript 调用 Native 的方式，主要有两种：注入 API 和 拦截 URL
 ### Vue相比React的优势在哪里？
 
 ### 什么时候用Vue，什么时候用React？
+
+
+### svelte有没有了解过？
+
+
+有一套自己的模板DSL，可以做到没有runtime，或者说少量runtime。适合做一写组件比如video-player等等的，在其他人引用时不依赖其他前端框架的组件。
+
+Svelte 比较有优势的地方，就是**用来编译可独立分发的 Web Components**。传统框架和 Web Components 结合最大的问题就在于运行时：单独分发的 WC 里面直接打包框架运行时，等于每个组件都要复制一份框架；不打包的话，又做不到开箱即用。但 Svelte 受这个问题的限制最小（依然存在重复代码问题，但取决于你用了多少功能），可以说是最适合这个用例的框架。
+
 
 ---
 
@@ -2171,6 +2509,23 @@ HLS（HTTP Live Streaming全称）是一个基于HTTP的视频流协议，由App
 
 一些常见的客户端如：MPlayerX、VLC 也都支持HLS协议，如果需要在chrome上播放，需要使用[hls.js](https://github.com/video-dev/hls.js/)或者[http-streaming](https://github.com/videojs/http-streaming)
 
+这里展示一个m3u8文件的例子：
+
+
+```
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:17
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-KEY:METHOD=AES-128,URI="http://localhost:3000/key/encrypt.key",IV=0x00000000000000000000000000000000
+#EXTINF:16.901411,
+playlist0.ts
+#EXTINF:4.563000,
+playlist1.ts
+#EXT-X-ENDLIST
+
+```
+
 #### RTMP
 
 Real Time Messaging Protocol（简称 RTMP）是 Macromedia 开发的一套视频直播协议，现在属于 Adobe。这套方案需要搭建专门的 RTMP 流媒体服务如 Adobe Media Server，并且在浏览器中只能使用 Flash 实现播放器。它的实时性非常好，延迟很小，但无法支持移动端 WEB 播放是它的硬伤。
@@ -2228,10 +2583,192 @@ http请求头部有一个表头字段叫referer，采用URL的格式来表示从
 
 
 
-### web视频怎么加密（todo）
+### web视频怎么加密
 
-### 设计一个播放器框架（todo）
+我们先看看业界目前几个厂商怎么做的：
 
+
+
+
+<table><tbody><tr><th colspan="3" align="left">调研市场竞品视频加密情况汇总</th></tr><tr><td rowspan="2">视频点播网站</td><td>爱奇艺</td><td>缓存采用 HLS，文件格式 ts，可以获取地址直接播放，没有加密（包括 vip 视频）</td></tr><tr><td>优酷</td><td>缓存采用 HLS，文件格式 ts，可以获取地址直接播放，没有加密视频文件</td></tr><tr><td rowspan="2">短视频直播类</td><td>快手</td><td>回播视频采用 HLS，文件格式 ts，可以获取地址直接播放（ts 文件比较大，可以通过头 range 控制下载的 ts 文件大小），没有加密视频文件</td></tr><tr><td>抖音</td><td>视频是 mp4 格式，访问链接直接下载播放，没有对视频文件加密</td></tr><tr><td rowspan="3">教育课程类</td><td>阿里学院</td><td>使用阿里云的私有加密方法（也是基于 HLS，替换了算法，必须基于阿里云播放器）</td></tr><tr><td>腾讯课堂</td><td>采用 HLS 标准加密方法，可通过抓包获取密钥解密 ts 文件</td></tr><tr><td>学而思网校</td><td>采用 HLS 标准加密方法，可通过抓包获取密钥解密 ts 文件</td></tr></tbody></table>
+
+可以看到基本都是基于HLS来加密。对HLS不了解可以参考[各种流格式，以及他们的特点是什么](/web/fed.html#%E5%90%84%E7%A7%8D%E6%B5%81%E6%A0%BC%E5%BC%8F%EF%BC%8C%E4%BB%A5%E5%8F%8A%E4%BB%96%E4%BB%AC%E7%9A%84%E7%89%B9%E7%82%B9%E6%98%AF%E4%BB%80%E4%B9%88)。也有更加复杂的商业化加密方案，这里不讨论。
+
+先看看一个简单的demo：[FunnyLiu/video-hls-encrypt at readsource](https://github.com/FunnyLiu/video-hls-encrypt/tree/readsource)：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210402153542.png"/>
+
+* 第一，把mp4的视频源通过`FFmpeg`转换为加密后的`m3u8`文件和`ts`文件以及关键的加密密钥`key`文件；
+* 第二，通过最简单的权限访问，保护加密密钥key文件；
+* 第三，利用`video.js`及相关的`videojs-contrib-hls.js`实现客户端的视频文件解密，并播放。
+
+再来看看商业级的完整方案及流程：
+
+参考了阿里、腾讯云等厂商的标准 HLS 方案，大致思路基本相同。  
+整体架构分为 KMS、转码服务后台、鉴权与密钥派发服务、cdn、app 客户端和视频播放器 sdk  
+![](https://img-blog.csdnimg.cn/20200302203932562.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhY3JlZGJvb2s=,size_16,color_FFFFFF,t_70)
+
+根据上图，总结加密流程：
+
+1.app 后台发起视频加密服务，转码服务向 KMS 获取数据密钥（DK 和 EDK）和解密密钥获取 URL
+
+名词解释：DK（由 KMS 系统生成的，用于对称加解密的密钥。实际用户加解密 ts 文件的）
+
+EDK（任意用户都可以获取的，用来换 DK 的，DK 和 EDK 有对应关系，密钥服务可缓存这种关系，免去每次向 KMS 请求获取）
+
+2. 转码服务进行视频内容切片并使用密钥 DK 进行加密，在 M3U8 文件的 EXT-X-KEY 标签中会写入解密密钥的获取 URL 等信息。
+
+3. 发布加密后的 M3U8 视频播放地址
+
+解密流程：
+
+1. 用户通过 app 登录，服务端会返回用户身份的 token
+
+2. 用户播放视频，访问 M3U8 下载对应的 ts 文件，通过 EXT-X-KEY 头中读取 URL，会向密钥服务请求解密密钥
+
+https://getkey.example.com?fileId=123456&keySource=VodBuildInKMS&edk=abcdef&token=ABC123
+
+如上例子所示，请求地址中保函 edk 和用户的 token，还有签名信息等，密钥服务会校验用户身份、签名等，通过后会根据资源 id 和 edk 返回解密 dk
+
+3. 播放器获得 DK，对 ts 文件进行解密，可以开始播放。
+
+以上就是标准的 HLS 加解密的一个大致流程，这种方案对播放器没有限制，支持主流的大多数播放器。
+
+这种加密最大的问题就是：
+
+但是一个最大的问题就是（阿里云和腾讯云在官方文档都有说明），需要用户自己保护好 DK 密钥。因此 DK 传输到客户端之后的安全保障机制尤为关键。
+
+按照标准的 HLS 加密方法，密钥 DK 一定会返回给客户端，因此通过在客户端进行劫持和抓包就能获取解密的 DK，故而视频 ts 文件就能轻松解密。
+
+我爱破解、知乎上都有很多解密的拼接转码成完整视频 mp4 的教程和文章。
+
+参考：
+
+[云点播视频-DRM-方案调研_sacredbook的博客-CSDN博客](https://blog.csdn.net/sacredbook/article/details/104619121)
+
+[云点播 HLS 普通加密 - 开发指南 - 文档中心 - 腾讯云](https://cloud.tencent.com/document/product/266/9638)
+
+[阿里云视频加密 - 视频点播 - 阿里云](https://help.aliyun.com/document_detail/68613.html)
+
+
+
+
+### 设计一个播放器框架
+
+采用微内核架构。
+
+参考[源码分析](https://github.com/FunnyLiu/xgplayer/tree/readsource)
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210406155010.png"/>
+
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210406192248.png"/>
+
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210406155110.png"/>
+
+主要是基于插件和事件通信来完成所有功能的。是个典型的微内核架构。
+
+
+通过eventEmitter来完成事件通信类，然后每个插件会拿到player的实例，在各个不同的事件抛出处进行事件通信。
+
+整个播放器由各种不同的插件组成。
+
+ui是基于dom操作/不依赖其他前端框架，来完成的。
+
+
+插件又分为ui插件和逻辑插件，逻辑插件（packages/xgplayer/src/controls/*.js）负责处理核心逻辑，ui插件（packages/xgplayer/src/skin/controls/*.js）负责特定皮肤（默认皮肤）下的com和样式基本交互。
+
+这里以播放按钮为例，逻辑插件为：
+
+``` js
+import Player from '../player'
+
+let play = function () {
+  let player = this
+  //监听播放按钮点击视觉
+  function onPlayBtnClick () {
+    if (!player.config.allowPlayAfterEnded && player.ended) {
+      return
+    }
+    if (player.paused) {
+      let playPromise = player.play()
+      if (playPromise !== undefined && playPromise) {
+        playPromise.catch(err => {})
+      }
+    } else {
+      player.pause()
+    }
+  }
+  player.on('playBtnClick', onPlayBtnClick)
+
+  function onDestroy () {
+    player.off('playBtnClick', onPlayBtnClick)
+    player.off('destroy', onDestroy)
+  }
+  player.once('destroy', onDestroy)
+}
+
+export default {
+  name: 'play',
+  method: play
+}
+```
+
+ui插件为：
+
+
+``` js
+import Player from '../../player'
+import PlayIcon from '../assets/play.svg'
+import PauseIcon from '../assets/pause.svg'
+import '../style/controls/play.scss'
+
+let s_play = function () {
+  let player = this
+  let util = Player.util
+  let playBtn = player.config.playBtn ? player.config.playBtn : {}
+  let btn
+  if (playBtn.type === 'img') {
+    btn = util.createImgBtn('play', playBtn.url.play, playBtn.width, playBtn.height)
+  } else {
+    btn = util.createDom('xg-play', `<xg-icon class="xgplayer-icon">
+                                      <div class="xgplayer-icon-play">${PlayIcon}</div>
+                                      <div class="xgplayer-icon-pause">${PauseIcon}</div>
+                                     </xg-icon>`, {}, 'xgplayer-play')
+  }
+
+  let tipsText = {}
+  tipsText.play = player.lang.PLAY_TIPS
+  tipsText.pause = player.lang.PAUSE_TIPS
+  let tips = util.createDom('xg-tips', `<span class="xgplayer-tip-play">${tipsText.play}</span>
+                                        <span class="xgplayer-tip-pause">${tipsText.pause}</span>`, {}, 'xgplayer-tips')
+  btn.appendChild(tips)
+  player.once('ready', () => {
+    if(player.controls) {
+      player.controls.appendChild(btn)
+    }
+  });
+
+  ['click', 'touchend'].forEach(item => {
+    btn.addEventListener(item, function (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      //基于事件触发
+      player.emit('playBtnClick')
+    })
+  })
+}
+
+export default {
+  name: 's_play',
+  method: s_play
+}
+```
+
+参考：
+
+[前端进阶：跟着开源项目学习插件化架构 - SegmentFault 思否](https://segmentfault.com/a/1190000022991956)
 
 
 ### 有哪些常见的音频格式

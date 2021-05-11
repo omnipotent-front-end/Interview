@@ -231,3 +231,19 @@ function compose(middlewares) {
 }
 ```
 
+
+
+
+## 架构
+
+
+### 大型koa项目，怎么对项目进行扩展？
+
+koa默认支持的扩展性就是middleware。
+
+普通的插件模式，可以通过封装一个中间件，在入参ctx上直接mixin挂载方法，然后去其他逻辑里调用接口。
+
+如果要把子服务模块拆分，可以通过koa-mount，[FunnyLiu/mount at readsource](https://github.com/FunnyLiu/mount/tree/readsource)。来直接挂载子路由。
+
+相当于子路由被其他模块接管。
+
