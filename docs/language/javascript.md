@@ -2989,6 +2989,17 @@ for (let i = 200; i < 1030; i++) {
 
 [探究JS V8引擎下的“数组”底层实现](https://juejin.cn/post/6844903943638794248)
 
+### 数组里面有10万个数据，取第一个元素和第10万个元素的时间相差多少？
+
+了解了前面有关数组存储的几题的知识后，知道数组可以直接根据索引取的对应的元素，所以不管取哪个位置的元素的时间复杂度都是 O(1)。
+
+所以说相差无几。
+
+
+参考：
+
+[第 75 题：数组里面有10万个数据，取第一个元素和第10万个元素的时间相差多少 · Issue #124 · Advanced-Frontend/Daily-Interview-Question](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/124)
+
 
 ### JavaScript 中的 TypeArray 和 Node.js 中的 Buffer 有什么区别？
 
@@ -5626,3 +5637,38 @@ function lazyload() {
 参考：
 
 [Intersection Observer - Web API 接口参考 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/IntersectionObserver)
+
+
+
+
+### 大数相关
+
+工程中最好用bigNumber这样的库。手写的话：
+
+``` js
+let a = "9007199254740991";
+let b = "1234567899999999999";
+
+function add(a ,b){
+   //取两个数字的最大长度
+   let maxLength = Math.max(a.length, b.length);
+   //用0去补齐长度
+   a = a.padStart(maxLength , 0);//"0009007199254740991"
+   b = b.padStart(maxLength , 0);//"1234567899999999999"
+   //定义加法过程中需要用到的变量
+   let t = 0;
+   let f = 0;   //"进位"
+   let sum = "";
+   for(let i=maxLength-1 ; i>=0 ; i--){
+      t = parseInt(a[i]) + parseInt(b[i]) + f;
+      f = Math.floor(t/10);
+      sum = t%10 + sum;
+   }
+   if(f == 1){
+      sum = "1" + sum;
+   }
+   return sum;
+}
+
+add(a ,b); //结果为：1243575099254740990
+```

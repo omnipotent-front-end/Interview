@@ -170,6 +170,43 @@ HTTP/2的多路复用就是为了解决上述的两个性能问题。
 [HTTP/2 服务器推送（Server Push）教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2018/03/http2_server_push.html)
 
 
+
+### 介绍下http3
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210517140357.png"/>
+
+随着网络技术的发展，1999 年设计的 HTTP/1.1 已经不能满足需求，所以 Google 在 2009 年设计了基于 TCP 的 SPDY，后来 SPDY 的开发组推动 SPDY 成为正式标准，不过最终没能通过。不过 SPDY 的开发组全程参与了 HTTP/2 的制定过程，参考了 SPDY 的很多设计，所以我们一般认为 SPDY 就是 HTTP/2 的前身。无论 SPDY 还是 HTTP/2，都是基于 TCP 的，TCP 与 UDP 相比效率上存在天然的劣势，所以 2013 年 Google 开发了基于 UDP 的名为 QUIC 的传输层协议，QUIC 全称 Quick UDP Internet Connections，希望它能替代 TCP，使得网页传输更加高效。后经提议，互联网工程任务组正式将基于 QUIC 协议的 HTTP （HTTP over QUIC）重命名为 HTTP/3。
+
+### QUIC和http3的区别？
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210517140536.png"/>
+
+QUIC 是用来替代 TCP、SSL/TLS 的传输层协议，在传输层之上还有应用层，我们熟知的应用层协议有 HTTP、FTP、IMAP 等，这些协议理论上都可以运行在 QUIC 之上，其中运行在 QUIC 之上的 HTTP 协议被称为 HTTP/3，这就是”HTTP over QUIC 即 HTTP/3“的含义。
+
+### QUIC基于UDP怎么保证可靠性？
+
+
+QUIC改进了TCP的拥塞控制。
+
+
+对于流量控制：
+
+QUIC 的流量控制和 TCP 有点区别，TCP 为了保证可靠性，窗口左边沿向右滑动时的长度取决于已经确认的字节数。如果中间出现丢包，就算接收到了更大序号的 Segment，窗口也无法超过这个序列号。
+
+但 QUIC 不同，就算此前有些 packet 没有接收到，它的滑动只取决于接收到的最大偏移字节数。
+
+QUIC 一个连接上的多个 stream 之间没有依赖。这样假如 stream2 丢了一个 udp packet，也只会影响 stream2 的处理。不会影响 stream2 之前及之后的 stream 的处理。
+
+
+
+参考：
+
+[QUIC](https://www.yuque.com/jerrold/czz55f/quic#6670224f)
+
+[QUIC可靠性](https://www.yuque.com/dr.andy/vwmkb2/etlou7)
+
+
+
 ### 简单介绍下https
 
 HTTPS 指的是超文本传输安全协议，HTTPS 是基于 HTTP 协议的，不过它会使 用 TLS/SSL 来对数据加密。

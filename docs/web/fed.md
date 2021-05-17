@@ -965,6 +965,39 @@ png、jpg等进行一定的有损或无损压缩。配合自动化工具。
 
 私有化部署sentry。
 
+
+### Sentry接入时，除了引入SDK，需要做什么其他事情？
+
+
+1、sourcemap上传方便定位代码。可以通过webpack插件或者手动上传。
+
+2、在接口拦截器或其他位置上报异常，自定义异常上传方式。
+
+3、区分环境、测试和线上或者预发。
+
+4、用户user设置，`Sentry.setUser({ id: user.id })`，方便区分用户信息，用来复现。
+
+5、去除噪音
+
+参考：
+
+[前端异常监控 Sentry 的私有化部署和使用-云社区-华为云](https://bbs.huaweicloud.com/blogs/235750)
+
+### Sentry怎么去除噪音？
+
+1、SDK处可以设置一些节流的参数
+
+``` 
+// 高访问量应用可以控制上报百分比
+  tracesSampleRate: 0.3,
+```
+
+2、系统的GUI里也可以设置，发送邮件的条件比如说时间间隔内出现次数等。
+
+3、设置一些域名白名单或者黑名单，第三方SDK的报错一般不用关注。
+
+
+
 ### 能聊一聊Script error出现的原因么？
 
 跨域脚本的异常是捕获不到的，只是抛出来Script error，增加crossorigin="anonymous"属性就好了，当然脚本cdn那边跨域请求头也是需要的
@@ -1421,6 +1454,20 @@ JavaScript 调用 Native 的方式，主要有两种：注入 API 和 拦截 URL
 [JSBridge的原理](https://juejin.cn/post/6844903585268891662#heading-11)
 
 
+### jsbridge有安全问题吗？怎么避免？
+
+以安卓 webview 的 addJavascriptInterface 为例，在安卓 4.2 版本之前，js 可以利用 java 的反射 Reflection API，取得构造该实例对象的类的內部信息，并能直接操作该对象的内部属性及方法，这种方式会造成安全隐患，例如如果加载了外部网页，该网页的恶意 js 脚本可以获取手机的存储卡上的信息。
+
+在安卓 4.2 版本后，可以通过在提供给 js 调用的 java 方法前加装饰器 @JavascriptInterface，来表明仅该方法可以被 js 调用。
+
+避免方式就是敏感操作放在native端去实现。
+
+参考：
+
+[JSBridge 实现原理解析 - SegmentFault 思否](https://segmentfault.com/a/1190000025182935)
+
+
+
 
 
 
@@ -1563,6 +1610,39 @@ Polyfill 指的是用于实现浏览器并不支持的原生 API 的代码。
 比如说 querySelectorAll 是很多现代浏览器都支持的原生 Web API，但是有些古老的浏览 器并不支持，那么假设有人写了一段代码来实现这个功能使这些浏览器也支持了这个功能，那么 这就可以成为一个 Polyfill。
 
 一个 shim 是一个库，有自己的 API，而不是单纯实现原生不支持的 API。
+
+
+### 有哪些polyfill解决方案？
+
+
+1、自己hack
+
+最简单的是自己手写hack方法，方法在MDN上即可拿到，然后打包，自己引入自己的SDK来polyfill。
+
+这样的优点是可控、轻量，缺点是不全，每次都需要补充、可维护性差。
+
+
+2、基于node工具链路
+
+基于`@babel/polyfill`或`core-js`这样的库，配合Browserslist来指定需要兼容的浏览器范围，最后打包到头部。
+
+这样的优点是可控、轻量，缺点是比第一种方案稍微重一点，而且也是全量覆盖的，很多用户其实用不到。
+
+
+3、基于服务来做
+
+通过[Polyfill.io](https://polyfill.io/v3/)这样的服务或者自己搭建相识的，根据浏览器不同版本来适配polyfill。
+
+这样的优点是最精确定位问题，缺点是维护起来麻烦。
+
+参考：
+
+[2020， 再谈 Polyfill 最佳实践 | 雨浣潇湘](https://www.thjiang.com/2020/03/24/2020%EF%BC%8C-%E5%86%8D%E8%B0%88-Polyfill-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/)
+
+
+[Polyfill 的前世今生 | 雨浣潇湘](https://www.thjiang.com/2019/03/02/Polyfill-%E7%9A%84%E5%89%8D%E4%B8%96%E4%BB%8A%E7%94%9F/#polyfill-io)
+
+
 
 ### 如何检测浏览器所支持的最小字体大小？
 
@@ -2401,6 +2481,19 @@ nest天然支持了module，所以相对会简单，后端暴露独立的module�
 
 
 ## 打包工具
+
+
+### 前端圈有哪些打包工具？
+
+1、Grunt：最老牌的打包工具，它运用配置的思想来写打包脚本，一切皆配置，所以会出现比较多的配置项，诸如option,src,dest等等。而且不同的插件可能会有自己扩展字段，认知成本高，运用的时候需要明白各种插件的配置规则。
+
+2、Gulp：用代码方式来写打包脚本，并且代码采用流式的写法，只抽象出了gulp.src, gulp.pipe, gulp.dest, gulp.watch 接口，运用相当简单。更易于学习和使用，使用gulp的代码量能比grunt少一半左右。
+
+3、Webpack: 是模块化管理工具和打包工具。通过 loader 的转换，任何形式的资源都可以视作模块，比如 CommonJs 模块、AMD 模块、ES6 模块、CSS、图片等。它可以将许多松散的模块按照依赖和规则打包成符合生产环境部署的前端资源。还可以将按需加载的模块进行代码分隔，等到实际需要的时候再异步加载。它定位是模块打包器，而 Gulp/Grunt 属于构建工具。Webpack 可以代替 Gulp/Grunt 的一些功能，但不是一个职能的工具，可以配合使用。
+
+4、Rollup：下一代 ES6 模块化工具，最大的亮点是利用 ES6 模块设计，利用 tree-shaking生成更简洁、更简单的代码。一般而言，对于应用使用 Webpack，对于类库使用 Rollup；需要代码拆分(Code Splitting)，或者很多静态资源需要处理，再或者构建的项目需要引入很多 CommonJS 模块的依赖时，使用 webpack。代码库是基于 ES6 模块，而且希望代码能够被其他人直接使用，使用 Rollup。
+
+5、vite/snowpack等bundleless的打包工具。具体参考[vite、snowpack这类bundleless的打包工具是否了解？](/web/fed.html#vite%E3%80%81snowpack%E8%BF%99%E7%B1%BBbundleless%E7%9A%84%E6%89%93%E5%8C%85%E5%B7%A5%E5%85%B7%E6%98%AF%E5%90%A6%E4%BA%86%E8%A7%A3%EF%BC%9F)。开发时通过esmodule和浏览器script type='module'来达到和AMD类似的开发体验，打包时再去进行解析语法树编译之类的流程。
 
 ### vite、snowpack这类bundleless的打包工具是否了解？
 

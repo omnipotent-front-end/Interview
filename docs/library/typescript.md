@@ -114,6 +114,36 @@ r = undefined; // Error
 [ecmascript 6 - Difference between 'object' and {} in TypeScript - Stack Overflow](https://stackoverflow.com/questions/49464634/difference-between-object-and-in-typescript)
 
 
+
+### 什么是TS的泛型？
+
+
+泛型（Generics）是指在**定义函数、接口或类**的时候，**不预先指定具体的类型，而在使用的时候再指定类型**的一种特性。
+
+举个例子：
+
+``` js
+// 声明一个泛型接口，这个写法，像极了声明一个函数，我们用描述语言来形容 @type = T => (T): T
+interface GenericIdentityFn<T> {
+    (arg: T): T;
+}
+
+// 这个写法，有点像一个闭包函数，在声明函数后，立即运行这个函数，描述语言：@@[T => (T): T](any)
+function identity<T>(arg: T): T {
+    return arg;
+}
+
+// 使用泛型接口，像极了调用一个函数，我们用描述语言来形容 @type(number)
+let myIdentity: GenericIdentityFn<number> = identity;
+```
+
+
+参考：
+
+[TypeScript 泛型的通俗解释](https://juejin.cn/post/6844904015235383303)
+
+
+
 ### 有没有了解过ts-node？ts-node是ts的运行时吗？为什么？
 
 ts-node不是将typescript编译成js再执行，而是直接通过hack开启了node的ts运行时。

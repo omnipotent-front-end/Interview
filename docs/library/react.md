@@ -1368,6 +1368,18 @@ react在传统的web开发中，通过react，和react-dom两个包来配合使�
 
 ## 原理
 
+
+
+### react和react-dom的区别是什么？
+
+react 包即是抽象逻辑，它包含了 React 的主干逻辑。例如组件实现、更新调度等。
+
+react-dom 顾名思义就是一种针对 dom 的平台实现，主要用于在 web 端进行渲染。ReactDom 只做和浏览器或 DOM 相关的操作，例如 ReactDOM.render() 和 ReactDOM.findDOMNode()。如果是服务器端渲染，可以 ReactDOM.renderToString()。除这些以外的其他所有的事情都是 react 做的。
+
+参考：
+
+[为什么react和react-dom要分成两个包？ - 知乎](https://www.zhihu.com/question/336664883)
+
 ### react如何将O(n3)的算法降低到O(n)级别的？
 
 传统的 diff 算法通过循环递归对节点一次对比，效率很低，复杂度达到 O(n3), 其中 n 是树中节点的总数。

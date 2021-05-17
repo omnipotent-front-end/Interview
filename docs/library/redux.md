@@ -160,7 +160,22 @@ redux-observable缺陷:
 [2019年17道高频React面试题及详解](https://juejin.cn/post/6844903922453200904#heading-3)
 
 
-### dva解决了redux-saga什么问题（todo）
+### dva解决了redux-saga什么问题？
+
+Dva 是基于 React + Redux + Saga 的最佳实践沉淀, 做了 3 件很重要的事情, 大大提升了编码体验:
+
+
+1、把 store 及 saga 统一为一个 model 的概念, 写在一个 js 文件里面
+
+2、增加了一个 Subscriptions, 用于收集其他来源的 action, eg: 键盘操作
+
+3、model 写法很简约, 类似于 DSL 或者 RoR, coding 快得飞起
+
+
+参考：
+
+[Dva 图解 | DvaJS](https://dvajs.com/guide/fig-show.html#%E5%9B%BE%E8%A7%A3%E4%B8%89-%E5%8A%A0%E5%85%A5-saga)
+
 
 
 ## 原理
