@@ -42,6 +42,7 @@ module.exports = {
             "/library/pm2.md",
             "/library/react.md",
             "/library/redux.md",
+            "/library/rollup.md",
             "/library/typescript.md",
             "/library/vue.md",
             "/library/webpack.md"

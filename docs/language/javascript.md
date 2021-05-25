@@ -2727,7 +2727,7 @@ js 中现在比较成熟的有四种模块加载方案。
 
 通过script标签，type为module时，以esm加载js文件。
 
-浏览器静态分析，编译时用AST找到import和export，构成依赖图，导出变量保存在依赖图中，内存是引用，实时更新（在不是export default的情况下）。
+浏览器静态分析，编译时用AST找到import和export，构成依赖图，导出变量保存在依赖图中，内存是引用，实时更新（在export default时的表现略有不同，见[链接](/language/javascript.html#esmodule和commonjs引用和拷贝的区别是指？)）。
 
 ### commonjs是怎么工作的？
 
@@ -2736,7 +2736,7 @@ node运行时构成依赖图，每个模块是闭包，依赖图中保存的是�
 ### esmodule和commonjs引用和拷贝的区别是指？
 
 
-以commonjs为例：
+**以commonjs为例：**
 
 ``` js
 let b = 1;
@@ -2756,31 +2756,45 @@ setTimeout(() => {
 
 输出的结果是1，因为被引入的d只是真正的d的闭包快照。
 
-而esmodule中：
+**而esmodule中：**
+
+`default` 和`非default`的import分别是一个引用传递，`非default`因为是在一个对象里面，所以他们都是实时改变的；
+
+而`default`自身是一个引用传递，当`default`内容是对象时，他的属性就是更新的；`default`是简单类型的话就不能更新了。
 
 ``` js
 export let b = 1;
-
-
 setTimeout(() => b = 3, 3000);
-//如果是export default 导出整个对象，就不能精细化实时同步了
+
+export default let a = 1;
+setTimeout(() => a = 3, 3000); // a是对象的话，属性可以实时更新
 ```
 
-
 ``` js
-import {b} from "./d1.mjs";
+import a, { b } from "./d1.mjs";
+
 setTimeout(() => {
   console.log(b);//3
 }, 5000);
 
+setTimeout(() => {
+  console.log(a);//1
+}, 5000);
 ```
 
-输出结果是3，也就是说引用的b生效了。
+### 动态加载和静态编译的区别？
 
-需要注意的是export default的情况下是不能正常更新的，因为export default是导出整个对象，引入的时候就是引入所有，不能精细化区分。
+ES modules 模块编译时执行，而 CommonJS 模块总是在运行时加载
 
+- 动态加载，只有当模块运行后，才能知道导出的模块是什么。
+- 静态编译, 在编译阶段就能知道导出什么模块。
 
+关于 ES6 模块编译时执行会导致有以下两个特点：
 
+- import 命令会被 JavaScript 引擎静态分析，优先于模块内的其他内容执行。
+- export 命令会有变量声明提前的效果。
+
+[参考](https://zhuanlan.zhihu.com/p/108217164)
 
 ### 模块依赖管理 import，import from 和 require 等的区别？
 
