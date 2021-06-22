@@ -11,9 +11,11 @@
 
 ### 移动端浏览器点击事件触发顺序
 
-touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->mousedown --> mouseup --> click -->touchend
+touchstart --> touchmove --> touchend --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->mousedown --> mouseup --> click
 
+mouseover: 当指针设备移动到存在监听器的元素或其子元素的时候
 
+mouseenter: 当指针设备( 通常指鼠标 )在元素上移动时
 ---
 
 

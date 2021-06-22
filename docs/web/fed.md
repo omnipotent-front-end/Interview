@@ -1312,12 +1312,16 @@ vmax：vmax的值是当前vw和vh中较大的值
 
 [使用viewport中的vm来适配移动端页面 - 简书](https://www.jianshu.com/p/35e81bb5c997)
 
+[使用vw做移动端页面的适配](http://t.zoukankan.com/axl234-p-8871794.html)
+
 [Viewport布局配置](https://youzan.github.io/vant/#/zh-CN/advanced-usage#viewport-bu-ju)
 
 viewport方案的配置[如这次提交](https://github.com/codeless-js/vue-h5-viewport/commit/60e6fc985e193e41625559a7fe61c7edb12c486c)
 
 
 ### 移动web为什么有300ms延迟，怎么解决？
+
+**该问题没有了：** [移动端300ms延迟被取消了](/web/fed.html#移动端300ms延迟被取消了)
 
 300ms的原因在于：由于移动端会有**双击缩放**的这个操作，因此浏览器在**click之后要等待300ms，看用户有没有下一次点击**，也就是这次操作是不是双击。
 
@@ -1347,6 +1351,8 @@ viewport方案的配置[如这次提交](https://github.com/codeless-js/vue-h5-v
 
 ### 什么是点透问题，如何解决呢？
 
+**该问题没有了：** [移动端300ms延迟被取消了](/web/fed.html#移动端300ms延迟被取消了)
+
 先理解了[移动web为什么有300ms延迟，怎么解决？](/web/fed.html#%E7%A7%BB%E5%8A%A8web%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89300ms%E5%BB%B6%E8%BF%9F%EF%BC%8C%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3%EF%BC%9F)，既然click点击有300ms的延迟，那对于触摸屏，我们直接监听touchstart事件不就好了吗？
 
 使用touchstart去代替click事件有两个不好的地方。
@@ -1365,7 +1371,7 @@ viewport方案的配置[如这次提交](https://github.com/codeless-js/vue-h5-v
 参考：[移动端浏览器点击事件触发顺序](/cp/browser.html#%E7%A7%BB%E5%8A%A8%E7%AB%AF%E6%B5%8F%E8%A7%88%E5%99%A8%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6%E8%A7%A6%E5%8F%91%E9%A1%BA%E5%BA%8F)。
 移动浏览器事件触发顺序为：
 
-touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->mousedown --> mouseup --> click -->touchend
+touchstart --> touchmove --> touchend --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->mousedown --> mouseup --> click
 
 解决方案：
 
@@ -1385,6 +1391,37 @@ touchstart --> mouseover(有的浏览器没有实现) --> mousemove(一次) -->m
 参考：
 
 [移动端300ms点击延迟和点击穿透 - 掘金](https://juejin.im/post/5b3cc9836fb9a04f9a5cb0e0)
+
+
+
+### 移动端300ms延迟被取消了
+
+方案1：
+
+加上如下标签：
+
+```html
+<meta name="viewport" content="width=device-width">
+```
+
+这将视口宽度设置为与设备相同，这通常是移动优化站点的最佳实践。有了这个标记，浏览器就会假定您已经让文本在移动设备上可读了，为了更快地点击，双点缩放功能被取消了。
+
+只有少数移动端浏览器不兼容。手机访问[测试地址](https://output.jsbin.com/ONuQizu/4/quiet) 点击Google字符是否反应很慢，来测试是否是那少数。
+
+方案2：
+
+如果因为某些原因你不能做出这种改变，你可以使用touch-action: manipulation在整个页面或特定元素上实现相同的效果:
+
+```css
+html {
+  touch-action: manipulation;
+}
+```
+
+Firefox不支持这种技术，所以viewport标记更受欢迎。
+
+
+参考 [300ms tap delay, gone away](https://developers.google.com/web/updates/2013/12/300ms-tap-delay-gone-away)
 
 
 ### 你有做过Hybrid APP开发吗？说说你的经验（todo）
