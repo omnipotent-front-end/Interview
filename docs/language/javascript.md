@@ -3528,6 +3528,31 @@ Function.prototype.mybind = function(context) {
 };
 ```
 
+
+### 如何实现typeof？
+
+其实这个是一个历史遗留的bug，在 javascript 的最初版本中，使用的 32 位系统，为了性能考虑使用低位存储了变量的类型信息：
+
+```
+000：对象
+010：浮点数
+100：字符串
+110：布尔
+1：整数
+```
+
+但是, 对于 undefined 和 null 来说，这两个值的信息存储是有点特殊的。
+
+null：对应机器码的 NULL 指针，一般是全零。
+
+undefined：用 −2^30 整数来表示!
+
+所以，typeof 在判断 null 的时候就出现问题了，由于 null 的所有机器码均为0，因此直接被当做了对象来看待。
+
+参考：
+
+[JavaScript基础：手写实现typeof与instanceof_imagine_tion的博客-CSDN博客](https://blog.csdn.net/imagine_tion/article/details/115534407)
+
 ### 如何实现instanceof？
 
 首先弄懂[说一下原型链，对象，构造函数之间的一些联系？prototype-和-proto-有什么区别？](/language/javascript.html#%E8%AF%B4%E4%B8%80%E4%B8%8B%E5%8E%9F%E5%9E%8B%E9%93%BE%EF%BC%8C%E5%AF%B9%E8%B1%A1%EF%BC%8C%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B9%8B%E9%97%B4%E7%9A%84%E4%B8%80%E4%BA%9B%E8%81%94%E7%B3%BB%EF%BC%9Fprototype-%E5%92%8C-proto-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F)
@@ -5445,6 +5470,9 @@ export function sampleSize([...arr], n = 1) {
 
 ```
 
+
+
+
 ### js实现拖拽的思路
 
 一个元素的拖拽过程，我们可以分为三个步骤，第一步是鼠标按下目标元素，第二步是鼠标保持 按下的状态移动鼠标，第三步是鼠
@@ -5641,7 +5669,7 @@ function lazyload() {
 
 
 
-### 大数相关
+### 大数相加
 
 工程中最好用bigNumber这样的库。手写的话：
 

@@ -94,6 +94,49 @@ UC 应用模式
  <meta http-equiv=”pragma” content=”no-cache”> <meta http-equiv=”cache-control” content=”no-cache”> <meta http-equiv=”expires” content=”0′′>
 ```
 
+
+### base标签是否了解？怎么指定资源相对路径？
+
+`<base>`标签是用来指定一个HTML页中所有的相对路径的根路径。
+
+比如：
+
+``` html
+<head>
+  <base href="http://www.xxx.com/public/script/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--  -->
+  <script type="text/javascript" src="/common/111.js"></script>
+  <script type="text/javascript" src="/common/222.js"></script>
+  <link rel="stylesheet" href="/common/111.css">
+  <link rel="stylesheet" href="/common/222.css">
+
+> <script type="text/javascript" src="/script/plug.js"></script>
+	...
+</head>
+```
+
+浏览器在解析的时候会比较基路径和静态文件的相对路径，如果相对路径中的一部分包含在基路径中，比如plug.js的/script/在基路径中已经有了，那么就会将二者拼起来，**去重哦（不可控）**
+
+```
+->http://www.xxx.com/public/script/plug.js
+
+```
+
+
+如果没有则会取前面的域名（如果为ip地址的话则是ip+端口号）和相对路径拼起来，比如111.js
+
+```
+->http://www.xxx.com/common/111.js
+```
+
+
+参考：
+
+[HTML Base标签的使用技巧-为页面设置统一的资源地址](https://juejin.cn/post/6844904116758511624)
+
 ## 表单相关
 
 ### label标签有什么用？

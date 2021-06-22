@@ -562,12 +562,28 @@ http 请求的解析速度。
 
 具体的逻辑实现可以参考我写的[brizer/web-monitor-sdk: SDK for web monitor, a simple web data collection tool for performance, exceptions, etc.](https://github.com/brizer/web-monitor-sdk)
 
+白屏时间计算
 
+将代码脚本放在 `</head>` 前面就能获取白屏时间：
+
+``` js
+new Date().getTime() - performance.timing.navigationStart
+```
+
+
+首屏时间计算
+
+在window.onload事件中执行以下代码，可以获取首屏时间：
+
+``` js
+new Date().getTime() - performance.timing.navigationStart
+```
 
 参考：
 
 [前端性能监控方案（首屏、白屏时间等） - 掘金](https://juejin.im/post/5df4294d518825128306cd5c)
 
+[7000字前端性能优化总结 | 干货建议收藏](https://mp.weixin.qq.com/s/OWYiVt0GeD01tFLN_8Z9YA)
 
 
 ### 无限滚动列表
@@ -711,7 +727,7 @@ fragment.appendChild(elem);
 
 服务端渲染页面。
 
-使用serviceworker的precache来缓存不变的静态资源。这不仅使用户可以在脱机时使用您的应用程序，而且还可以缩短重复访问时的页面加载时间
+使用serviceworker的precache来缓存不变的静态资源。这不仅使用户可以在脱机时使用您的应用程序，而且还可以缩短重复访问时的页面加载时间。
 
 懒加载图片和js。
 
@@ -956,6 +972,20 @@ png、jpg等进行一定的有损或无损压缩。配合自动化工具。
 5、代码层面的优化
 
 比如[有做过哪些ssr性能方面的优化？](/web/fed.html#%E6%9C%89%E5%81%9A%E8%BF%87%E5%93%AA%E4%BA%9Bssr%E6%80%A7%E8%83%BD%E6%96%B9%E9%9D%A2%E7%9A%84%E4%BC%98%E5%8C%96%EF%BC%9F)中提到的异步优化和缓存优化，和[做过哪些react方面的性能优化？](/library/react.html#%E5%81%9A%E8%BF%87%E5%93%AA%E4%BA%9Breact%E6%96%B9%E9%9D%A2%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%EF%BC%9F)中React防止组件重复渲染的memo等方式。
+
+
+
+### serviceworker做了什么实践？
+
+可以参考文章：[serviceworker运用与实践 · Issue #2 · omnipotent-front-end/blog](https://github.com/omnipotent-front-end/blog/issues/2)
+
+被以下收录：
+
+[【第1909期】Service Worker运用与实践](https://mp.weixin.qq.com/s/vI2bxaFsFSB5rGC4Bkr8vQ)
+
+[大厂都在用的高级缓存方案](https://mp.weixin.qq.com/s/LzrR9PByBEL0m17n5PsDfw)
+
+[有道技术团队收录](https://mp.weixin.qq.com/s/3Ep5pJULvP7WHJvVJNDV-g)
 
 
 
@@ -1596,6 +1626,57 @@ babel-import-plugin,这时候才想起来，跟面试官解释了自己的组件
 
 
 
+### 组件封装有哪些原则？
+
+组件开发中，如何将数据和UI解耦，是最重要的工作。
+
+1、单一职责
+
+你的组件是否符合只实现一个职责，并且只有一个改变状态的理由？
+
+如fetch请求和渲染逻辑，应该分离。因为fetch请求时会造成组件重新渲染，渲染时的样式或数据格式变化，也会引起组件重新渲染。
+
+单一职责可以保证组件是最细的粒度，且有利于复用。但太细的粒度有时又会造成组件的碎片化。
+
+因此单一职责组件要建立在可复用的基础上，对于不可复用的单一职责组件，我们仅仅作为独立组件的内部组件即可。
+
+2、通用性
+
+放弃对DOM的掌控，只提供最基础的DOM、交互逻辑，将DOM的结构转移给开发者
+
+3、封装
+
+良好的组件封装应该隐藏内部细节和实现意义，并通过props来控制行为和输出。
+
+减少访问全局变量：因为它们打破了封装，创造了不可预测的行为，并且使测试变得困难。可以将全局变量作为组件的props，而不是直接引用。
+
+4、纯函数纯组件
+
+非纯组件有显示的副作用，我们要尽量隔离非纯代码。
+
+将全局变量作为props传递给组件，而非将其注入到组件的作用域中。
+
+将网络请求和组件渲染分离，只将数据传递给组件，保证组件职责的单一性，也能将非纯代码从组件中隔离。
+
+5、可测试性
+
+测试不仅仅是自动检测错误，更是检测组件的逻辑。
+
+如果一个组件测试不易于测试，很大可能是你的组件设计存在问题。
+
+
+6、语义化
+
+开发人员大部分时间都在阅读和理解代码，而不是实际编写代码。
+
+有意义的函数、变量命名，可以让代码具有良好的可读性。
+
+
+参考：
+
+[前端组件设计之一——设计原则](https://juejin.cn/post/6844904032700481550)
+
+
 
 ---
 
@@ -1871,6 +1952,13 @@ function wrapComponent (WrappedComponent: FC) {
 }
 ```
 
+### 什么节点降级为CSR最合适？
+
+降级的同时，还需要保证启动可以通过csr来完成。这样方便ssr挂掉时迅速用csr启动来补位。
+
+至于怎么补位，可以通过每次启动ssr、csr两个service，然后nginx去探活，如果ssr的service挂了，就去访问csr的service。
+
+
 
 ### 服务端路由和客户端路由在处理上有什么区别？
 
@@ -2124,6 +2212,131 @@ nginx 产生一条日志，云端拿到数据进行清洗、分析
 模块组件使用计算、各个营销活动打点计数、自动化埋点点击区域热图显示等等，ABtest效果展示。
 
 
+
+## 截屏服务
+
+截屏服务一般是由node来提供，将用户屏幕内容截取。
+
+
+### 需要什么参数
+
+``` js
+await screenShotService.shotSingle({
+      url: url as string,
+      fullPage: fullPage === 'true',
+      outputPath,
+      userAgent: userAgent as string,
+      viewPort: {
+        width: Number(viewPortWidth),
+        height: Number(viewPortHeight),
+      },
+      scrollLoad: scrollLoad === 'true',
+    })
+    const stats = fs.statSync(outputPath)
+```
+
+### 截图过程
+
+``` js
+const shotSingle = async (options:ScreenShotOption) => {
+  const {
+    url, userAgent, viewPort, outputPath, fullPage, scrollLoad,
+  } = { ...defaultOption, ...options }
+  const { page, browser } = await preparePage({ userAgent, viewPort })
+
+  await page.goto(url, {
+    timeout: TIME_OUT,
+    waitUntil: 'networkidle2',
+  })
+  if (scrollLoad) {
+    await autoScroll(page)
+  }
+  await page.screenshot({
+    path: outputPath,
+    fullPage,
+  })
+  await browser.close()
+}
+```
+
+### 怎么模拟页面
+
+使用puppeteer来启动页面，设置viewport、ua等等
+
+``` js
+export const preparePage = async (options:PageOption): Promise<PageReturn> => {
+  const {
+    userAgent, viewPort,
+  } = options || {}
+  const ua = userAgent || MOBILE_UA
+  const dpr = ua.toLocaleLowerCase().includes('mobile') ? 2 : 1
+  const browser = await puppeteer.launch({
+    headless: true,
+    // linux环境一定不能省略下面俩个参数 noSandbox 还有disableSetuidSandbox, 否则会运行失败！！！
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  })
+  const page = await browser.newPage()
+  await page.setUserAgent(ua)
+  await page.setViewport({
+    width: viewPort?.width || VIEW_PORT.width,
+    height: viewPort?.height || VIEW_PORT.height,
+    deviceScaleFactor: dpr,
+  })
+  return {
+    browser,
+    page,
+  }
+}
+```
+
+### 怎么滚屏
+
+通过go到了指定url页面后需要进行滚屏
+
+``` js
+/**
+ * 自动滚动到底，注意；必须可滚动到底
+ */
+async function autoScroll(page:Page) {
+  await page.evaluate(`(async () => {
+    await new Promise((resolve) => {
+      // 页面的当前高度
+      let totalHeight = 0
+      // 每次向下滚动的距离
+      const distance = 100
+      // 通过setInterval循环执行
+      const timer = setInterval(() => {
+        const { scrollHeight } = document.body
+
+        // 执行滚动操作
+        window.scrollBy(0, distance)
+
+        // 如果滚动的距离大于当前元素高度则停止执行
+        totalHeight += distance
+        if (totalHeight >= scrollHeight) {
+          clearInterval(timer)
+          resolve()
+        }
+      }, 100)
+    })
+  })()`)
+}
+```
+
+
+### 怎么截屏
+
+截屏并关闭页面即可。
+
+``` js
+  await page.screenshot({
+    path: outputPath,
+    fullPage,
+  })
+  await browser.close()
+
+```
+
 ## 其他
 ### 怎么实现草稿，多终端同步，以及冲突问题
 
@@ -2214,8 +2427,161 @@ egg是基于事件完成生命周期的通知，和通过规约拿到原型注�
 vue是简单的注入原型。
 
 
-### 自建图标库怎么建设的，原理是什么？（todo）
+### 自建图标库怎么建设的，原理是什么？
 
+核心原理就是把svg转成字体文件。主要是通过[gulp-iconfont](https://github.com/nfroidure/gulp-iconfont)这个库来完成的。
+
+整个系统可以参考[bolin-L/nicon: 字体图标管理平台 http://icon.bolin.site/#/](https://github.com/bolin-L/nicon)。
+
+
+
+``` html
+<span class="icon-qq"></span>
+<style>
+@font-face {
+  font-family: "hello";
+  src: url('//at.alicdn.com/t/font_1475388520_7015634.ttf') format('truetype')
+}
+.icon-qq:before { font-family:"hello";content: "\e600"; } 
+</style>
+
+```
+
+通过字体和伪类遥相呼应。
+
+在dom上增加一个伪元素，css中正斜杠\表示一个16进制数字。这样写的好处是可以直接通过审查dom元素就知道它引用的是哪个字形，看起来更加语义化。
+
+
+
+### node怎么做绘图？
+
+
+生成证书图片等服务一般是用node来完成，这里整理下实现。
+
+
+1、通过模板和数据，组装canvas实例。
+
+这里的 Canvas来自node-canvas这个库
+
+``` js
+    // 渲染
+    async render(temp, data){
+        // 处理模板数据
+        temp = super._formatTemplate(temp, data);
+
+        let w = temp.canvasProperty.width || 1000, h = temp.canvasProperty.height || 1000;
+        let pw = temp.canvasProperty.printWidth || 297, ph = temp.canvasProperty.printHeight || 210; // 打印尺寸，单位毫米
+
+        let scale = renderUtil.getRenderScale(pw, ph);
+        // log.debug('证书渲染尺寸：' + scale.scaleW + ' * ' + scale.scaleH);
+
+        this._canvasIns = new Canvas(scale.scaleW, scale.scaleH);
+        let context = this._canvasIns.getContext('2d');
+
+        // 缩放
+        this._scale(context, temp, scale.scaleW / w, scale.scaleH / h);
+
+        return this._downloadAllImage(temp).then((imageList) => {            
+            log.debug('证书全部资源下载完成');
+            return this._renderItemsByOrder(context, temp, imageList); // 要注意先后顺序
+        })
+    }
+```
+
+
+2、针对不同的内容，进行不同的渲染
+
+``` js
+
+            log.debug('渲染背景');
+            this._renderBackground(context, item.areaProperty);
+
+            // 可能同时有图片和文本，一般先渲染图片
+            if(item.image){
+                // log.debug('渲染图片');
+                this._renderImage(context, item.image, item.areaProperty, imageMap);
+            }
+            
+            if(item.text){
+                // log.debug('渲染文本');
+                this._renderText(context, item.text, item.areaProperty);
+            }
+```
+
+渲染背景：
+
+``` js
+    // 绘制背景
+    _renderBackground(context, areaProperty){
+        /*
+            边框暂时没做
+            borderStyle
+            borderColor
+            borderWidth
+        */
+
+        // 如果有背景色
+        if(areaProperty.backgroundColor){
+            context.fillStyle = areaProperty.backgroundColor;
+            context.fillRect(areaProperty.left || 0, areaProperty.top || 0, areaProperty.width || 0, areaProperty.height || 0);
+        }
+    }
+```
+
+渲染图片、渲染文字等等，均是使用canvas的api来完成渲染。
+
+
+### 使用node搭建过哪些服务？
+
+1、可视化cms
+
+用来做页面生成器的工具
+
+参考[可视化搭建cms](/web/fed.html#%E5%8F%AF%E8%A7%86%E5%8C%96%E6%90%AD%E5%BB%BAcms)
+
+
+2、截屏服务
+
+用来截取用户当前屏幕内容，基于puppeteer
+
+参考[截屏服务](/web/fed.html#%E6%88%AA%E5%B1%8F%E6%9C%8D%E5%8A%A1)
+
+
+3、绘图服务
+
+用来根据用户参数，绘制图片，基于node-canvas
+
+参考[node怎么做绘图？](/web/fed.html#node%E6%80%8E%E4%B9%88%E5%81%9A%E7%BB%98%E5%9B%BE%EF%BC%9F)
+
+4、SSR
+
+SSR用来优化性能和SEO。
+
+参考[ssr](/web/fed.html#ssr)
+
+5、性能监控平台
+
+基于lighthouse来做APM平台，给页面自动化打分。
+
+参考[lighthouse-apm](https://github.com/brizer/lighthouse-apm)
+
+6、图标库
+
+内部图标库，类似[iconfont-阿里巴巴矢量图标库](https://www.iconfont.cn/)
+
+参考[自建图标库怎么建设的，原理是什么？](/web/fed.html#%E8%87%AA%E5%BB%BA%E5%9B%BE%E6%A0%87%E5%BA%93%E6%80%8E%E4%B9%88%E5%BB%BA%E8%AE%BE%E7%9A%84%EF%BC%8C%E5%8E%9F%E7%90%86%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%EF%BC%88todo%EF%BC%89)
+
+7、内部后台系统
+
+基于egg、nest、koa等等搭建内部后台表单系统。
+
+8、投放系统
+
+基于koa大家外投api系统，接入第三方sdk完成投放上报。
+
+9、微信管理系统
+
+基于微信api，管理微信服务号公综号相关系统。
 
 
 
@@ -2566,6 +2932,22 @@ bundleless方案的不会立即编译。
 bundleless的方案均是依赖esmodule来完成的，esmodule的特性参考[esmodule的怎么工作的？](/language/javascript.html#esmodule%E7%9A%84%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84%EF%BC%9F)，其实esm和amd非常接近可以参考[amd和esmodule的区别？](/language/javascript.html#amd%E5%92%8Cesmodule%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F)。
 
 只不过esm是语法层面支持，可以在静态分析阶段构建依赖图，而AMD不行，需要在运行时。所以esm更快一些。
+
+
+
+### uglify的原理是什么？
+
+uglify首先是生成了抽象语法树，
+
+接着遍历语法树并作出优化，像是替换语法树中的变量，变成a，b，c那样的看不出意义的变量名。还有把 if/else 合并成三元运算符等。
+
+最后输出代码的时候，全都输出成一行。
+
+参考：
+
+[【Q137】js 代码压缩的原理是什么 · Issue #138 · shfshanyue/Daily-Question](https://github.com/shfshanyue/Daily-Question/issues/138)
+
+
 
 ## 播放器相关
 

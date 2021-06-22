@@ -651,6 +651,173 @@ const DemoLoader = React.memo(props => {
 [React.memo: 在函数组件中实现'shouldComponentUpdate'](https://juejin.cn/post/6844904006075023367)
 
 
+### hook遇到不更新的问题吗？怎么解决？
+
+闭包问题经常捕获一个未更新的变量，一个有效的解决闭包问题的方法是在React hooks里设置正确的依赖，或者用函数的方式更新state。
+
+先看一个useEffect的问题：
+
+``` js
+function WatchCount() {
+  const [count, setCount] = useState(0);
+
+  useEffect(function() {
+    setInterval(function log() {
+      console.log(`Count is: ${count}`);
+    }, 2000);
+  }, []);
+
+  return (
+    <div>
+      {count}
+      <button onClick={() => setCount(count + 1) }>
+        Increase
+      </button>
+    </div>
+  );
+}
+```
+
+点击多次后，count 还是0。
+
+这个问题的本质可以看看下面的例子：
+
+``` js
+function createIncrement(incBy) {
+  let value = 0;
+
+  function increment() {
+    value += incBy;
+    console.log(value);
+  }
+
+  const message = `Current value is ${value}`;
+  function log() {
+    console.log(message);
+  }
+  
+  return [increment, log];
+}
+
+const [increment, log] = createIncrement(1);
+increment(); // logs 1
+increment(); // logs 2
+increment(); // logs 3
+// Does not work!
+log();       // logs "Current value is 0"
+```
+
+尽管多次调用increment增加vulue的值，message变量也没有保持更新。
+
+需要改为：
+
+``` js
+function createIncrement(incBy) {
+  let value = 0;
+
+  function increment() {
+    value += incBy;
+    console.log(value);
+  }
+
+  function log() {
+    const message = `Current value is ${value}`;
+    console.log(message);
+  }
+  
+  return [increment, log];
+}
+
+const [increment, log] = createIncrement(1);
+increment(); // logs 1
+increment(); // logs 2
+increment(); // logs 3
+// Works!
+log();       // logs "Current value is 3"
+```
+
+所以刚才的useEffect应该改为：
+
+``` js
+function WatchCount() {
+  const [count, setCount] = useState(0);
+
+  useEffect(function() {
+    const id = setInterval(function log() {
+      console.log(`Count is: ${count}`);
+    }, 2000);
+    return function() {
+      clearInterval(id);
+    }
+  }, [count]);
+
+  return (
+    <div>
+      {count}
+      <button onClick={() => setCount(count + 1) }>
+        Increase
+      </button>
+    </div>
+  );
+}
+```
+
+通过依赖计算，来保证其执行。
+
+再看看useState遇到同样的问题：
+
+``` js
+function DelayedCount() {
+  const [count, setCount] = useState(0);
+
+  function handleClickAsync() {
+    setTimeout(function delay() {
+      setCount(count + 1);
+    }, 1000);
+  }
+
+  return (
+    <div>
+      {count}
+      <button onClick={handleClickAsync}>Increase async</button>
+    </div>
+  );
+}
+```
+
+需要改为：
+
+``` js
+function DelayedCount() {
+  const [count, setCount] = useState(0);
+
+  function handleClickAsync() {
+    setTimeout(function delay() {
+      setCount(count => count + 1);
+    }, 1000);
+  }
+
+  function handleClickSync() {
+    setCount(count + 1);
+  }
+
+  return (
+    <div>
+      {count}
+      <button onClick={handleClickAsync}>Increase async</button>
+      <button onClick={handleClickSync}>Increase sync</button>
+    </div>
+  );
+}
+```
+
+参考：
+
+[警惕React hooks中的闭包 - 知乎](https://zhuanlan.zhihu.com/p/351069053)
+
+
+
+
 
 ### React怎么控制渲染顺序？
 
@@ -1344,6 +1511,122 @@ export default Memo;
 参考：
 
 [理解useMemo与useCallback的使用场景_ass_ace-CSDN博客](https://blog.csdn.net/baidu_39067385/article/details/111412255)
+
+
+### useReducer用过没？比Redux好在哪里？
+
+从代码量上看，useReducer简洁了很多很多，更易于编写和阅读。同时也减少了方法的定义、减少了命名的次数。
+
+可以对比redux：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210519094634.png"/>
+
+使用redux的步骤：
+
+定义reducer
+
+引入connect
+
+定义mapStateToProps方法，mapDispatchToProps方法(分别用来接收state和dispatch)
+
+
+这种写法并无些麻烦但如果写起大型项目，频繁地connect，频繁地定义mapStateToProps、mapDispatchToProps还是稍有一些麻烦。有一点必须要知道的是，在mapDispatchToProps中我们还要再定义一个方法，包裹那些需要dispatch的动作。
+
+
+再来看看useReducer：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210519094719.png"/>
+
+使用useReducer的步骤
+
+定义reducer
+
+useReducer引入reducer和初始值
+
+从代码中可以看到我们通过useReducer，一句话的功夫就可以将state和dispatch引出，供view层使用。不需要像redux再引入connect，将组件connect起来，定义mapStateToProps，mapDispatchToProps，再供view层使用。
+
+
+参考：
+
+[react16.8版本更新中的useReducer想比起redux到底好在哪呢？](https://juejin.cn/post/6844904006020497422)
+
+
+
+### react中怎么处理异常？
+
+使用错误边界。
+
+这个是React16中新增的概念，错误边界在渲染期间、生命周期方法和整个组件树的构造函数中捕获并处理发生在其子组件树任何位置的 JavaScript 错误，并且，我们也可以指定渲染出错误显示 UI。
+
+错误边界的工作方式类似于 JavaScript 的 catch {}，不同的地方在于错误边界只针对 React 组件。只有 class 组件才可以成为成错误边界组件。大多数情况下, 你只需要声明一次错误边界组件, 并在整个应用中使用它。
+
+错误边界无法捕获以下场景中产生的错误：
+
+事件处理
+
+异步代码
+
+服务端渲染
+
+错误边界自身抛出来的错误（并非它的子组件）
+
+举个例子：
+
+``` js
+import * as React from 'react'
+
+export interface ErrorBoundaryState {
+    hasError: boolean;
+}
+
+class ErrorBoundary extends React.Component<{}, ErrorBoundaryState> {
+    constructor(props: {}) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: any, info: any) {
+        if (error) {
+            console.error(error)
+        }
+        if (info) {
+            console.log(info)
+        }
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return <h1>出错了</h1>;
+        }
+
+        return this.props.children;
+    }
+}
+
+export default ErrorBoundary;
+```
+
+也可以上报sentry比如：
+
+``` js
+  componentDidCatch(error, errorInfo) {
+    Sentry.withScope((scope) => {
+      scope.setExtras(errorInfo);
+      const eventId = Sentry.captureException(error);
+      this.setState({ eventId });
+    });
+  }
+```
+
+参考：
+
+[06-React异常处理 - 简书](https://www.jianshu.com/p/456509f44fbd)
+
+
 
 
 

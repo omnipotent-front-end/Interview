@@ -902,3 +902,5 @@ export function isType<T>(value: unknown, type: string): value is T {
 export const isNode = () => typeof process !== "undefined" && isType(process, "process");
 
 ```
+
+

@@ -40,3 +40,5 @@
 [小伙伴新鲜出炉面试题目总结(含中大厂，已拿offer)](https://mp.weixin.qq.com/s/y-ggYwM4VUHDlCycL18C8Q)
 
 [金三银四的前端社招面经](https://juejin.cn/post/6939774328858738696#heading-6)
+
+[今日头条面试官整理的面试文档](https://bytedance.feishu.cn/base/app8Ok6k9qafpMkgyRbfgxeEnet?table=tblLUxZFqOA2vI2F&view=vewUvN2mp7)

@@ -4,6 +4,31 @@
 ## 应用
 
 
+
+
+### redux有哪些原则？
+
+
+1、单一数据源。
+
+整个应用的 state 被储存在一棵 object tree 中，并且这个 object tree 只存在于唯一一个 store 中。
+
+2、state只读。
+
+唯一改变 state 的方法就是触发 action，action 是一个用于描述已发生事件的普通对象。
+
+3、纯函数执行。
+
+为了描述 action 如何改变 state tree ，你需要编写 reducers。
+
+Reducer 只是一些纯函数，它接收先前的 state 和 action，并返回新的 state
+
+参考：
+
+[三大原则 · GitBook](https://cn.redux.js.org/docs/introduction/ThreePrinciples.html)
+
+
+
 ### 说一下redux的基本工作流程
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20201224105428.png"/>
@@ -32,6 +57,7 @@
 3、State一旦有变化，Store就会调用监听函数，来更新View。
 
 到这儿为止，一次用户交互流程结束。可以看到，在整个流程中数据都是单向流动的，这种方式保证了流程的清晰。
+
 
 ### redux的基本用法
 
