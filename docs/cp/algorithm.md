@@ -1,5 +1,7 @@
 # 算法
 
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%93%8D%E4%BD%9C%E5%A4%A7%E5%85%A8.jpg"/>
+
 ## 应用
 
 

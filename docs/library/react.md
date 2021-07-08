@@ -651,6 +651,22 @@ const DemoLoader = React.memo(props => {
 [React.memo: 在函数组件中实现'shouldComponentUpdate'](https://juejin.cn/post/6844904006075023367)
 
 
+### class组件怎么使用hooks？
+
+class组件使用不了hooks，所以可以通过高阶组件，包一层给class用：
+
+``` js
+import { useErrorHandler } from "react-error-boundary";
+//为了给class用上hook，只能如此
+export function withErrorHandler(Component) {
+  return function WithErrorHandler(props) {
+    const handleError = useErrorHandler();
+    return <Component {...props} handleError={handleError} />;
+  };
+}
+
+```
+
 ### hook遇到不更新的问题吗？怎么解决？
 
 闭包问题经常捕获一个未更新的变量，一个有效的解决闭包问题的方法是在React hooks里设置正确的依赖，或者用函数的方式更新state。
@@ -1625,6 +1641,31 @@ export default ErrorBoundary;
 参考：
 
 [06-React异常处理 - 简书](https://www.jianshu.com/p/456509f44fbd)
+
+
+### 错误边界怎么捕获异步错误
+
+https://github.com/facebook/react/issues/14981#issuecomment-468460187
+
+正常情况是捕获不了的，因为错误边界主要是为了捕获渲染错误。但是可以通过useState来hack：
+
+``` js
+setState(() => {
+  throw new Error('hi')
+})
+
+```
+
+所以也有类型的库专门干这事：
+[react-error-boundary](https://github.com/bvaughn/react-error-boundary) 
+``` js
+function useErrorHandler(givenError?: unknown): (error: unknown) => void {
+  const [error, setError] = React.useState<unknown>(null)
+  if (givenError != null) throw givenError
+  if (error != null) throw error
+  return setError
+}
+```
 
 
 

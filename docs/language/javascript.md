@@ -1,5 +1,7 @@
 # Javascript
 
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/js%E5%9F%BA%E7%A1%80%E5%A4%A7%E5%85%A8.jpg"/>
+
 ## 语言基础
 
 ### javascript是一门什么类型的语言？动态、静态、强类型、弱类型分别有什么区别？
