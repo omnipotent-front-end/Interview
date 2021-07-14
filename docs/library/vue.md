@@ -110,6 +110,35 @@ watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于�
 
 [深入理解Vue的watch实现原理及其实现方式](https://juejin.cn/post/6844903605485436941)
 
+
+
+### vue2怎么深度监听对象变化
+
+watch的deep属性设为true即可。
+
+``` js
+  watch: {
+    a: function (val, oldVal) {
+      console.log('new: %s, old: %s', val, oldVal)
+    },
+    // 方法名
+    b: 'someMethod',
+    // 该回调会在任何被侦听的对象的 property 改变时被调用，不论其被嵌套多深
+    c: {
+      handler: function (val, oldVal) { /* ... */ },
+      deep: true
+    },
+  }
+```
+
+
+### v-model是什么？有什么用？
+
+一则语法糖，相当于 v-bind:value="xxx" 和 @input，意思是绑定了一个 value 属性的值，子组件可对value 属性监听，通过$emit('input', xxx)的方式给父组件通讯。自己实现model 方式的组件也是这样的思路。
+
+
+
+
 ### vue2组件通信方式
 
 #### 父子组件之间：
@@ -778,7 +807,48 @@ vue options->{ mixins: [] }：在组件的配置对象中挂载mixins的成员�
 
 
 
+### Vue3做了哪些优化？
 
+生 成 Block tree
+
+Vue.js 2.x 的数据更新并触发重新渲染的粒度是组件级的，单个组件内部 需要遍历该组件的整个 vnode 树。在 2.0 里，渲染效率的快慢与组件大小成正相关：组件越大，渲染效率越慢。并且，对于一些静态节点，又无数据更新，这些遍历都是性能浪费。Vue.js 3.0 做到了通过编译阶段对静态模板的分析，编译生成了 Block tree。 
+
+Block tree是一个将模版基于动态节点指令切割的嵌套区块，每个 区块内部的节点结构是固定的， 每个区块只需要追踪自身包含的动态节点。所以，在 3.0 里，渲染效率不再与模板大小成正相关，而是与模板中动态节点的数量成正相关。
+
+slot 编译优化
+
+Vue.js 2.x 中，如果有一个组件传入了 slot，那么每次父组件更新的时候，会强制使子组件update，造成性能的浪费。
+
+Vue.js 3.0 优化了 slot 的生成，使得非动态 slot 中属性的更新只会触发子组件的更新。动态 slot 指的是在 slot 上面使用 v-if，v-for，动态slot 名字等会导致 slot 产生运行时动态变化但是又无法被子组件 track 的操作。
+
+diff 算法优化
+
+Vue2.x 中的虚拟dom 是进行全量的对比。
+
+Vue3.0 中新增了静态标记（PatchFlag）：在与上次虚拟结点进行对比的时候，值对比带有patch flag 的节点，并且可以通过 flag 的信息得知当前节点要对比的具体内容化。
+
+
+cacheHandlers 事件侦听器缓存
+
+默认情况下onClick 会被视为动态绑定，所以每次都会去追踪它的变化但是因为是同一个函数，所以没有追踪变化，直接缓存起来复用即可。
+
+
+### vue3的hook和React的区别？
+
+React hook 底层是基于链表实现，调用的条件是每次组件被 render 的时候都会顺序执行所有的hooks。
+
+Vue hook 只会被注册调用一次，Vue 能避开这些麻烦的问题，原因在于它对数据的响应是基于proxy 的，对数据直接代理观察。（这种场景下，只要任何一个更改 data 的地方，相关的 function 或者 template 都会被重新计算，因此避开了 React 可能遇到的性能上的问题）。
+
+React 中，数据更改的时候，会导致重新 render，重新 render 又会重新把 hooks 重新注册一次，所以React 复杂程度会高一些。
+
+
+### vue的re-render和React的re-render的区别？
+
+Vue2通过主动记录数据依赖，可以精确到某个组件开始及其子组件的re-render;
+
+Vue3进一步优化到模板中区分静态节点和动态节点，只re-render动态节点；
+
+而React则是每次改变状态后对整个APP进行重新diff并查到需要render的组件，重新执行render。
 
 
 ## 编码

@@ -283,6 +283,63 @@ mapDispatchToProps 把UI组件的事件映射到 dispatch 方法
 [realworld](https://github.com/FunnyLiu/react-redux-realworld-example-app/blob/master/src/components/Article/CommentInput.js#L58)
 
 
+
+
+### 权限一般怎么管理？
+
+
+以vue为例。一般思路是通过获取当前用户的权限去比对路由表，生成当前用户具有的权限可访问的路由表，通过 router.addRoutes 动态挂载到 router 上。
+
+或者封装成指令[vue-element-admin/permission.js at master · PanJiaChen/vue-element-admin](https://github.com/PanJiaChen/vue-element-admin/blob/master/src/directive/permission/permission.js)，来精细化控制：
+
+``` js
+<template>
+  <!-- Admin can see this -->
+  <el-tag v-permission="['admin']">admin</el-tag>
+
+  <!-- Editor can see this -->
+  <el-tag v-permission="['editor']">editor</el-tag>
+
+  <!-- Editor can see this -->
+  <el-tag v-permission="['admin','editor']">Both admin or editor can see this</el-tag>
+</template>
+
+<script>
+// 当然你也可以为了方便使用，将它注册到全局
+import permission from '@/directive/permission/index.js' // 权限判断指令
+export default{
+  directives: { permission }
+}
+</script>
+```
+
+
+获取权限判断函数：
+
+``` js
+<template>
+  <el-tab-pane v-if="checkPermission(['admin'])" label="Admin">Admin can see this</el-tab-pane>
+  <el-tab-pane v-if="checkPermission(['editor'])" label="Editor">Editor can see this</el-tab-pane>
+  <el-tab-pane v-if="checkPermission(['admin','editor'])" label="Admin-OR-Editor">Both admin or editor can see this</el-tab-pane>
+</template>
+
+<script>
+import checkPermission from '@/utils/permission' // 权限判断函数
+
+export default{
+   methods: {
+    checkPermission
+   }
+}
+</script>
+```
+
+参考：
+
+[权限验证 | vue-element-admin](https://panjiachen.github.io/vue-element-admin-site/zh/guide/essentials/permission.html#%E9%80%BB%E8%BE%91%E4%BF%AE%E6%94%B9)
+
+
+
 ---
 
 ## 数据收集
@@ -3290,3 +3347,174 @@ export default {
 ### 有哪些场景的音频编码格式
 
 <table width="741"><tbody><tr><td rowspan="1" colspan="1"><strong>PCM</strong></td><td rowspan="1" colspan="1">脉冲编码调制 (Pulse Code Modulation,PCM)，PCM 是数字通信的编码方式之一。</td></tr><tr><td rowspan="1" colspan="1"><strong>AAC-LC(MPEG AAC Low Complexity)</strong></td><td rowspan="1" colspan="1">低复杂度编码解码器（AAC-LC — 低复杂度高级音频编码）是低比特率、优质音频 的高性能音频编码解码器。</td></tr><tr><td rowspan="1" colspan="1"><strong>AAC-LD</strong></td><td rowspan="1" colspan="1">（又名 AAC 低延迟或 MPEG-4 低延迟音频编码器），为电话会议和 OTT 服务量身打造的低延迟音频编解码器</td></tr><tr><td rowspan="1" colspan="1"><strong>LAC（Free Lossless Audio Codec）</strong></td><td rowspan="1" colspan="1">免费无损音频编解码器。是一套著名的自由音频压缩编码，其特点是无损压缩。2012 年以来它已被很多软件及硬件音频产品（如 CD 等）所支持。</td></tr></tbody></table>
+
+
+---
+
+## 多线程
+
+### webworker和主线程怎么通信？有什么局限性？
+
+worker主线程:Web Worker可以分为两种不同线程类型，一个是专用线程，一个是共享线程。
+
+使用限制：
+
+Web Worker无法访问DOM节点；
+
+Web Worker无法访问全局变量或是全局函数；
+
+Web Worker无法调用alert()或者confirm之类的函数；
+
+Web Worker无法访问window、document之类的浏览器全局变量；
+
+
+``` js
+//主线程代码
+
+/** 1. 创建专用线程 **/
+var worker = new Worker('dedicated.js');
+/** 2. 接收来至工作线程 **/
+worker.onmessage = function (event) { ... };
+/** 3.发送 ArrayBuffer 数据代码 **/
+worker.postMessage(10000);
+/** 4.终止一个worker的执行 **/
+worker.terminate()；
+
+------------------------------------------------
+
+//worker线程代码
+
+addEventListener("message", function(evt){  
+var date = new Date();  
+var currentDate = null;  
+do {  
+    currentDate = new Date();  
+}while(currentDate - date < evt.data);  
+    postMessage(currentDate);  
+}, false);  
+```
+
+
+``` js
+/** 1. 创建共享线程 **/
+var worker = new SharedWorker('sharedworker.js', ’ mysharedworker ’ );
+/** 2. 从端口接收数据 , 包括文本数据以及结构化数据 **/
+worker.port.onmessage = function (event) { define your logic here... }; 
+/** 3. 向端口发送普通文本数据 **/
+ worker.port.postMessage('put your message here … '); 
+/** 向端口发送结构化数据 **/
+worker.port.postMessage({ username: 'usertext'; live_city: 
+['data-one', 'data-two', 'data-three','data-four']});
+```
+
+参考：
+
+[WEB前端面试题汇总（JS） - SegmentFault 思否](https://segmentfault.com/a/1190000009592068)
+
+
+### web worker有哪些应用场景？
+
+Web Worker我们可以当做计算器来用，需要用的时候掏出来摁一摁，不用的时候一定要收起来~
+
+加密数据
+
+有些加解密的算法比较复杂，或者在加解密很多数据的时候，这会非常耗费计算资源，导致UI线程无响应，因此这是使用Web Worker的好时机，使用Worker线程可以让用户更加无缝的操作UI。
+
+预取数据
+
+有时候为了提升数据加载速度，可以提前使用Worker线程获取数据，因为Worker线程是可以是用 XMLHttpRequest 的。
+
+预渲染
+
+在某些渲染场景下，比如渲染复杂的canvas的时候需要计算的效果比如反射、折射、光影、材料等，这些计算的逻辑可以使用Worker线程来执行，也可以使用多个Worker线程，这里有个射线追踪的示例。
+
+复杂数据处理场景
+
+某些检索、排序、过滤、分析会非常耗费时间，这时可以使用Web Worker来进行，不占用主线程。
+
+预加载图片
+
+有时候一个页面有很多图片，或者有几个很大的图片的时候，如果业务限制不考虑懒加载，也可以使用Web Worker来加载图片，可以参考一下这篇文章的探索，这里简单提要一下。
+
+
+参考：
+
+[webworker应用场景_Web Workers 的使用场景有哪些_杨明月luna的博客-CSDN博客](https://blog.csdn.net/weixin_32049741/article/details/112236176)
+
+
+
+---
+
+## 本地存储
+
+
+### localStoarge和sessionStorage有什么区别？
+
+HTML5的WebStorage提供了两种API：localStorage（本地存储）和sessionStorage（会话存储）。
+
+
+1、生命周期：localStorage:localStorage的生命周期是永久的，关闭页面或浏览器之后localStorage中的数据也不会消失。localStorage除非主动删除数据，否则数据永远不会消失。
+
+  sessionStorage的生命周期是在仅在当前会话下有效。sessionStorage引入了一个“浏览器窗口”的概念，sessionStorage是在同源的窗口中始终存在的数据。只要这个浏览器窗口没有关闭，即使刷新页面或者进入同源另一个页面，数据依然存在。但是sessionStorage在关闭了浏览器窗口后就会被销毁。同时独立的打开同一个窗口同一个页面，sessionStorage也是不一样的。
+
+2、存储大小：localStorage和sessionStorage的存储数据大小一般都是：5MB
+
+3、存储位置：localStorage和sessionStorage都保存在客户端，不与服务器进行交互通信。
+
+4、存储内容类型：localStorage和sessionStorage只能存储字符串类型，对于复杂的对象可以使用ECMAScript提供的JSON对象的stringify和parse来处理
+
+5、获取方式：localStorage：window.localStorage;；sessionStorage：window.sessionStorage;。
+
+6、应用场景：localStoragese：常用于长期登录（+判断用户是否已登录），适合长期保存在本地的数据。sessionStorage：敏感账号一次性登录；
+
+
+### localstorage怎么实现跨域通信？
+
+通过iframe一个中间页，这个中间页来做所有的localStorage，再postmessage通信给其他域名来完成。
+
+参考：
+
+[实现本地跨域存储 - SegmentFault 思否](https://segmentfault.com/a/1190000021539851)
+
+### IndexedDB简单介绍下
+
+ndexedDB就是一个非关系型数据库，它不需要你去写一些特定的sql语句来对数据库进行操作，因为它是nosql的，数据形式使用的是json。
+
+IndexedDB很适合存储大量数据，它的API是**异步调用**的。IndexedDB使用索引存储数据，各种数据库操作放在事务中执行。IndexedDB甚至还支持简单的数据类型。IndexedDB比localstorage强大得多，但它的API也相对复杂。对于简单的数据，你应该继续使用localstorage，但当你希望存储大量数据时，IndexedDB会明显的更适合，IndexedDB能提供你更为复杂的查询数据的方式。
+
+
+参考：
+
+[面试题](https://juejin.cn/post/6844903669549236237)
+
+### IndexedDB有哪些特点？
+
+IndexedDB 具有以下特点。
+
+（1）键值对储存。 IndexedDB 内部采用对象仓库（object store）存放数据。所有类型的数据都可以直接存入，包括 JavaScript 对象。对象仓库中，数据以"键值对"的形式保存，每一个数据记录都有对应的主键，主键是独一无二的，不能有重复，否则会抛出一个错误。
+
+（2）异步。 IndexedDB 操作时不会锁死浏览器，用户依然可以进行其他操作，这与 LocalStorage 形成对比，后者的操作是同步的。异步设计是为了防止大量数据的读写，拖慢网页的表现。
+
+（3）支持事务。 IndexedDB 支持事务（transaction），这意味着一系列操作步骤之中，只要有一步失败，整个事务就都取消，数据库回滚到事务发生之前的状态，不存在只改写一部分数据的情况。
+
+（4）同源限制 IndexedDB 受到同源限制，每一个数据库对应创建它的域名。网页只能访问自身域名下的数据库，而不能访问跨域的数据库。
+
+（5）储存空间大 IndexedDB 的储存空间比 LocalStorage 大得多，一般来说不少于 250MB，甚至没有上限。
+
+（6）支持二进制储存。 IndexedDB 不仅可以储存字符串，还可以储存二进制数据（ArrayBuffer 对象和 Blob 对象）。
+
+
+参考：
+
+[浏览器数据库 IndexedDB 入门教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2018/07/indexeddb.html)
+
+
+### IndexedDB的接口为什么是异步的？
+
+IndexedDB 操作时不会锁死浏览器，用户依然可以进行其他操作，这与 LocalStorage 形成对比，后者的操作是同步的。异步设计是为了防止大量数据的读写，拖慢网页的表现。
+
+参考：
+
+[浏览器数据库 IndexedDB 入门教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2018/07/indexeddb.html)
+
+

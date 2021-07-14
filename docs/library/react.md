@@ -2078,6 +2078,139 @@ export function lazy<T>(
 [这就是你日思夜想的 React 原生动态加载 - 政采云前端团队](https://www.zoo.team/article/react-lazy-suspense)
 
 
+### class组件为什么需要绑定this
+
+这其实是javascript的一个问题。
+
+我们可以看看：
+
+``` js
+class Foo {
+  constructor(name){
+    this.name = name
+    //this.display = this.display.bind(this);
+  }
+  
+  display(){
+    console.log(this.name);
+  }
+}
+
+var foo = new Foo('Saurabh');
+foo.display(); // Saurabh
+
+var display = foo.display;
+display(); // Error
+```
+正常情况下，对象方法是可以访问到this的。但是如果把函数给拷贝给另一个对象时，这个this就会丢失。
+
+来看看React是怎么用的：
+
+``` js
+class Foo extends React.Component{
+  constructor( props ){
+    super( props );
+  }
+    
+  handleClick(event){
+    console.log(this); // 'this' is undefined
+  }
+    
+  render(){
+    return (
+      <button type="button" onClick={this.handleClick}>
+        Click Me
+      </button>
+    );
+  }
+}
+
+ReactDOM.render(
+  <Foo />,
+  document.getElementById("app")
+);
+
+```
+
+onClick相对是与函数拷贝给了下一个组件，所以this就丢失了。
+
+### 怎么解决this丢失问题
+
+有很多方式，有onClick中bindthis，或者箭头函数，或者autobind库里完成。
+
+也可以基于
+
+``` js
+// 方式二
+class B {
+    print = () => {
+    	console.log('print b');
+    }
+}
+
+```
+
+
+这也是react支持的方案。
+
+参考：
+
+[ES6 Class Methods 定义方式的差异 · Issue #67 · dwqs/blog](https://github.com/dwqs/blog/issues/67)
+
+
+### 为什么用箭头函数可以解决？
+
+在箭头函数出现之前，每个新定义的函数都有它自己的 this 值，但箭头函数不会创建自己的 this，它从会从自己的作用域链的上一层继承 this。
+
+直接箭头函数就是把箭头函数绑定到当前class 构造函数的this上。而普通函数传统方式则是prototype上。
+
+``` js
+class B {
+    print = () => {
+    	console.log('print b');
+    }
+}
+
+class D extends B {
+    print () {
+	  super.print();
+          console.log('print d');
+    }
+}
+
+const d = new D();
+d.print();
+// print b
+```
+编译后为：
+``` js
+var B = function B() {
+   _classCallCheck(this, B);
+
+   this.print = function () {
+      console.log('print b');
+   };
+};
+function D () {
+    // 继承自 B
+    this.print = function () {
+	console.log('print b');
+    }
+}
+
+// 通过原型实现继承
+D.__proto__ = B;
+D.prototype.__proto__ === B.prototype;
+
+D.prototype.print = function () {
+    // 类 D 自身定义的 print 方法
+}
+const d = new D();
+d.print();
+
+```
+
+
 
 ## 编码
 
