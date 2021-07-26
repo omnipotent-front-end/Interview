@@ -1096,3 +1096,26 @@ HTTP的传输速度慢，数据包大，数据传输安全性差，如实现实�
 [http2 - Does HTTP/2 make websockets obsolete? - Stack Overflow](https://stackoverflow.com/questions/28582935/does-http-2-make-websockets-obsolete)
 
 
+### 除了websocket，还有哪些服务端主动push的方法？
+
+websocket是全双工的，占用的资源会多一些。除了websocket，还可以使用EventSource API，来进行服务端向客户端的的单向主动通信。用法如下：
+
+``` js
+var evtSource = new EventSource('sse.php');
+var eventList = document.querySelector('ul');
+
+evtSource.onmessage = function(e) {
+  var newElement = document.createElement("li");
+
+  newElement.textContent = "message: " + e.data;
+  eventList.appendChild(newElement);
+}
+```
+
+EventSource的缺点就是不能客户端到服务端，只能服务端到客户端，且只支持utf8。
+
+还可以通过http2的服务端推送功能。但是和这个不是针对应用程序API级别，而是文件资源级别，一般用来预加载静态资源用。
+
+参考：
+
+[EventSource - Web API 接口参考 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource)

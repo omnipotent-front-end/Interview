@@ -70,6 +70,7 @@ module.exports = {
         {
           title: '企业',
           children: [
+            '/company/bank.md',
             '/company/it.md',
             '/company/party.md'
           ]

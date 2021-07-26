@@ -123,6 +123,11 @@ const todos = (state = [], action) => {
 ```
 
 
+### redux中间件做什么的，什么流程？
+
+中间件提供第三方插件的模式，自定义拦截 action -> reducer 的过程。变为 action -> middlewares -> reducer 。这种机制可以让我们改变数据流，实现如异步 action ，action 过滤，日志输出，异常报告等功能。
+
+
 ### redux有哪些常用的中间件?
 
 [redux-thunk源码分析](https://github.com/FunnyLiu/redux-thunk/tree/readsource)
@@ -184,6 +189,17 @@ redux-observable缺陷:
 参考：
 
 [2019年17道高频React面试题及详解](https://juejin.cn/post/6844903922453200904#heading-3)
+
+
+
+### redux的缺点是什么？
+
+一个组件所需要的数据，必须由父组件传过来，而不能像flux 中直接从store 取。
+
+当一个组件相关数据更新时，即使父组件不需要用到这个组件，父组件还是会重新render，可能会有效率影响，或者需要写复杂的 shouldComponentUpdate 进行判断。
+
+
+
 
 
 ### dva解决了redux-saga什么问题？

@@ -69,6 +69,18 @@ Vue 一共有 8 个生命阶段，分别是创建前、创建后、加载前、�
 销毁过程
 父beforeDestroy->子beforeDestroy->**子destroyed->父destroyed**
 
+
+### vue 在 created 和 mounted 这两个生命周期中请求数据有什么区别呢？
+
+看实际情况，一般在created（或beforeRouter） 里面就可以，如果涉及到需要页面加载完成之后的话就用mounted。
+
+在created 的时候，视图中的 html 并没有渲染出来，所以此时如果直接去操作 html 的dom节点，一定找不到相关的元素
+
+而在mounted 中，由于此时html 已经渲染出来了，所以可以直接操作 dom 节点，（此时document.getElementById 即可生效了）。
+
+
+
+
 ### Vue.nextTick()有什么用？使用场景是？如何实现的？
 
 官方文档的解释是：**为了在数据变化之后等待 Vue 完成更新 DOM ，可以在数据变化之后立即使用 Vue.nextTick(callback) 。这样回调函数在 DOM 更新完成后就会调用。**

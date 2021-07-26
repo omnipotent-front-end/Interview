@@ -89,7 +89,7 @@ getDerivedStateFromProps: static getDerivedStateFromProps(nextProps, prevState),
 
 render: render函数是纯函数，只返回需要渲染的东西，不应该包含其它的业务逻辑,可以返回原生的DOM、React组件、Fragment、Portals、字符串和数字、Boolean和null等内容
 
-componentDidMount: 组件装载之后调用，此时我们可以获取到DOM节点并操作，比如对canvas，svg的操作，服务器请求，订阅都可以写在这个里面，但是记得在componentWillUnmount中取消订阅
+componentDidMount: 组件装载之后调用，此时我们可以获取到DOM节点并操作，比如对canvas，svg的操作，服务器请求，订阅都可以写在这个里面，但是记得在componentWillUnMount中取消订阅
 
 更新阶段:
 
@@ -414,6 +414,16 @@ React合成事件理解
 [React 合成事件和原生事件的区别 - 简书](https://www.jianshu.com/p/8d8f9aa4b033)
 
 
+
+### React中state和props的区别？
+
+
+Props是一个从外部传进组件的参数，主要作用就是父组件向子组件传递数据，但是props对于使用它的组件来说是只读的，一旦赋值不能修改，只能通过外部组件主动传入新的props来重新渲染子组件
+
+State一个组件的显示形态可以由数据状态和外部参数决定，外部参数是props，数据状态就是state，首先，在组件初始化的时候，用this.state给组件设定一个初始的state，在第一次渲染的时候就会用这个数据来渲染组件，state不同于props一点时，state可以修改，通过this.setState()方法来修改state
+
+
+
 ### React 中的 setState 是同步还是异步？
 
 首先搞懂[react合成事件和原生事件的区别是？](/library/react.html#react%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E5%92%8C%E5%8E%9F%E7%94%9F%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%EF%BC%9F)
@@ -436,6 +446,8 @@ setState 的批量更新优化也是建立在“异步”（合成事件、钩�
 ### setState为何设计成异步的？如何实现的？
 
 为什么react大部分情况setState是异步的呢？假如所有setState是同步的，意味着每执行一次setState时（有可能一个同步代码中，多次setState），都重新vnode diff + dom修改，这对性能来说是极为不好的。如果是异步，则可以把一个同步代码中的多个setState合并成一次组件更新。
+
+具体实现可以参考：[FunnyLiu/react-1 at readsource](https://github.com/FunnyLiu/react-1/tree/readsource#thissetstate%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88)
 
 
 核心代码实现：
@@ -497,7 +509,7 @@ function enqueueUpdate(component) {
 
 ```
 
-以上是setState的关键代码，batchingStrategy.batchedUpdates里面用到了事务机制。 setState 本身的方法调用是同步的，但是调用了setState不标志这react的 state 立即更新，这个更新是要根据当前环境执行上下文来判断的，如果处于batchedUpadte的情况下，那么state的不是当前立马更新的，而不处于batchedUpadte的情况下，那么他就有可能立马更新的。
+以上是setState的关键代码，batchingStrategy.batchedUpdates里面用到了事务机制。 setState 本身的方法调用是同步的，但是调用了setState不标志这react的 state 立即更新，这个更新是要根据当前环境执行上下文来判断的，如果处于batchedUpdate的情况下，那么state的不是当前立马更新的，而不处于batchedUpdate的情况下，那么他就有可能立马更新的。
 
 参考：
 
@@ -604,10 +616,16 @@ class NameForm extends React.Component {
 [2019年17道高频React面试题及详解](https://juejin.cn/post/6844903922453200904#heading-3)
 
 
+### 在 React 中，refs 的作用是什么？
+
+Refs 可以用于获取一个 DOM 节点或者 React 组件的引用。何时使用 refs 的好的示例有管理焦点/文本选择，触发命令动画，或者和第三方 DOM 库集成。你应该避免使用String 类型的 Refs 和内联的 ref 回调。Refs 回调是 React 所推荐的
+
+
+
 
 ### 是否了解shouldComponentUpdate，做什么的？
 
-在class组件中，我们可以通过shouldComponentUpdate阻止不必要的rerender：
+在class组件中，我们可以通过shouldComponentUpdate阻止不必要的re-render：
 
 ``` js
 class DemoLoader extends React.Component {
@@ -625,6 +643,16 @@ class DemoLoader extends React.Component {
 }
 
 ```
+
+在更新数据的时候用setState修改整个数据，数据变了之后，遍历的时候所有内容都要被重新渲染，数据量少还好，数据量大就会严重影响性能
+
+解决办法：
+
+1.shouldComponentUpdate 在渲染前进行判断组件是否更新，更新了再渲染
+
+2.pureComponent（纯组件）省去了虚拟dom生成和对比的过程  在类组件中使用
+
+3.react.memo() 类似于纯组件 在无状态组件中使用
 
 
 ### hook函数式组件怎么实现shouldComponentUpdate？
@@ -1703,6 +1731,18 @@ react-dom 顾名思义就是一种针对 dom 的平台实现，主要用于在 w
 参考：
 
 [为什么react和react-dom要分成两个包？ - 知乎](https://www.zhihu.com/question/336664883)
+
+
+### React diff原理
+
+它是基于三个策略：
+
+tree diff  web UI中dom节点跨层级的移动操作特别少，可以忽略不计
+
+component diff 拥有相同类的两个组件将会生成相似的树形结构，拥有不同类的两个组件会生成不同的树形结构
+
+element diff 对于同一层级的一组子节点，他们可以通过唯一的id进行区分何为受控组件
+
 
 ### react如何将O(n3)的算法降低到O(n)级别的？
 
