@@ -46,7 +46,7 @@
 
 允许你将请求沿着处理者链进行发送。收到请求后，每个处理者都可对请求进行处理，然后将其传递给链上的下个处理者。
 
-常用例子：axios拦截器，koa中间件，webpack的loader，vue的过滤器。模板组成逻辑复杂时，将是否显示的逻辑放在js中。
+常用例子：axios拦截器，koa中间件，webpack的loader，vue的过滤器。逻辑放js，简化dom。
 
 > 一个文件会有多个loader，一个loader处理后会传给下一个loader
 
@@ -56,17 +56,18 @@
 
 常用例子：[vue的数据响应式](/library/vue.html#vue中的数据响应式如何实现的？)，webpack的plugin，vue的生命周期（生命周期相关都是）
 
+* [发布订阅](/cp/soft.html#观察者和发布订阅的区别是？)
+
+借助第三方来实现调度的，发布者和订阅者之间互不感知
+
+例子：vue的eventbus
+
 * [策略模式](/-Design-Patterns-Typescript/#/?id=策略)
 
 能让你定义一系列算法，并将每种算法放入独立的类中，以使算法的对象互相替换
 
 例子：`axios`支持浏览器端和node端
 
-* [发布订阅](/cp/soft.html#观察者和发布订阅的区别是？)
-
-借助第三方来实现调度的，发布者和订阅者之间互不感知
-
-例子：vue的eventbus
 
 * [中介者](/-Design-Patterns-Typescript/#/?id=中介者)
 
