@@ -2,7 +2,78 @@
 
 ## 设计模式
 
-### 工作中或者哪些源码中遇到过什么设计模式，列举一下？（todo）
+### 工作中或者哪些源码中遇到过什么设计模式，列举一下？
+
+* [工厂模式](/-Design-Patterns-Typescript/#/?id=工厂方法)
+
+在父类中提供一个创建对象的接口，允许子类决定实例化对象的类型。
+
+开源例子：express()创造实例时，调用他的工厂方法。axios.create()创建实例。ui库ora(options)
+
+业务例子：要做很多有略微差异的卡片。父组件包含一些框架和共有逻辑，各个子组件去定制这些卡片的差异内容。
+
+> koa是new的。new Koa()
+
+* [生成器](/-Design-Patterns-Typescript/#/?id=%e7%94%9f%e6%88%90%e5%99%a8)
+
+使你能分步骤创建复杂对象。该模式使你能用相同的创建代码生成不同类型和形式的对象
+
+开源例子：webpack的config对象很复杂时，可使用工具按需生成该对象
+
+业务例子：组件是一个对象（包含render等），可以用生成器模式拼装出来
+
+* [单例](/-Design-Patterns-Typescript/#/?id=%e5%8d%95%e4%be%8b)
+
+保证一个类只有一个实例，并提供一个访问该实例的全局节点
+
+常用例子：vuex vue-router redux。组件中的modal message等也是单例
+
+* [适配器](/-Design-Patterns-Typescript/#/?id=适配器)
+
+使接口不兼容的对象能够互相合作
+
+开源例子：`axios`的API适配成`XMLHttpRequest`或`http`模块，兼容浏览器和node端。orm框架兼容多种数据库。
+
+* [外观模式](/-Design-Patterns-Typescript/#/?id=外观（门面）)
+
+为程序库、 框架或其他复杂类提供一个简单的接口
+
+例子：babel preset
+
+业务例子：使用`echart`时，会写一个适配器组件。当绘图组件升级或更改时，降低更改范围。
+
+* [职责链](/-Design-Patterns-Typescript/#/?id=职责链)
+
+允许你将请求沿着处理者链进行发送。收到请求后，每个处理者都可对请求进行处理，然后将其传递给链上的下个处理者。
+
+常用例子：axios拦截器，koa中间件，webpack的loader，vue的过滤器。模板组成逻辑复杂时，将是否显示的逻辑放在js中。
+
+> 一个文件会有多个loader，一个loader处理后会传给下一个loader
+
+* [观察者](/-Design-Patterns-Typescript/#/?id=观察者)
+
+允许你定义一种订阅机制，可以对象发生时通知多个“观察”该对象的其他对象
+
+常用例子：[vue的数据响应式](/library/vue.html#vue中的数据响应式如何实现的？)，webpack的plugin，vue的生命周期（生命周期相关都是）
+
+* [策略模式](/-Design-Patterns-Typescript/#/?id=策略)
+
+能让你定义一系列算法，并将每种算法放入独立的类中，以使算法的对象互相替换
+
+例子：`axios`支持浏览器端和node端
+
+* [发布订阅](/cp/soft.html#观察者和发布订阅的区别是？)
+
+借助第三方来实现调度的，发布者和订阅者之间互不感知
+
+例子：vue的eventbus
+
+* [中介者](/-Design-Patterns-Typescript/#/?id=中介者)
+
+限制对象之间的直接交互， 迫使它们通过一个中介者对象进行合作，减少对象之间混乱无序的依赖关系
+
+例子：vuex
+
 
 ### 如何实现集群下的单例模式？
 

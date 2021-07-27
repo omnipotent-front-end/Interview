@@ -1716,7 +1716,7 @@ babel-import-plugin,这时候才想起来，跟面试官解释了自己的组件
 
 可以参考[FunnyLiu/element at readsource](https://github.com/FunnyLiu/element/tree/readsource)，也就是elementui的单元测试部分。
 
-主要通过不同的参数传递后、或者执行了组件的不同api后，组件dom是否有对应的class或text来判断流程是否正确。
+主要通过不同的参数传递后、或者执行了组件的不同api后，组件dom是否有对应的class或text来判断流程是否正确。性能测试（比如select的200个option的渲染时间不超过1s）。
 
 
 
