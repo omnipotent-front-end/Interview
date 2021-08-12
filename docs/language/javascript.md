@@ -4038,6 +4038,131 @@ let copy2 = Object.assign({}, { x: 1 });
 
 [参考](https://segmentfault.com/a/1190000012150942)
 
+
+### 对象的深比较
+
+阿里笔试原题
+
+``` js
+
+// 已知有两个对象obj1和obj2，实现isEqual函数判断对象是否相等
+const obj1 = {
+  a: 1,
+  c: 3,
+  b: {
+    c: [1, 2]
+  }
+}
+const obj2 = {
+  c: 4,
+  b: {
+    c: [1, 2]
+  },
+  a: 1
+}
+
+// isEqual函数，相等输出true，不相等输出false
+isEqual(obj1, obj2)
+```
+
+可以参考Underscore里的_.isEqual()方法，地址：https://github.com/lessfish/underscore-analysis/blob/master/underscore-1.8.3.js/src/underscore-1.8.3.js#L1094-L1190
+
+``` js
+// 答案仅供参考
+// 更详细的解答建议参考Underscore源码[https://github.com/lessfish/underscore-analysis/blob/master/underscore-1.8.3.js/src/underscore-1.8.3.js#L1094-L1190](https://github.com/lessfish/underscore-analysis/blob/master/underscore-1.8.3.js/src/underscore-1.8.3.js#L1094-L1190)
+function isEqual(A, B) {
+    const keysA = Object.keys(A)
+    const keysB = Object.keys(B)
+
+    // 健长不一致的话就更谈不上相等了
+    if (keysA.length !== keysB.length) return false
+
+    for (let i = 0; i < keysA.length; i++) {
+        const key = keysA[i]
+
+        // 类型不等的话直接就不相等了
+        if (typeof A[key] !== typeof B[key]) return false
+    
+        // 当都不是对象的时候直接判断值是否相等
+        if (typeof A[key] !== 'object' && typeof B[key] !== 'object' && A[key] !== B[key]) {
+            return false
+        }
+
+        if (Array.isArray(A[key]) && Array.isArray(B[key])) {
+            if (!arrayEqual(A[key], B[key])) return false
+        }
+
+        // 递归判断
+        if (typeof A[key] === 'object' && typeof B[key] === 'object') {
+            if (!isEqual(A[key], B[key])) return false
+        }
+    }
+
+    return true
+}
+
+function arrayEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false
+
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) return false
+    }
+
+    return true
+}
+isEqual(obj1, obj2)
+```
+
+
+### 判断对象是否存在循环引用
+
+阿里笔试原题。
+
+``` js
+// 判断JS对象是否存在循环引用
+const obj = {
+ a: 1,
+ b: 2,
+}
+
+obj.c = obj
+
+// isHasCircle函数， 存在环输出true，不存在的话输出false
+isHasCircle(obj)
+```
+
+循环引用的判断我们可以通过map来进行暂存，当值是对象的情况下，我们将对象存在map中，循环判断是否存在，如果存在就是存在环了，同时进行递归调用。具体解答可以参考下面的代码
+
+``` js
+function isHasCircle(obj) {
+
+    let hasCircle = false
+    const map = new Map()
+
+    function loop(obj) {
+        const keys = Object.keys(obj)
+
+        keys.forEach(key => {
+            const value = obj[key]
+            if (typeof value == 'object' && value !== null) {
+                if (map.has(value)) {
+                    hasCircle = true
+                    return
+                } else {
+                    map.set(value)
+                    loop(value)
+                }
+            }
+        })
+
+    }
+
+    loop(obj)
+
+    return hasCircle
+}
+```
+
 ### 二维数组转一维有哪些实现方式？
 
 1.遍历
@@ -5707,7 +5832,62 @@ export function sampleSize([...arr], n = 1) {
 
 ```
 
+### 实现一个可链式调用的find
 
+阿里巴巴笔试原题。
+
+实现find，需要提供链式调用。
+
+``` js
+// 实现一个find函数，并且find函数能够满足下列条件
+
+// title数据类型为string|null
+// userId为主键，数据类型为number
+
+// 原始数据
+const data = [
+  {userId: 8, title: 'title1'},
+  {userId: 11, title: 'other'},
+  {userId: 15, title: null},
+  {userId: 19, title: 'title2'}
+];
+
+// 查找data中，符合条件的数据，并进行排序
+const result = find(data).where({
+  "title": /\d$/
+}).orderBy('userId', 'desc');
+
+// 输出
+[{ userId: 19, title: 'title2'}, { userId: 8, title: 'title1' }];
+```
+
+JS的链式调用有很多种方式。jQuery链式调用是通过return this的形式来实现的，通过对象上的方法最后加上return this，把对象再返回回来，对象就可以继续调用方法，实现链式操作了。
+
+实现如下：
+
+``` js
+function find(origin) {
+  return {
+   data: origin,
+    where: function(searchObj) {
+     const keys = Reflect.ownKeys(searchObj)
+
+        for (let i = 0; i < keys.length; i++) {
+         this.data = this.data.filter(item => searchObj[keys[i]].test(item[keys[i]]))
+        }
+
+       return find(this.data)
+    },
+    orderBy: function(key, sorter) {
+     this.data.sort((a, b) => {
+         return sorter === 'desc' ? b[key] - a[key] : a[key] - b[key]
+        })
+
+        return this.data
+    }
+  }
+}
+```
 
 
 ### js实现拖拽的思路

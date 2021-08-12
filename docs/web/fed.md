@@ -2839,6 +2839,18 @@ qiankun 本身在 2.0 的时候提供了最简单的基于 props 通信的 API�
 [听说你还不了解微前端？[收藏=学会]](https://mp.weixin.qq.com/s/17RZjQE-UiXvu4jRHdKetA)
 
 
+### 使用qiankun的过程中，遇到哪些坑？
+
+1、主从应用之间样式不隔离。
+
+默认情况下沙箱可以确保单实例场景子应用之间的样式隔离，但是无法确保主应用跟子应用、或者多实例场景的子应用样式隔离。当配置为 `{ strictStyleIsolation: true }` 时表示开启严格的样式隔离模式。这种模式下 qiankun 会为每个微应用的容器包裹上一个 shadow dom 节点，从而确保微应用的样式不会对全局造成影响。
+
+在最新的 qiankun 版本中，你也可以尝试通过配置 `{ sandbox : { experimentalStyleIsolation: true } }` 的方式开启运行时的 scoped css 功能，从而解决应用间的样式隔离问题。 PS：目前该特性还处于实验阶段，如果碰到一些问题欢迎提 issue 来帮助我们一起改善。
+
+
+
+
+
 ### 路由级别的微前端有哪些难点？
 
 包括路由的处理、应用加载的处理和应用入口的选择

@@ -42,3 +42,5 @@
 [金三银四的前端社招面经](https://juejin.cn/post/6939774328858738696#heading-6)
 
 [今日头条面试官整理的面试文档](https://bytedance.feishu.cn/base/app8Ok6k9qafpMkgyRbfgxeEnet?table=tblLUxZFqOA2vI2F&view=vewUvN2mp7)
+
+[阿里笔试题：链式调用、对象比较以及对象是否存在循环引用](https://mp.weixin.qq.com/s/LFDTkhGoVKseq_JCLqlRfg)
