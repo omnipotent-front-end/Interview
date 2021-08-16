@@ -28,7 +28,7 @@ mouseenter: 当指针设备( 通常指鼠标 )在元素上移动时
 
 那我们可以聊一聊它们与 async 和 defer 区别
 
-async和defer的用法参考[/language/html.html#script标签的的defer和async有什么区别？]
+[async和defer的用法参考](/language/html.html#script标签的的defer和async有什么区别？)
 
 > 带 async 的脚本一定会在 load 事件之前执行，可能会在 DOMContentLoaded 之前或之后执行。
 
