@@ -43,6 +43,7 @@ module.exports = {
             "/library/react.md",
             "/library/redux.md",
             "/library/rollup.md",
+            "/library/taro.md",
             "/library/typescript.md",
             "/library/vue.md",
             "/library/webpack.md"

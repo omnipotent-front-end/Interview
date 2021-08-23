@@ -128,6 +128,41 @@ module.exports = function testPlugin(babel) {
 [深入浅出 Babel 上篇：架构和原理 + 实战](https://juejin.cn/post/6844903956905197576)
 
 
+
+
+### babel在做polyfill时，如何保证不污染原型。
+
+默认情况下，babel通过core-js来做api的polyfill，但是会污染各个对象的原型，想要不污染的话，需要配置@babel/plugin-transform-runtime和@babel/runtime-corejs3来完成。
+
+``` js
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage",
+        "debug": true
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "corejs": 3 // 指定 runtime-corejs 的版本，目前有 2 3 两个版本
+      }
+    ]
+  ]
+}
+```
+
+他的作用就是将core-js原本修改原型的逻辑，改成自己实现一套函数。
+
+比如下图这样，从而保证不污染Array的原型。
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210819143508.png"/>
+
+
 ## 原理
 
 
