@@ -348,6 +348,9 @@ valueOf 和 toString 的区别参考：[tostring 和 valueof 有什么区别？]
 使用 + 进行判断时
 
 - 两个操作数都为数字时直接运行加法操作
+- 若有一方为字符串，则将两个操作数都转换成字符串，进行字符串拼接操作。
+- true + true / false + false / null + null 转换为数字进行加法运算
+- undefined + undefined 进行加法运算，结果为 NaN
 - 其他情况下，会优先调用 valueOf 方法，经过转换之后的任一个为字符串，则会优先进行字符串连接；否则转为数字类型，进行数字运算。
 
 使用除 + 号以外的四则运算符判断时
@@ -401,7 +404,7 @@ console.log({} == !{}); //false
 // valueOf 方法返回的不是基本类型值，再次调用 toString 方法
 '[object Object]' == 0
 // 隐式转换字符串为数字
-1 == 0
+NaN == 0
 // 返回结果
 false
 
@@ -770,7 +773,7 @@ Math.floor() === 向下取整，函数返回一个小于或等于给定数字的
 
 所有的构造函数的隐式原型指向的都是Function()的显示原型
 
-Object的隐式原型是null
+`Object.prototype.__proto__` 为 `null`
 
 ### 说一下原型链，对象，构造函数之间的一些联系？prototype 和__proto__有什么区别？
 

@@ -394,7 +394,7 @@ flex-direction 属性决定主轴的方向(即项目的排列方向)。
 
 flex-wrap 属性定义，如果一条轴线排不下，如何换行。
   
-flex-flow 属性是 flex-direction 属性和 flex-wrap 属性的简写形式，默认值为 rownowrap。
+flex-flow 属性是 flex-direction 属性和 flex-wrap 属性的简写形式，默认值为 row nowrap 。
 
 justify-content 属性定义了项目在主轴上的对齐方式。
 
