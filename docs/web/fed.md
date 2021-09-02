@@ -346,9 +346,13 @@ export default{
 
 ### 前端数据埋点时，为什么使用1*1像素的透明gif图片而不是接口？
 
+埋点接口的实现是，请求一个gif图的方式，带上埋点的数据。
+
 为什么用图片不用接口或者js、css，是因为：
 - 没有跨域问题
 - 不会阻塞页面的加载
+- 不会改dom。只要在js中new出Image对象就能发起请求
+- 在没有js的浏览器环境中也能通过img标签正常打点，这是其他类型的资源请求所做不到的。
 
 为什么用gif，是因为：
 GIF的最低合法体积最小（最小的BMP文件需要74个字节，PNG需要67个字节，而合法的GIF，只需要43个字节）
@@ -592,7 +596,7 @@ http 请求的解析速度。
 
 2、接口还没有发出去，页面就跳转了或者刷新了。解决方案是改为同步接口。
 
-3、表单提交submit时部分浏览器会刷新页面（即使看不出来），也会触发刷新流程，偶现cancel。解决方案是submit时vent.preventDefault()
+3、表单提交submit时部分浏览器会刷新页面（即使看不出来），也会触发刷新流程，偶现cancel。解决方案是submit时event.preventDefault()
 
 
 参考：
@@ -2562,68 +2566,67 @@ vue是简单的注入原型。
 这里的 Canvas来自node-canvas这个库
 
 ``` js
-    // 渲染
-    async render(temp, data){
-        // 处理模板数据
-        temp = super._formatTemplate(temp, data);
+// 渲染
+async render(temp, data){
+    // 处理模板数据
+    temp = super._formatTemplate(temp, data);
 
-        let w = temp.canvasProperty.width || 1000, h = temp.canvasProperty.height || 1000;
-        let pw = temp.canvasProperty.printWidth || 297, ph = temp.canvasProperty.printHeight || 210; // 打印尺寸，单位毫米
+    let w = temp.canvasProperty.width || 1000, h = temp.canvasProperty.height || 1000;
+    let pw = temp.canvasProperty.printWidth || 297, ph = temp.canvasProperty.printHeight || 210; // 打印尺寸，单位毫米
 
-        let scale = renderUtil.getRenderScale(pw, ph);
-        // log.debug('证书渲染尺寸：' + scale.scaleW + ' * ' + scale.scaleH);
+    let scale = renderUtil.getRenderScale(pw, ph);
+    // log.debug('证书渲染尺寸：' + scale.scaleW + ' * ' + scale.scaleH);
 
-        this._canvasIns = new Canvas(scale.scaleW, scale.scaleH);
-        let context = this._canvasIns.getContext('2d');
+    this._canvasIns = new Canvas(scale.scaleW, scale.scaleH);
+    let context = this._canvasIns.getContext('2d');
 
-        // 缩放
-        this._scale(context, temp, scale.scaleW / w, scale.scaleH / h);
+    // 缩放
+    this._scale(context, temp, scale.scaleW / w, scale.scaleH / h);
 
-        return this._downloadAllImage(temp).then((imageList) => {            
-            log.debug('证书全部资源下载完成');
-            return this._renderItemsByOrder(context, temp, imageList); // 要注意先后顺序
-        })
-    }
+    return this._downloadAllImage(temp).then((imageList) => {            
+        log.debug('证书全部资源下载完成');
+        return this._renderItemsByOrder(context, temp, imageList); // 要注意先后顺序
+    })
+}
 ```
 
 
 2、针对不同的内容，进行不同的渲染
 
 ``` js
+log.debug('渲染背景');
+this._renderBackground(context, item.areaProperty);
 
-            log.debug('渲染背景');
-            this._renderBackground(context, item.areaProperty);
+// 可能同时有图片和文本，一般先渲染图片
+if(item.image){
+    // log.debug('渲染图片');
+    this._renderImage(context, item.image, item.areaProperty, imageMap);
+}
 
-            // 可能同时有图片和文本，一般先渲染图片
-            if(item.image){
-                // log.debug('渲染图片');
-                this._renderImage(context, item.image, item.areaProperty, imageMap);
-            }
-            
-            if(item.text){
-                // log.debug('渲染文本');
-                this._renderText(context, item.text, item.areaProperty);
-            }
+if(item.text){
+    // log.debug('渲染文本');
+    this._renderText(context, item.text, item.areaProperty);
+}
 ```
 
 渲染背景：
 
 ``` js
-    // 绘制背景
-    _renderBackground(context, areaProperty){
-        /*
-            边框暂时没做
-            borderStyle
-            borderColor
-            borderWidth
-        */
+// 绘制背景
+_renderBackground(context, areaProperty){
+    /*
+        边框暂时没做
+        borderStyle
+        borderColor
+        borderWidth
+    */
 
-        // 如果有背景色
-        if(areaProperty.backgroundColor){
-            context.fillStyle = areaProperty.backgroundColor;
-            context.fillRect(areaProperty.left || 0, areaProperty.top || 0, areaProperty.width || 0, areaProperty.height || 0);
-        }
+    // 如果有背景色
+    if(areaProperty.backgroundColor){
+        context.fillStyle = areaProperty.backgroundColor;
+        context.fillRect(areaProperty.left || 0, areaProperty.top || 0, areaProperty.width || 0, areaProperty.height || 0);
     }
+}
 ```
 
 渲染图片、渲染文字等等，均是使用canvas的api来完成渲染。

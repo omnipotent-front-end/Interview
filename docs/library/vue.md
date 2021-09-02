@@ -49,6 +49,8 @@ Vue 一共有 8 个生命阶段，分别是创建前、创建后、加载前、�
 
 当我们使用 keep-alive 的时候，还有两个钩子函数，分别是 activated 和 deactivated 。 用 keep-alive 包裹的组件在切换时不会进行销毁，而是缓存到内存中并执行 deactivated 钩子函数，命中缓存渲染后会执行 actived 钩子函数。
 
+> 需要修改能重新render的数据后才会触发update相关生命周期，其他数据不会触发。
+
 参考：
 
 [vue 生命周期深入 - 前端](https://juejin.cn/entry/6844903602356502542)
@@ -100,6 +102,8 @@ nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数
 具体源码位于[笔记内容](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/next-tick.js#L78)
 
 [参考](https://ustbhuangyi.github.io/vue-analysis/reactive/next-tick.html#vue-%E7%9A%84%E5%AE%9E%E7%8E%B0)
+
+[参考](https://juejin.cn/post/6875492931726376974#comment)
 
 
 ### computed 和 watch 有什么区别及运用场景?
@@ -249,6 +253,21 @@ $route 是“路由信息对象”，包括 path，params，hash，query，fullP
 
 - vue中动态组件需要提前在使用的组件内注册，而React则可以通过动态import直接引入，提高加载性能
 
+
+### 怎么让弹框了再加载相应代码
+
+下面PublicForm的引入方式会单独构建成一个js文件，模板中通过v-if来动态载入。PickPublicModal会和当前组件打包在一起。
+
+```js
+/*组件*/
+import PickPublicModal from '@/components/common/pick-public-modal.vue';
+export default {
+  components: {
+    PublicForm: () => import('@/components/public-assets/public/public-form/new-form'),
+    PickPublicModal,
+  },
+}
+```
 
 ## 原理
 
@@ -646,7 +665,9 @@ watcher 中实例化了 dep 并向 dep.subs 中添加了订阅者,dep 通过 not
 
 参考 [一题](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/90)
 
+[官方解释](https://cn.vuejs.org/v2/guide/reactivity.html#%E5%A6%82%E4%BD%95%E8%BF%BD%E8%B8%AA%E5%8F%98%E5%8C%96)
 
+每个组件实例都对应一个 watcher 实例，它会在组件渲染的过程中把“接触”过的数据 property 记录为依赖。之后当依赖项的 setter 触发时，会通知 watcher，从而使它关联的组件重新渲染。
 
 ### 聊聊 Vue 的响应式，Model 如何改变 View，View 又是如何改变 Model 的
 
@@ -748,7 +769,7 @@ Vue中的事件有Dom事件和Vue事件（自定义事件）两种，所以可�
 
 - 类型一：在模板中通过v-on指令绑定的Dom事件
 - 类型二：在模板中通过v-on指令绑定的自定义事件
-- 类型三：在vue options中通过events绑定的自定义事件
+- 类型三：在vue options中通过events绑定的自定义事件（[events被废弃了](https://cn.vuejs.org/v2/guide/migration.html#events-选项移除))
 - 类型四：通过$on方法绑定的自定义事件
 
 Vue中为DOM元素绑定事件是采用DOM2级事件的处理方式，也就是addEventListener，因为Vue服务的是IE9以上的现代浏览器，他们也都是支持DOM2级事件。
@@ -862,6 +883,33 @@ Vue3进一步优化到模板中区分静态节点和动态节点，只re-render�
 
 而React则是每次改变状态后对整个APP进行重新diff并查到需要render的组件，重新执行render。
 
+
+### data为什么是个函数
+
+因为组件的data是一个对象，而对象是引用类型的，若不是函数，多个组件实例的data会指向同一个对象的堆，导致对象的内容互相影响。所以需要用函数使每个组件实例返回一个新的data。
+
+### vue哪些配置会做数据绑定
+
+vue源码中观察数据的方法有[defineReactive](https://github.com/FunnyLiu/vue/blob/c8c89c9fbc6d4243cf55a8aaddabfff395af0587/src/core/observer/index.js#L149)[、observe](https://github.com/FunnyLiu/vue/blob/c8c89c9fbc6d4243cf55a8aaddabfff395af0587/src/core/observer/index.js#L123) 使用在如下vue配置上
+* props：[源码1](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/props.js#L51) [源码2](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L101)
+* data [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L169) ，
+* computed [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L231)，
+* inject [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/inject.js#L16)
+* [$attrs](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L43)
+* [$listeners](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L46)
+* [set](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222) 给响应式对象加新的响应式property
+
+### vue.set到底在做什么？
+
+Vue.set( target, propertyName/index, value )向响应式对象中添加一个 property，并确保这个新 property 同样是响应式的，且触发视图更新。它必须用于向响应式对象上添加新 property。
+
+* target是数组。设置数组长度防止index取不到，使用splice方法，将value赋给index。return value;
+* target上有这个propertyName，直接赋值。 return value;
+* target不能是Vue实例，或者Vue实例的根数据对象，否则报错。return value;
+* target不是响应式对象，赋值。return value;
+* target使用object.defineProperty，赋值，建立监听，然后触发dep的notify方法。
+
+[源码地址](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222)
 
 ## 编码
 
