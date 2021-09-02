@@ -676,6 +676,31 @@ watcher 中实例化了 dep 并向 dep.subs 中添加了订阅者,dep 通过 not
 此题和上题同样可参考 [一题](https://juejin.im/post/5e93e1ea51882573cb72277a#heading-7) 
 
 
+### vue哪些配置会做数据绑定
+
+vue源码中观察数据的方法有[defineReactive](https://github.com/FunnyLiu/vue/blob/c8c89c9fbc6d4243cf55a8aaddabfff395af0587/src/core/observer/index.js#L149)、[observe](https://github.com/FunnyLiu/vue/blob/c8c89c9fbc6d4243cf55a8aaddabfff395af0587/src/core/observer/index.js#L123) 使用在如下vue配置上
+* props：[源码1](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/props.js#L51) [源码2](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L101)
+* data [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L169) ，
+* computed [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L231)，
+* inject [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/inject.js#L16)
+* [$attrs](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L43)
+* [$listeners](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L46)
+* [set](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222) 给响应式对象加新的响应式property
+
+[参考](https://github.com/theydy/notebook/issues/39)
+
+### vue.set到底在做什么？
+
+Vue.set( target, propertyName/index, value )向响应式对象中添加一个 property，并确保这个新 property 同样是响应式的，且触发视图更新。它必须用于向响应式对象上添加新 property。
+
+* target是数组。设置数组长度防止index取不到，使用splice方法，将value赋给index。return value;
+* target上有这个propertyName，直接赋值。 return value;
+* target不能是Vue实例，或者Vue实例的根数据对象，否则报错。return value;
+* target不是响应式对象，赋值。return value;
+* target使用object.defineProperty，赋值，建立监听，然后触发dep的notify方法。
+
+[源码地址](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222)
+
 ### Vue的响应式用Proxy和Object.defineProperty有什么区别？
 
 Object.defineProperty有如下缺陷：
@@ -887,29 +912,6 @@ Vue3进一步优化到模板中区分静态节点和动态节点，只re-render�
 ### data为什么是个函数
 
 因为组件的data是一个对象，而对象是引用类型的，若不是函数，多个组件实例的data会指向同一个对象的堆，导致对象的内容互相影响。所以需要用函数使每个组件实例返回一个新的data。
-
-### vue哪些配置会做数据绑定
-
-vue源码中观察数据的方法有[defineReactive](https://github.com/FunnyLiu/vue/blob/c8c89c9fbc6d4243cf55a8aaddabfff395af0587/src/core/observer/index.js#L149)[、observe](https://github.com/FunnyLiu/vue/blob/c8c89c9fbc6d4243cf55a8aaddabfff395af0587/src/core/observer/index.js#L123) 使用在如下vue配置上
-* props：[源码1](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/props.js#L51) [源码2](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L101)
-* data [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L169) ，
-* computed [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/state.js#L231)，
-* inject [源码](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/inject.js#L16)
-* [$attrs](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L43)
-* [$listeners](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L46)
-* [set](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222) 给响应式对象加新的响应式property
-
-### vue.set到底在做什么？
-
-Vue.set( target, propertyName/index, value )向响应式对象中添加一个 property，并确保这个新 property 同样是响应式的，且触发视图更新。它必须用于向响应式对象上添加新 property。
-
-* target是数组。设置数组长度防止index取不到，使用splice方法，将value赋给index。return value;
-* target上有这个propertyName，直接赋值。 return value;
-* target不能是Vue实例，或者Vue实例的根数据对象，否则报错。return value;
-* target不是响应式对象，赋值。return value;
-* target使用object.defineProperty，赋值，建立监听，然后触发dep的notify方法。
-
-[源码地址](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222)
 
 ## 编码
 
