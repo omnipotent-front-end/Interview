@@ -110,9 +110,9 @@ nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数
 
 区别
 
-computed 计算属性 : 依赖其它属性值,并且 computed 的值有缓存,只有它依赖的属性值发生改变,下一次获取 computed 的值时才会重新计算 computed 的值。
+computed 计算属性 : 依赖其它属性值,并且 computed 的值有缓存,只有它依赖的属性值发生改变,下一次获取 computed 的值时才会重新计算 computed 的值。computed不能进行异步操作。
 
-watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于某些数据的监听回调,每当监听的数据变化时都会执行回调进行后续操作。
+watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于某些数据的监听回调,每当监听的数据变化时都会执行回调进行后续操作。watch可以进行异步操作。
 
 运用场景：
 
@@ -209,6 +209,25 @@ watch的deep属性设为true即可。
 
 .self: 当事件发生在该元 素本身而不是子元素的时候会触发;
 
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210914093208.png"/>
+
+
+### vue中常用的内部指令
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210914093249.png"/>
+
+
+### v-if和v-show区别？
+
+1.v-if是通过控制dom元素的删除和生成来实现显隐，每一次显隐都会使组件重新跑一遍生命周期，因为显隐决定了组件的生成和销毁
+
+2.v-show是通过控制dom元素的css样式来实现显隐，不会销毁
+
+3.频繁或者大数量显隐使用v-show，否则使用v-if
+
+参考：
+
+[熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
 
 ### vue 中 mixin 和 mixins 区别?
  
@@ -268,6 +287,70 @@ export default {
   },
 }
 ```
+
+### 不需要响应式的数据怎么处理？
+
+在我们的Vue开发中，会有一些数据，从始至终都未曾改变过，这种死数据，既然不改变，那也就不需要对他做响应式处理了，不然只会做一些无用功消耗性能，比如一些写死的下拉框，写死的表格数据，这些数据量大的死数据，如果都进行响应式处理，那会消耗大量性能。
+
+``` js
+
+// 方法一：将数据定义在data之外
+data () {
+    this.list1 = { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx }
+    this.list2 = { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx }
+    this.list3 = { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx }
+    this.list4 = { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx }
+    this.list5 = { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx }
+    return {}
+ }
+    
+// 方法二：Object.freeze()
+data () {
+    return {
+        list1: Object.freeze({xxxxxxxxxxxxxxxxxxxxxxxx}),
+        list2: Object.freeze({xxxxxxxxxxxxxxxxxxxxxxxx}),
+        list3: Object.freeze({xxxxxxxxxxxxxxxxxxxxxxxx}),
+        list4: Object.freeze({xxxxxxxxxxxxxxxxxxxxxxxx}),
+        list5: Object.freeze({xxxxxxxxxxxxxxxxxxxxxxxx}),
+    }
+ }
+```
+
+参考：
+
+[熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
+
+
+### 对象新属性无法更新视图，删除属性无法更新视图，为什么？怎么办？
+
+原因：Object.defineProperty没有对对象的新属性进行属性劫持
+
+对象新属性无法更新视图：使用Vue.$set(obj, key, value)，组件中this.$set(obj, key, value)
+
+删除属性无法更新视图：使用Vue.$delete(obj, key)，组件中this.$delete(obj, key)
+
+参考：
+
+[熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
+
+
+### prop怎么自定义校验？
+
+``` js
+props: {
+    num: {
+      default: 1,
+      validator: function (value) {
+          // 返回值为true则验证不通过，报错
+          return [
+            1, 2, 3, 4, 5
+          ].indexOf(value) !== -1
+    }
+    }
+  }
+```
+
+
 
 ## 原理
 
@@ -701,6 +784,61 @@ Vue.set( target, propertyName/index, value )向响应式对象中添加一个 pr
 
 [源码地址](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222)
 
+``` js
+function set(target, key, val) {
+    // 判断是否是数组
+    if (Array.isArray(target)) {
+        // 判断谁大谁小
+        target.length = Math.max(target.length, key)
+        // 执行splice
+        target.splice(key, 1, val)
+        return val
+    }
+
+    const ob = target.__ob__
+
+    // 如果此对象没有不是响应式对象，直接设置并返回
+    if (key in target && !(key in target.prototype) || !ob) {
+        target[key] = val
+        return val
+    }
+
+    // 否则，新增属性，并响应式处理
+    defineReactive(target, key, val)
+    return val
+}
+
+```
+
+
+### Vue.delete的原理
+
+``` js
+function del (target, key) {
+    // 判断是否为数组
+    if (Array.isArray(target)) {
+        // 执行splice
+        target.splice(key, 1)
+        return
+    }
+
+    const ob = target.__ob__
+
+    // 对象本身就没有这个属性，直接返回
+    if (!(key in target)) return
+
+
+    // 否则，删除这个属性
+    delete target[key]
+
+    // 判断是否是响应式对象，不是的话，直接返回
+    if (!ob) return
+    // 是的话，删除后要通知视图更新
+    ob.dep.notify()
+}
+
+```
+
 ### Vue的响应式用Proxy和Object.defineProperty有什么区别？
 
 Object.defineProperty有如下缺陷：
@@ -912,6 +1050,41 @@ Vue3进一步优化到模板中区分静态节点和动态节点，只re-render�
 ### data为什么是个函数
 
 因为组件的data是一个对象，而对象是引用类型的，若不是函数，多个组件实例的data会指向同一个对象的堆，导致对象的内容互相影响。所以需要用函数使每个组件实例返回一个新的data。
+
+data之所以只一个函数，是因为一个组件可能会多处调用，而每一次调用就会执行data函数并返回新的数据对象，这样，可以避免多处调用之间的数据污染。
+
+参考：
+
+[熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
+
+
+### v-if和v-for为什么不能在同一个标签？
+
+在Vue2中，v-for优先级是高于v-if的，咱们来看例子
+
+``` html
+<div v-for=item in [1, 2, 3, 4, 5, 6, 7] v-if=item !== 3>
+    {{item}}
+</div>
+```
+
+上面的写法是v-for和v-if同时存在，会先把7个元素都遍历出来，然后再一个个判断是否为3，并把3给隐藏掉，这样的坏处就是，渲染了无用的3节点，增加无用的dom操作，建议使用computed来解决这个问题：
+
+```
+<div v-for=item in list>
+    {{item}}
+</div>
+
+computed() {
+    list() {
+        return [1, 2, 3, 4, 5, 6, 7].filter(item => item !== 3)
+    }
+  }
+```
+
+参考：
+
+[熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
 
 ## 编码
 
