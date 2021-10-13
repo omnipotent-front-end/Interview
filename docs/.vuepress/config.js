@@ -22,6 +22,7 @@ module.exports = {
           title: "编程语言",
           children: [
             "/language/css",
+            "/language/dart",
             "/language/html",
             "/language/javascript",
             "/language/node",

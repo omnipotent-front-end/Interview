@@ -44,3 +44,5 @@
 [今日头条面试官整理的面试文档](https://bytedance.feishu.cn/base/app8Ok6k9qafpMkgyRbfgxeEnet?table=tblLUxZFqOA2vI2F&view=vewUvN2mp7)
 
 [阿里笔试题：链式调用、对象比较以及对象是否存在循环引用](https://mp.weixin.qq.com/s/LFDTkhGoVKseq_JCLqlRfg)
+
+[面试分享：三年工作经验成功面试字节、阿里 P6 总结](https://mp.weixin.qq.com/s/6XZ3aiQJdfFBpcc7MhG3cw)

@@ -152,7 +152,32 @@ watch的deep属性设为true即可。
 
 一则语法糖，相当于 v-bind:value="xxx" 和 @input，意思是绑定了一个 value 属性的值，子组件可对value 属性监听，通过$emit('input', xxx)的方式给父组件通讯。自己实现model 方式的组件也是这样的思路。
 
+自定义事件也可以用于创建支持 v-model 的自定义输入组件。记住：
 
+``` html
+
+<input v-model="searchText">
+```
+
+等价于：
+
+``` html
+<input
+  v-bind:value="searchText"
+  v-on:input="searchText = $event.target.value"
+>
+```
+
+当用在组件上时，v-model 则会这样：
+
+``` html
+<custom-input
+  v-bind:value="searchText"
+  v-on:input="searchText = $event"
+></custom-input>
+```
+
+[具体源码实现](https://github.com/FunnyLiu/vue/blob/readsource/src/platforms/web/compiler/directives/model.js#L127)
 
 
 ### vue2组件通信方式
@@ -270,10 +295,9 @@ $route 是“路由信息对象”，包括 path，params，hash，query，fullP
 
 - vue中透传参数，需要一个个在模板中传递，或者$attrs全部透传；而React则可以通过扩展运算符来解决
 
-- vue中动态组件需要提前在使用的组件内注册，而React则可以通过动态import直接引入，提高加载性能
 
 
-### 怎么让弹框了再加载相应代码
+### 如何实现vue组件的异步加载
 
 下面PublicForm的引入方式会单独构建成一个js文件，模板中通过v-if来动态载入。PickPublicModal会和当前组件打包在一起。
 
@@ -527,7 +551,7 @@ patch实现在此：[笔记内容](https://github.com/FunnyLiu/million/blob/read
 
 判断key不一致才diff，如果tag不同则直接替换。
 
-如果rag相同，就挨个排查prop。
+如果tag相同，就挨个排查prop。
 
 对于children则递归再patch来diff
 

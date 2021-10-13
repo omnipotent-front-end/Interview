@@ -1557,6 +1557,28 @@ Promise 是一个构造函数，接收一个函数作为参数，返回一个 Pr
 
 [Promise 对象 - ECMAScript 6入门](https://es6.ruanyifeng.com/#docs/promise)
 
+### 对Promise的then和catch的理解？
+
+1、then catch可以随意组合链式调用（因为catch也是经过then实现，其实就是then的第二个参数传入rejected时要执行的函数，而then最后会返回当前promise实例）
+
+``` js
+  // catch就是then的语法糖
+  catch(callback) {
+    return this.then(null, callback);
+  }
+```
+
+2、then中没有异常，则后面的catch不会执行；
+
+3、catch自己有异常，后面的then不会执行；catch后面再接catch可以捕获到前一个catch自己的异常
+
+
+参考：
+
+[Promise 对象 - ECMAScript 6入门](https://es6.ruanyifeng.com/#docs/promise)
+
+
+
 ### js 异步编程方法和各种的优缺点
 
 发展历程：
@@ -6119,4 +6141,15 @@ function add(a ,b){
 }
 
 add(a ,b); //结果为：1243575099254740990
+```
+
+
+### 版本号排序
+
+利用字符串比较
+
+``` js
+var arr=['0.1.1', '2.3.3', '0.302.1', '4.2', '4.3.5', '4.3.4.5'];
+arr.sort((a,b)=>a>b?-1:1);
+console.log(arr); // ['4.3.5','4.3.4.5','2.3.3','0.302.1','0.1.1']
 ```
