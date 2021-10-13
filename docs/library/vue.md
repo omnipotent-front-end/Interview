@@ -99,6 +99,25 @@ Vue 一共有 8 个生命阶段，分别是创建前、创建后、加载前、�
 nextTick函数的逻辑，就是将传入的回调函数 cb 压入 callbacks 数组，最后一次性地根据 useMacroTask 条件执行 macroTimerFunc 或者是 microTimerFunc，**useMacroTask条件的判断依据就是传入的回调函数中是否有操作state的行为，如果有就认为ture**。
 
 
+具体的业务场景：
+
+> 交互是弹框编辑一个很大的字符串。因内容大，弹框弹出慢，为给用户反馈，先遮罩层loading，然后弹框，弹出后，再遮罩层loading
+> 如果没有nexttick的话，遮罩层loading的过程就看不到了,或者是一闪而过
+
+```js
+{
+  showEditModal: function() {
+    this.$Spin.show();
+    setTimeout(() => {
+      this.modal.edit = true;
+      this.$nextTick(() => {
+        this.$Spin.hide();
+      });
+    }, 20);
+  }
+}
+```
+
 具体源码位于[笔记内容](https://github.com/FunnyLiu/vue/blob/readsource/src/core/util/next-tick.js#L78)
 
 [参考](https://ustbhuangyi.github.io/vue-analysis/reactive/next-tick.html#vue-%E7%9A%84%E5%AE%9E%E7%8E%B0)
@@ -119,6 +138,11 @@ watch 侦听器 : 更多的是「观察」的作用,**无缓存性**,类似于�
 当我们需要进行数值计算,并且**依赖于其它数据**时,应该使用 computed,因为可以利用 computed 的缓存特性,**避免每次获取值时,都要重新计算**。
 
 当我们需要**在数据变化时执行异步或开销较大的操作时,应该使用 watch**,使用  watch  选项允许我们执行异步操作 ( 访问一个 API ),限制我们执行该操作的频率,并在我们得到最终结果前,设置中间状态。这些都是计算属性无法做到的。
+
+具体业务场景：
+
+* computed：接口路径由很多参数拼接起来。组件中使用vuex的state可以会用到。
+* watch: 监听详情页id，调用详情接口。
 
 参考：
 
@@ -202,6 +226,8 @@ watch的deep属性设为true即可。
 直接得到组件实例，可以实现父子组件、兄弟组件、跨级组件等数据通信
 
 
+$children场景：类似select相关组件，option是通过slot传入的，select组件中通过$children获取option列表然后通过当前value更新选中状态。[示例代码](https://github.com/iview/iview/blob/v2.14.3/src/components/select/select.vue#L91)
+
 #### 跨级组件通信
 
 - $attrs
@@ -216,9 +242,14 @@ watch的deep属性设为true即可。
 
 上面讲了$attrs是为了跨组件传递数据，那如果想通过孙子组件来给父组件传递数据呢？之前的做法也是一层一层的向上传递，比如用$emit方法，但是子组件如果用不到，只是想改变父组件的数据，这时候我们就可以使用$listeners。
 
+
+业务场景：表单弹框组件，相当于将组件包了一层，使用$attrs传参数，$listeners抛事件，减少不必要代码。
+
 - provide和inject
 
 允许一个祖先组件向其所有子孙后代注入一个依赖，不论组件嵌套的层次有多深，并在起上下游关系成立的时间里始终有效。一言以蔽之：祖先组件中通过provider来提供变量，然后在子孙组件中通过inject来注入变量。
+
+业务场景：锚点组件provide提供数据，子孙组件通过inject接受，如传递父组件实例，点击时调用该组件的方法。因为子链接组件嵌套逻辑复杂 [示例代码](https://github.com/iview/iview/blob/v3.5.1/src/components/anchor/anchor.vue#L18)
 
 - 通过中央事件总线（Event Bus）
 
@@ -793,6 +824,8 @@ vue源码中观察数据的方法有[defineReactive](https://github.com/FunnyLiu
 * [$attrs](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L43)
 * [$listeners](https://github.com/FunnyLiu/vue/blob/readsource/src/core/instance/render.js#L46)
 * [set](https://github.com/FunnyLiu/vue/blob/readsource/src/core/observer/index.js#L222) 给响应式对象加新的响应式property
+
+* vuex的实例的`state`即`$store.state`也是响应式的，改了之后dom会更新的
 
 [参考](https://github.com/theydy/notebook/issues/39)
 
