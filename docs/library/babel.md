@@ -162,6 +162,12 @@ module.exports = function testPlugin(babel) {
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20210819143508.png"/>
 
+### useBuiltIns 参数说明：
+
+* false: 不对 polyfills 做任何操作
+* entry: 根据 target 中浏览器版本的支持，将 polyfills 拆分引入，仅引入有浏览器不支持的 polyfill
+* usage(新)：检测代码中 ES6/7/8 等的使用情况，仅仅加载代码中用到的 polyfills
+
 
 ## 原理
 

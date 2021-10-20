@@ -1138,9 +1138,14 @@ computed() {
     }
   }
 ```
+使用computed我们将会获得如下好处：
+* 过滤后的列表只会在 users 数组发生相关变化时才被重新运算，过滤更高效。
+* 使用 v-for="user in activeUsers" 之后，我们在渲染的时候只遍历活跃用户，渲染更高效。
+* 解耦渲染层的逻辑，可维护性 (对逻辑的更改和扩展) 更强。
 
 参考：
 
+[避免 v-if 和 v-for 用在一起](https://cn.vuejs.org/v2/style-guide/#%E9%81%BF%E5%85%8D-v-if-%E5%92%8C-v-for-%E7%94%A8%E5%9C%A8%E4%B8%80%E8%B5%B7%E5%BF%85%E8%A6%81)
 [熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
 
 ## 编码
