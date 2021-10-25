@@ -1230,6 +1230,10 @@ function Component() {
 
 ### useCallback用过没？使用场景是？
 
+useMemo和useCallback都会在组件第一次渲染的时候执行，之后会在其依赖的变量发生改变时再次执行；并且这两个hooks都返回缓存的值，useMemo返回缓存的变量，useCallback返回缓存的函数。
+
+`useCallback(fn, deps)`相当于`useMemo(() => fn, deps)`
+
 #### 1、普通情况下不需要使用
 
 比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Simple.jsx#L1)
@@ -1259,6 +1263,8 @@ export default Simple;
 这种情况下用了反而性能更低
 
 #### 2、解决引用问题
+
+解决useEffect的依赖项为引用类型时，即使内容没用改变但是依旧触发update的问题。
 
 比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Effect.jsx#L1)
 
@@ -1367,7 +1373,11 @@ export default Effect;
 
 #### 3、配合React.memo优化不必要的渲染
 
+所有依赖本地状态或props来创建函数，需要使用到缓存函数的地方，都是useCallback的应用场景。
+
+
 比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Memo.jsx#L1)
+
 
 ``` js
 import React, { useCallback, useState, useEffect } from "react";
