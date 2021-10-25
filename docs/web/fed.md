@@ -646,6 +646,13 @@ new Date().getTime() - performance.timing.navigationStart
 
 [7000字前端性能优化总结 | 干货建议收藏](https://mp.weixin.qq.com/s/OWYiVt0GeD01tFLN_8Z9YA)
 
+### 首屏性能优化
+
+* 做cdn 升级http2.0
+* 开启http缓存
+* 减少资源体积：开启gzip压缩（Nginx或webpack打包均可做）；Chrome的coverage分析代码，剔除首屏不需要的代码，可使用splitChunksPlugin打成一个个包
+* 优化渲染路径，将js放在body后。做ssr服务端渲染
+* 图片懒加载
 
 ### 无限滚动列表
 
@@ -3500,7 +3507,7 @@ Web Worker我们可以当做计算器来用，需要用的时候掏出来摁一�
 ## 本地存储
 
 
-### localStoarge和sessionStorage有什么区别？
+### localStoarge、sessionStorage、CacheStorage有什么区别？
 
 HTML5的WebStorage提供了两种API：localStorage（本地存储）和sessionStorage（会话存储）。
 
@@ -3519,6 +3526,9 @@ HTML5的WebStorage提供了两种API：localStorage（本地存储）和sessionS
 
 6、应用场景：localStoragese：常用于长期登录（+判断用户是否已登录），适合长期保存在本地的数据。sessionStorage：敏感账号一次性登录；
 
+CacheStorage 接口表示 Cache 对象的存储。它提供了一个 ServiceWorker 、其它类型worker或者 window 范围内可以访问到的所有命名cache的主目录（它并不是一定要和service workers一起使用，即使它是在service workers规范中定义的），并维护一份字符串名称到相应 Cache 对象的映射。
+
+[cachestorage参考](https://developer.mozilla.org/zh-CN/docs/Web/API/CacheStorage)
 
 ### localstorage怎么实现跨域通信？
 
@@ -3569,4 +3579,11 @@ IndexedDB 操作时不会锁死浏览器，用户依然可以进行其他操作�
 
 [浏览器数据库 IndexedDB 入门教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2018/07/indexeddb.html)
 
+### CacheStorage
 
+### 前端缓存有哪些
+
+[localstoarge、sessionstorage、CacheStorage](/web/fed.html#localStoarge、sessionStorage、CacheStorage有什么区别？)
+[from memory cache 和 from disk cache](cp/browser.html#请求时浏览器缓存-from-memory-cache-和-from-disk-cache-的区别是什么？)
+[dns缓存](/cp/network.html#简单说下dns解析的过程)
+[http缓存](/cp/browser.html#谈一谈浏览器的缓存机制)

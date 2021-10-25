@@ -304,7 +304,7 @@ mixins 应该是我们最常使用的扩展组件的方式了。如果多个组�
 
 (3)组件内的导航钩子主要有这三种:beforeRouteEnter、beforeRouteUpdate、beforeRouteLeave。它们是直接在路由组件内部直接进行定义的。
 
-### $route和$router的区别？
+### \$route和$router的区别？
 
 $route 是“路由信息对象”，包括 path，params，hash，query，fullPath，matched，name 等路由信息参数。而 $router 是“路由实例”对象包括了路由的跳转方法，钩子函数等。
 
@@ -405,6 +405,11 @@ props: {
   }
 ```
 
+### vue.config上的配置有哪些，作用是什么
+
+常用`productionTip`设置为 false 以阻止 vue 在启动时生成生产提示。
+
+[参考](https://cn.vuejs.org/v2/api/#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE)
 
 
 ## 原理
@@ -1138,9 +1143,14 @@ computed() {
     }
   }
 ```
+使用computed我们将会获得如下好处：
+* 过滤后的列表只会在 users 数组发生相关变化时才被重新运算，过滤更高效。
+* 使用 v-for="user in activeUsers" 之后，我们在渲染的时候只遍历活跃用户，渲染更高效。
+* 解耦渲染层的逻辑，可维护性 (对逻辑的更改和扩展) 更强。
 
 参考：
 
+[避免 v-if 和 v-for 用在一起](https://cn.vuejs.org/v2/style-guide/#%E9%81%BF%E5%85%8D-v-if-%E5%92%8C-v-for-%E7%94%A8%E5%9C%A8%E4%B8%80%E8%B5%B7%E5%BF%85%E8%A6%81)
 [熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
 
 ## 编码

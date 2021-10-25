@@ -771,7 +771,7 @@ Math.floor() === 向下取整，函数返回一个小于或等于给定数字的
 
 所有的prototype都是对象，自然它的__proto__指向的是Object()的prototype
 
-所有的构造函数的隐式原型指向的都是Function()的显示原型
+所有的构造函数的隐式原型指向的都是Function()的显式原型
 
 `Object.prototype.__proto__` 为 `null`
 
