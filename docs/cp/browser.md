@@ -672,6 +672,7 @@ HTTP参考：[https的握手过程是什么样子的？](/cp/network.html#https%
 
 <img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20200603112123.png"/>
 
+requestIdleCallback利用的是帧的空闲时间，所以就有可能出现浏览器一直处于繁忙状态，导致回调一直无法执行。
 
 参考：
 

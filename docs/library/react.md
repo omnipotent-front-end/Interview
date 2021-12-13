@@ -1742,6 +1742,148 @@ react-dom 顾名思义就是一种针对 dom 的平台实现，主要用于在 w
 
 [为什么react和react-dom要分成两个包？ - 知乎](https://www.zhihu.com/question/336664883)
 
+### React整体的工作流程和架构是什么样？
+
+React16架构可以分为三层：
+
+Scheduler（调度器）—— 核心职责只有 1 个, 就是执行回调
+
+把react-reconciler提供的回调函数, 包装到一个任务对象中.
+
+在内部维护一个任务队列, 优先级高的排在最前面.
+
+循环消费任务队列, 直到队列清空.
+
+Reconciler（协调器）—— 负责找出变化的组件，16版本主要是Fiber，15版本是stack。区别在于增加了优先级系统，通过遍历的方式实现可中断的递归，将fiber树的构造过程包装在一个回调函数中, 并将此回调函数传入到scheduler包等待调度.
+
+Renderer（渲染器）—— 负责将变化的组件渲染到页面上，能够将react-reconciler包构造出来的fiber树表现出来, 生成 dom 节点(浏览器中), 生成字符串(ssr)，比如说react-dom、react-native
+
+三者关系：
+
+![img](https://raw.githubusercontent.com/brizer/graph-bed/master/img/20211109094218.png)
+
+参考：
+
+[FunnyLiu/react-1 at readsource](https://github.com/FunnyLiu/react-1/tree/readsource#react%E6%9E%B6%E6%9E%84%E6%80%8E%E4%B9%88%E5%88%92%E5%88%86)
+
+
+### JSX/ReactElement/Fiber/Dom之间的关系是什么？
+
+JSX是一种描述当前组件内容的数据结构，他不包含组件schedule、reconcile、render所需的相关信息。
+
+所有采用jsx语法书写的节点, 都会被编译器转换, 最终会以React.createElement(...)的方式, 创建出来一个与之对应的ReactElement对象。
+
+fiber对象是通过ReactElement对象进行创建的, 多个fiber对象构成了一棵fiber树, fiber树是构造DOM树的数据模型, fiber树的任何改动, 最后都体现到DOM树。
+
+DOM将文档解析为一个由节点和对象（包含属性和方法的对象）组成的结构集合, 也就是常说的DOM树. JavaScript可以访问和操作存储在 DOM 中的内容, 也就是操作DOM对象, 进而触发 UI 渲染.
+
+参考：
+
+[FunnyLiu/react-1 at readsource](https://github.com/FunnyLiu/react-1/tree/readsource#fiberreactelementdom%E4%B8%89%E8%80%85%E5%85%B3%E7%B3%BB)
+
+
+### React15的StackReconciler和React16的FiberReconciler有什么区别？
+
+Fiber Reconciler是从Stack Reconciler重构而来，通过遍历的方式实现可中断的递归。
+
+
+[FunnyLiu/react-1 at readsource](https://github.com/FunnyLiu/react-1/tree/readsource#react15%E5%92%8C16%E7%9A%84reconciler%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB)
+
+[React技术揭秘](https://react.iamkasong.com/preparation/newConstructure.html#react16%E6%9E%B6%E6%9E%84)
+
+
+### Reconciler主要是做什么的？
+
+
+此处先归纳一下react-reconciler包的主要作用, 将主要功能分为 4 个方面:
+
+输入: 暴露api函数(如: scheduleUpdateOnFiber), 供给其他包(如react包)调用.
+
+注册调度任务: 与调度中心(scheduler包)交互, 注册调度任务task, 等待任务回调.
+
+执行任务回调: 在内存中构造出fiber树, 同时与与渲染器(react-dom)交互, 在内存中创建出与fiber对应的DOM节点.
+
+输出: 与渲染器(react-dom)交互, 渲染DOM节点.
+
+
+![](https://raw.githubusercontent.com/brizer/graph-bed/master/img/20211109094806.png)
+
+图中的1,2,3,4步骤可以反映react-reconciler包从输入到输出的运作流程,这是一个固定流程, 每一次更新都会运行.
+
+
+### Fiber是什么？数据结构是怎么样？
+
+在React15及以前，Reconciler采用递归的方式创建虚拟DOM，递归过程是不能中断的。如果组件树的层级很深，递归会占用线程很多时间，造成卡顿。
+
+为了解决这个问题，React16将递归的无法中断的更新重构为异步的可中断更新，由于曾经用于递归的虚拟DOM数据结构已经无法满足需要。于是，全新的Fiber架构应运而生。
+
+Fiber包含三层含义：
+
+作为架构来说，之前React15的Reconciler采用递归的方式执行，数据保存在递归调用栈中，所以被称为stack Reconciler。React16的Reconciler基于Fiber节点实现，被称为Fiber Reconciler。
+
+作为静态的数据结构来说，每个Fiber节点对应一个React element，保存了该组件的类型（函数组件/类组件/原生组件...）、对应的DOM节点等信息。
+
+作为动态的工作单元来说，每个Fiber节点保存了本次更新中该组件改变的状态、要执行的工作（需要被删除/被插入页面中/被更新...）。
+
+数据结构如下：
+
+``` js
+function FiberNode(
+  tag: WorkTag,
+  pendingProps: mixed,
+  key: null | string,
+  mode: TypeOfMode,
+) {
+  // 作为静态数据结构的属性
+  this.tag = tag;
+  this.key = key;
+  this.elementType = null;
+  this.type = null;
+  this.stateNode = null;
+
+  // 用于连接其他Fiber节点形成Fiber树
+  // 指向父级Fiber节点
+  this.return = null;
+  // 指向子Fiber节点
+  this.child = null;
+  // 指向右边第一个兄弟Fiber节点
+  this.sibling = null;
+  this.index = 0;
+
+  this.ref = null;
+
+  // 作为动态的工作单元的属性
+  this.pendingProps = pendingProps;
+  this.memoizedProps = null;
+  this.updateQueue = null;
+  this.memoizedState = null;
+  this.dependencies = null;
+
+  this.mode = mode;
+
+  this.effectTag = NoEffect;
+  this.nextEffect = null;
+
+  this.firstEffect = null;
+  this.lastEffect = null;
+
+  // 调度优先级相关
+  this.lanes = NoLanes;
+  this.childLanes = NoLanes;
+
+  // 指向该fiber在另一次更新时对应的fiber
+  this.alternate = null;
+}
+
+```
+
+### Fiber是怎么工作的？
+
+在React中最多会同时存在两棵Fiber树。当前屏幕上显示内容对应的Fiber树称为current Fiber树，正在内存中构建的Fiber树称为workInProgress Fiber树。
+
+每次状态更新都会产生新的workInProgress Fiber树，通过current与workInProgress的替换，完成DOM更新。
+
+
 
 ### React diff原理
 
@@ -1752,6 +1894,17 @@ tree diff  web UI中dom节点跨层级的移动操作特别少，可以忽略不
 component diff 拥有相同类的两个组件将会生成相似的树形结构，拥有不同类的两个组件会生成不同的树形结构
 
 element diff 对于同一层级的一组子节点，他们可以通过唯一的id进行区分何为受控组件
+
+
+### React组件什么时候会重复渲染？
+
+当内部data发生改变，state发生改变(通过调用this.setState()) 以及父组件传过来的props发生改变时，会导致组件重新渲染。
+
+### React如何避免重复渲染？
+
+react生命周期中有这样一个钩子，叫shouldComponentUpdate函数，是重渲染时render()函数调用前被调用的函数，两个参数 nextProps和nextState ，分别表示下一个props和state的值。当函数返回false时，阻止接下来的render()函数的调用，阻止组件重渲染，返回true时，组件照常渲染。 前后不改变state的值的setState和无数据交换的父组件的重渲染都会导致组件的重渲染，但我们可以通过shouldComponentUpdate来阻止这两种情况，shouldComponentUpdate并不是完美的，只能阻止扁平的对象，这时候可以考虑​​Immutable.js​​(Immutable.js 的基本原则是对于不变的对象返回相同的引用，而对于变化的对象，返回新的引用)或者​​PureRenderMixin​​ 插件。
+
+
 
 
 ### react如何将O(n3)的算法降低到O(n)级别的？
@@ -1892,6 +2045,7 @@ React在渲染时做做如下步骤：
 代码实现如下：
 
 ``` js
+// 通过闭包来完成对数据的存储，方便在函数中去有状态的使用
 let state = [];
 let setters = [];
 let firstRun = true;

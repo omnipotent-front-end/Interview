@@ -201,6 +201,17 @@ autocomplete 属性规定输入字段是否应该启用自动完成功能。默�
 
 autocomplete 属性适用于` <form>`，以及下面的 `<input>` 类型:text, search, url, telephone, email, password, datepickers, range 以及 color。
 
+### 如何处理浏览器中表单项的密码自动填充问题？
+
+表单中当input是password类型时，打开浏览器会自动填充浏览器存储的密码，在input中加入autocomplete="new-password"即可解决。之所以new-password能够解决off失效的原因是autocomplete属性的有效值只有on和off，默认值是on，如果autocomplete的属性是除on和off外的值，那么就是个无效值，那么浏览器就会放弃对该属性的执行。
+
+``` html
+<input type="password" name="password" placeholder="请输入密码" autocomplete="new-password"/>
+```
+
+
+
+
 
 ### disabled 和 readonly 的区别?
 

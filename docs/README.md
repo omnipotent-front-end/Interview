@@ -46,3 +46,6 @@
 [阿里笔试题：链式调用、对象比较以及对象是否存在循环引用](https://mp.weixin.qq.com/s/LFDTkhGoVKseq_JCLqlRfg)
 
 [面试分享：三年工作经验成功面试字节、阿里 P6 总结](https://mp.weixin.qq.com/s/6XZ3aiQJdfFBpcc7MhG3cw)
+
+[阿里巴巴专有钉钉前端面试指南](https://mp.weixin.qq.com/s/4eqA7IokLBGPmNcQqCnFUg)
+

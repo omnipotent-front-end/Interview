@@ -152,5 +152,26 @@ ts-node不是将typescript编译成js再执行，而是直接通过hack开启了
 
 
 
+### const和readonly的区别？
+
+const是一个编译期常量， readonly是一个运行时常量
+
+const只能声明基元类型，枚举类型，字符串类型。readonly则无限制
+
+const天生为静态数据，无需再添加static标识
+
+readonly是运行时变量，只能赋值一次。特例是可以定义时赋值一次，构造函数中再赋值一次
+
+### any、never、unknown和void区别？
+
+ ​​any​​ 顾名思义就是任意类型。 ​​never​​ 表示永不存在的值的类型。 ​​unknown​​ 表示未知类型，即写代码的时候还不清楚会得到怎样的数据类型，它能被赋值为任何类型，但不能被赋值给除了 any 和 unknown 之外的其他类型，同时，不允许执行 unknown 类型变量的方法（any 可以）。 ​​void​​ 表示无任何类型，正好与 any 相反，没有类型，如果是函数则应没有返回值或者返回 undefined
 
 
+
+
+### 如何让js工程支持ts？
+
+
+利用 Babel 的 @babel/plugin-transform-typescript 插件来实现。
+
+利用 ts-loader 结合官方 typescript 库来实现。

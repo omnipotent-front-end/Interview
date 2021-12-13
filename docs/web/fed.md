@@ -1095,6 +1095,20 @@ png、jpg等进行一定的有损或无损压缩。配合自动化工具。
 3、设置一些域名白名单或者黑名单，第三方SDK的报错一般不用关注。
 
 
+### 谈谈你对SourceMap的理解？
+
+Source Map。它是一个独立的map文件，与源码在同一个目录下。
+
+简单说，Source map就是一个信息文件，里面储存着位置信息。也就是说，转换后的代码的每一个位置，所对应的转换前的位置。
+
+有了它，出错的时候，除错工具将直接显示原始代码，而不是转换后的代码。
+
+
+
+参考：
+
+[JavaScript Source Map 详解 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2013/01/javascript_source_map.html)
+
 
 ### 能聊一聊Script error出现的原因么？
 

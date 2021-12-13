@@ -304,7 +304,7 @@ mixins 应该是我们最常使用的扩展组件的方式了。如果多个组�
 
 (3)组件内的导航钩子主要有这三种:beforeRouteEnter、beforeRouteUpdate、beforeRouteLeave。它们是直接在路由组件内部直接进行定义的。
 
-### \$route和$router的区别？
+### $route和$router的区别？
 
 $route 是“路由信息对象”，包括 path，params，hash，query，fullPath，matched，name 等路由信息参数。而 $router 是“路由实例”对象包括了路由的跳转方法，钩子函数等。
 
@@ -413,6 +413,22 @@ props: {
 
 
 ## 原理
+
+
+### 简单说明下vue2的全链路运行机制？
+
+
+初始化以及挂载init, mount
+
+在进行模板编译compile，将template编译为渲染函数render function
+
+执行render function生成Virtual DOM, render function => VNode tree
+
+再进行响应式依赖收集，render function => getter, setter => Watcher.update => patch。以及使用队列进行异步更新的策略。
+
+最后通过diff算法后进行patch更新视图
+
+
 
 ### Vue框架本身的生命周期是什么样子的？
 
@@ -1152,6 +1168,27 @@ computed() {
 
 [避免 v-if 和 v-for 用在一起](https://cn.vuejs.org/v2/style-guide/#%E9%81%BF%E5%85%8D-v-if-%E5%92%8C-v-for-%E7%94%A8%E5%9C%A8%E4%B8%80%E8%B5%B7%E5%BF%85%E8%A6%81)
 [熬夜总结50个Vue知识点，全都会你就是神！！！](https://mp.weixin.qq.com/s/h2H-36iVeoyXsorZChwxyQ)
+
+
+
+### vue2中的指令是如何解析的？
+
+指令本质上就是一个 JavaScript 对象，对象上挂着一些钩子函数，无论是官方提供的指令，还是自定义指令，一个指令从第一次被绑定到元素上到最终与被绑定的元素解绑，它会经过以下几种状态：
+
+bind：只调用一次，指令第一次绑定到元素时调用。在这里可以进行一次性的初始化设置。
+
+inserted：被绑定元素插入父节点时调用 (仅保证父节点存在，但不一定已被插入文档中)。
+
+update：所在组件的 VNode 更新时调用，但是可能发生在其子 VNode 更新之前。
+
+componentUpdated：指令所在组件的 VNode 及其子 VNode 全部更新后调用。
+
+unbind：只调用一次，指令与元素解绑时调用。
+
+了每个状态的钩子函数，这样我们就可以让指令在不同状态下做不同的事情。当虚拟DOM渲染更新的时候会触发create、update、destroy这三个钩子函数，从而就会执行updateDirectives函数来处理指令的相关逻辑，执行指令函数，让指令生效。
+
+
+
 
 ## 编码
 
