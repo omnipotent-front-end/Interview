@@ -114,6 +114,12 @@ mouseenter: 当指针设备( 通常指鼠标 )在元素上移动时
 
  服务器端可以使用 Set-Cookie 的响应头部来配置 cookie 信息。一条 cookie 包括了 5 个属性值 expires、domain、path、secure、HttpOnly。其中 expires 指定了 cookie 失 效的时间，domain 是域名、path 是路径，domain 和 path 一起限制了 cookie 能够被哪些 url 访问。secure 规定了 cookie 只能在确保安全的情况下传输（即https下传输），HttpOnly 规定了这个 cookie 只能被服务器访问，不能使用 js 脚本访问。在发生 xhr 的跨域请求的时候，即使是 同源下的 cookie，也不会被自动添加到请求头部，除非显示地规定。
 
+默认情况下，某个源只能在 当前域 或者 当前域的父级写入Cookie(同级与子级都不行)；
+
+比如, one.automannn.cn 可以 往 one.automannn.cn 和 automannn.cn 写入 Cookie记录;
+
+two.automannn.cn 可以 读取 到 two.automannn.cn 和 automannn.cn 的Cookie记录;
+
 ### Cookie的SameSite属性做什么的？
 
 SameSite Cookie 表示同站 cookie，避免 cookie 被第三方所利用。

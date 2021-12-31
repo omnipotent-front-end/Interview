@@ -342,6 +342,79 @@ export default{
 
 ---
 
+
+### immutable、immer这种对象不可变的库是做什么的？他怎么做的？
+
+用来改变深层次对象时降低性能损耗的。
+
+immutablejs创建的对象无法更改，通过结构共享，每次修改只会影响当前节点其他节点不会改变，通过这种方式产生新的immutablejs对象，避免性能损耗：
+
+``` js
+const { fromJS } = require('immutable')
+const data = {
+  content: {
+    time: '2018-02-01',
+    val: 'Hello World',
+  },
+  desc: {
+    text: 'a',
+  },
+}
+
+// 把 data 转化为 immutable-js 中的内置对象
+const a = fromJS(data)
+const b = a.setIn(['desc', 'text'], 'b')
+console.log(b.get('desc') === a.get('desc'))       // false
+// content 的值没有改动过，所以 a 和 b 的 content 还保持着引用
+console.log(b.get('content') === a.get('content')) // true
+
+// 将 immutable-js 的内置对象又转化为 JS 原生的内容
+const c = a.toJS()
+const d = b.toJS()
+
+// 这时我们发现所有的引用都断开了
+console.log(c.desc === d.desc)       // false
+console.log(c.content === d.content) // false
+
+```
+
+immer 的作者同时也是 mobx 的作者。mobx 又像是把 Vue 的一套东西融合进了 React，已经在社区取得了不错的反响。immer 则是他在 immutable 方面所做的另一个实践。
+与 immutable-js 最大的不同，immer 是使用原生数据结构的 API 而不是像 immutable-js 那样转化为内置对象之后使用内置的 API，举个简单例子：
+
+``` js
+const produce = require('immer')
+const state = {
+done: false,
+val: 'string',
+}
+// 所有具有副作用的操作，都可以放入 produce 函数的第二个参数内进行
+// 最终返回的结果并不影响原来的数据
+const newState = produce(state, (draft) => {
+draft.done = true
+})
+console.log(state.done)    // false
+console.log(newState.done) // true
+```
+
+参考：
+
+[immer.js:也许更适合你的immutable js库 - 掘金](https://juejin.cn/post/6844904111402385422)
+
+### immer的原理是什么？
+
+Immer 源码中，使用了一个 ES6 的新特性 Proxy 对象。Proxy 对象允许拦截某些操作并实现自定义行为。
+
+immer 的做法就是维护一份 state 在内部，劫持所有操作，内部来判断是否有变化从而最终决定如何返回。
+
+
+
+参考：
+
+[immer.js:也许更适合你的immutable js库 - 掘金](https://juejin.cn/post/6844904111402385422)
+
+
+
+
 ## 数据收集
 
 ### 前端数据埋点时，为什么使用1*1像素的透明gif图片而不是接口？
@@ -1056,6 +1129,21 @@ png、jpg等进行一定的有损或无损压缩。配合自动化工具。
 [有道技术团队收录](https://mp.weixin.qq.com/s/3Ep5pJULvP7WHJvVJNDV-g)
 
 
+## 体验优化
+
+### 业务上做过哪些优化用户体验的事情？
+
+直播活动，商品详情页访问量大，页面加骨骼屏，等待时间过长时loading引导客户先去其他活动转转，不让用户盲等。
+
+对于无论是H5还是小程序，埋点数据全部走离线上传，把埋点队列里的埋点请求全部放在缓存里，一个一个慢慢发送慢慢吐泡泡，既保证了不与主流程业务请求竞争，也不会因为用户设备退出应用闪退，而侦测不到数据，因为下次进入时只要缓存里有没吐完的泡泡（埋点请求队列）就继续发送。
+
+应用的业务http请求封装一层 熔断任务队列，增加重试机制，增加token自动刷新请求等等。
+
+应用页面适当的缓动动画，不仅可以为请求数据争取时间，还可以提高用户体验，不那么突兀。
+
+H5可使用龙骨动画、spine动画，小程序可以使用帧动画、css animation提高页面的动感，以及一定的互动营销效果。从实现和编码方面都比裸写DOM要好得多。
+
+
 
 ## 异常
 
@@ -1076,6 +1164,10 @@ png、jpg等进行一定的有损或无损压缩。配合自动化工具。
 4、用户user设置，`Sentry.setUser({ id: user.id })`，方便区分用户信息，用来复现。
 
 5、去除噪音
+
+6、对监控数据、配置告警阈值等方式，结合邮件、机器人等方式推送到相关的人员，来及时发现并解决问题。
+
+7、关联 BUG 管理系统、自动生成 BUG 单，将 BUG 单绑定到对应的版本分支上，通过提交对应的修复分支、进行测试验证后，自动地扭转 BUG 单状态。
 
 参考：
 
@@ -1596,6 +1688,10 @@ JavaScript 调用 Native 的方式，主要有两种：注入 API 和 拦截 URL
 注入 API 方式的主要原理是，通过 WebView 提供的接口，向 JavaScript 的 Context（window）中注入对象或者方法，让 JavaScript 调用时，直接执行相应的 Native 代码逻辑，达到 JavaScript 调用 Native 的目的。
 
 拦截 URL SCHEME 的主要流程是：Web 端通过某种方式（例如 iframe.src）发送 URL Scheme 请求，之后 Native 拦截到请求并根据 URL SCHEME（包括所带的参数）进行相关操作。
+
+Native调用js的方式：直接调用api执行js拼接的字符串。
+
+
 
 
 参考：
@@ -3601,3 +3697,38 @@ IndexedDB 操作时不会锁死浏览器，用户依然可以进行其他操作�
 [from memory cache 和 from disk cache](cp/browser.html#请求时浏览器缓存-from-memory-cache-和-from-disk-cache-的区别是什么？)
 [dns缓存](/cp/network.html#简单说下dns解析的过程)
 [http缓存](/cp/browser.html#谈一谈浏览器的缓存机制)
+
+
+
+
+## 国际化
+
+
+### 怎么做国际化？
+
+国际化分为静态和动态，静态就是前端文案，动态是后端返回的。
+
+一、通过i18等插件，在项目代码中定义语言环境，通过通用的语言翻译函数，提供的功能就是静态和动态文案的翻译。主要思路就是通过构建工具去完成样式, 图片替换, class属性等的替换工作，在业务代码中不会出现过多的因国际化而多出的变量名，同时使用一个通用的翻译函数去完成静态文案及动态文案的翻译工作，而不用使用不同框架提供的相应的国际化插件。
+
+二、在项目中不使用插件，而是封装一套通用的翻译函数，在后台服务那边定义语言环境，通过API服务调用不同的主题和语言环境，返回不同的字段和页面内容。（项目代码中无中文，全是用翻译函数包裹后的变量）
+
+也可以使用web翻译平台，产出语言包。比如weblate这种。
+
+
+
+## 低代码
+
+### 一般的低代码平台需要具备哪些能力？
+
+
+阿里的imgCook、云凤蝶、京东的通天塔、满帮的码良、徐小夕的H5 Doring等等，无一例外，至少都满足一下几种能力：
+
+1、面向业务的软件设计模式，低代码主要是给运营用的，通过模块or组件的使用，给运营人员提供物料，搭建他们自己想要的营销活动页面。
+
+2、能够提供可复用业务组件的知识库，组件之间可以相互联合，组成新的业务组件，而不是单一独立的基础组件，可复用性、可拓展性非常高。
+
+3、能够方便实现与第三方系统整合的流程整合能力与数据整合能力等，能够以SDK，或者npm包的形式嵌入到其他应用，或者其他应用嵌入进来，支持数据之间的整合。
+
+4、能够支持多种部署模式，不受平台本身的限制
+
+5、支持高度可配置化，以满足不同环境、不同规模、不同业务场景的特定要求

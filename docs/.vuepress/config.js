@@ -42,6 +42,7 @@ module.exports = {
             "/library/nginx.md",
             "/library/pm2.md",
             "/library/react.md",
+            "/library/react_native.md",
             "/library/redux.md",
             "/library/rollup.md",
             "/library/taro.md",

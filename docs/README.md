@@ -49,3 +49,5 @@
 
 [阿里巴巴专有钉钉前端面试指南](https://mp.weixin.qq.com/s/4eqA7IokLBGPmNcQqCnFUg)
 
+[腾讯QQ音乐前端面经（已offer）](https://mp.weixin.qq.com/s/zhIP85s5ubg2yCJ76t3hHg)
+
