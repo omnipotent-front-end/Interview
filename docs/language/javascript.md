@@ -3974,40 +3974,6 @@ console.log(instanceOf(b,C))
 [面试造火箭，看下这些大厂原题 - 掘金](https://juejin.im/post/6859121743869509646)
 
 
-
-### 如何实现 curry？
-
-```js
-function curry(fn) {
-  var args = [...arguments].slice(1);
-  return function() {
-    var finalArgs = args.concat(...arguments);
-    return fn.apply(null, finalArgs);
-  };
-}
-
-//使用方法如下：
-function add(num1, num2) {
-  return num1 + num2;
-}
-var curriedAdd = curry(add, 5);
-document.write(curriedAdd(3) + "<br>"); //8
-var curriedAddB = curry(add, 5, 10);
-document.write(curriedAddB() + "<br>"); //15
-//可以看到参数灵活多变
-```
-
-```js
-const curry = (fn, arr = []) =>
-  fn.length === arr.length
-    ? fn(...arr)
-    : (...args) => curry(fn, [...arr, ...args]);
-```
-
-### js 的 api 中哪些用了 curry？
-
-函数的 bind 方法，数组的 reduce 方法。
-
 ### 如何实现深拷贝？
 
 首先明白深拷贝和浅拷贝的区别。**浅克隆之所以被称为浅克隆，是因为对象只会被克隆最外部的一层,至于更深层的对象,则依然是通过引用指向同一块堆内存**.
@@ -6272,3 +6238,151 @@ var arr=['0.1.1', '2.3.3', '0.302.1', '4.2', '4.3.5', '4.3.4.5'];
 arr.sort((a,b)=>a>b?-1:1);
 console.log(arr); // ['4.3.5','4.3.4.5','2.3.3','0.302.1','0.1.1']
 ```
+
+
+## 函数式编程
+
+### 什么是纯函数？
+
+相同输入相同输出，不依赖外部状态，没有副作用的函数为存函数。
+
+副作用可能包含，但不限于:
+
+- 更改文件系统 
+
+- 往数据库插入记录 
+
+- 发送一个 http 请求 
+
+- 可变数据
+
+- 打印/log 
+
+- 获取用户输入 
+
+- DOM查询 
+
+- 访问系统状态
+
+### 有哪些增强函数、组合函数的方式？
+
+curry、compose、pipe
+
+### 介绍下curry
+
+
+curry的概念是**只传递给函数一部分参数来调用它，让它返回一个函数去处理剩下的参数**。实现方法和函数绑定一样，都是通过闭包来返回一个函数。两者的区别在于，当函数被调用时，返回的函数还需要设置一些传入的参数。
+
+正常情况下的一个函数复用：
+
+``` js
+function add(num1,num2){
+  return num1+num2; 
+}
+// 通过使用add来复用它
+function curriedAdd(num3){
+  return add(5,num3); 
+}
+document.write(add(2,3)+"<br>");//5 
+document.write(curriedAdd(3));//8
+```
+
+使用curry化来增强add：
+
+``` js
+//下面介绍创建函数柯里化的通用方法 
+function curry(fn, ...args) {
+  //fn.length是形参的个数
+  if (args.length >= fn.length) {
+    return fn(...args);
+  }
+
+  return function(...args2) {
+    return curry(fn, ...args, ...args2);
+  };
+}
+//使用方法如下:
+function add(num1,num2){
+  return num1+num2; 
+}
+var curriedAdd = curry(add); 
+console.log(curriedAdd(3,5));//8 
+var curriedAddB = curry(add,5); 
+console.log(curriedAddB(10));//15
+```
+
+### 介绍一下compose
+
+函数组合，选择几个函数，将其结合成一个新的函数，将外部数据从右往左依次通过各个函数的加工，生成结果。
+
+
+举个例子：
+
+``` js
+const step1 = (x: number) => (x ? 1 : 2);
+const step2 = (x: number) => (x === 1 ? 3 : 4);
+const step3 = (x: number) => (x === 3 ? 5 : 6);
+// 想要入参1，得到5，我们需要
+step3(step2((step(1))));
+
+```
+
+如果使用compose的话：
+
+``` js
+//从右往左依次通过各个函数的加工
+const getResult = compose(step3, step2, step1);
+const result = getResult(1);//5
+```
+
+compose的含义是：
+
+``` js
+var compose = function(f,g) { 
+  return function(x) {
+    return f(g(x)); 
+  };
+}
+```
+
+一个较为完善的实现是:
+
+``` js
+function compose(...args) {
+    return function (...args2) {
+        // 需要组合的函数列表
+        const [...argsCopy] = args;
+        // 递归函数
+        function funced(...func) {
+            //直到执行列表为空，返回最后的函数结果
+            if (argsCopy.length === 0)
+                return func[0];
+            //推出最后面一个函数并递归执行
+            func = argsCopy.pop()(...func);
+            return funced(func);
+        }
+        return funced(...args2);
+    };
+}
+```
+
+koa的中间件和redux的中间件都使用了compose的思路。参考：[koa-compose](https://github.com/FunnyLiu/compose/blob/readsource/index.js#L19)。
+
+
+### 介绍一下pipe
+
+
+
+和compose类似，只不过执行顺序是从左往右。
+
+函数组合，选择几个函数，将其结合成一个新的函数，将外部数据从右往左依次通过各个函数的加工，生成结果。
+
+实现可以借着compose来：
+
+``` js
+function pipe(...args) {
+    return compose(...args.reverse());
+}
+```
+
+
