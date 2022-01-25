@@ -230,3 +230,115 @@ Babel 对于 AST 的遍历是深度优先遍历，对于 AST 上的每一个分�
 
 [前端自习课](https://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458453197&idx=1&sn=17c87903f152a80f41e3677e7fba1ee4&chksm=b1c224e486b5adf253536520bcc2d7cd82467202bc1780317de2a2e852032ca3eccc7eb76b1e&mpshare=1&scene=24&srcid=0720K4h9Sl67l9p4CzgoR4Oh&key=8f90367f007f539f7fef938326296704385013ce6202228cbfc1f6e9161541b7048c69b5957964698ab24eed72c4465c00be828c67c5c604424779835accf1913dd7648d1a560179c1c84382446d36cb&ascene=0&uin=MjUwMTIyNjY4Mg%3D%3D&devicetype=iMac+MacBookPro13%2C2+OSX+OSX+10.14.1+build(18B75)&version=12020810&nettype=WIFI&lang=zh_CN&fontScale=100&pass_ticket=%2BIVC5t4o%2BRVpON9JZy94ucxj88jHSEU%2B8JAiDOM7A9hrFYk9FGuI6V2vfm79kroG)
 
+
+
+
+## 各插件工作原理
+
+### 模板字符串怎么转？
+
+参考[@babel/plugin-transform-template-literals · Babel](https://babeljs.io/docs/en/babel-plugin-transform-template-literals)。
+
+通过String.prototype.concat来拼接字符串。
+
+### 扩展运算符怎么转？
+
+数组参考[@babel/plugin-transform-spread · Babel](https://babeljs.io/docs/en/babel-plugin-transform-spread)
+
+通过Array.prototype.concat来拼接数组。
+
+对象参考[@babel/plugin-proposal-object-rest-spread · Babel](https://babeljs.io/docs/en/babel-plugin-proposal-object-rest-spread)
+
+利用Object.assign来模拟。
+
+
+
+
+### 剩余参数怎么转？
+
+参考[@babel/plugin-transform-parameters · Babel](https://babeljs.io/docs/en/babel-plugin-transform-parameters)
+
+通过arguments来。
+
+### for-of怎么转？
+
+参考[@babel/plugin-transform-for-of · Babel](https://babeljs.io/docs/en/babel-plugin-transform-for-of)
+
+通过[Symbol.iterator]和其next方法来实现。不了解可迭代可以看看[如何让一个对象变得可迭代，可迭代的本质是什么？](/language/javascript.html#%E5%A6%82%E4%BD%95%E8%AE%A9%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%B1%A1%E5%8F%98%E5%BE%97%E5%8F%AF%E8%BF%AD%E4%BB%A3%EF%BC%8C%E5%8F%AF%E8%BF%AD%E4%BB%A3%E7%9A%84%E6%9C%AC%E8%B4%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F)
+
+### 解构怎么转？
+
+参考[@babel/plugin-transform-destructuring · Babel](https://babeljs.io/docs/en/babel-plugin-transform-destructuring)
+
+针对对象就是直接a.b.c，针对数组则是通过Array.prototype.slice来模拟。
+
+
+### 块级作用域怎么转？
+
+参考[@babel/plugin-transform-block-scoping · Babel](https://babeljs.io/docs/en/babel-plugin-transform-block-scoping)
+
+将{}内的变量通过_a来命名，从而和外部的区分开来。
+
+``` js
+{
+  let a = 3;
+}
+
+let a = 3;
+
+function bbb() {
+  
+  let c ='1';
+}
+
+let c = '2';
+
+if(true){
+  let d = 1;
+}
+var d = 2;
+
+```
+
+变为：
+
+``` js
+"use strict";
+
+{
+  var _a = 3;
+}
+var a = 3;
+
+function bbb() {
+  var c = '1';
+}
+
+var c = '2';
+
+if (true) {
+  var _d = 1;
+}
+
+var d = 2;
+```
+
+### 箭头函数怎么转？
+
+参考[@babel/plugin-transform-arrow-functions · Babel](https://babeljs.io/docs/en/babel-plugin-transform-arrow-functions)
+
+转为普通函数，this使用上一层作用域的this。
+
+### async怎么转？
+
+参考[@babel/plugin-transform-async-to-generator · Babel](https://babeljs.io/docs/en/babel-plugin-transform-async-to-generator)
+
+转成generator
+
+### 私有属性怎么转？
+
+参考[@babel/plugin-proposal-private-property-in-object · Babel](https://babeljs.io/docs/en/babel-plugin-proposal-private-property-in-object)
+
+通过weakmap来存储私有属性，mock `#`操作符。
+
+

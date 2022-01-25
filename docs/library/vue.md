@@ -1187,6 +1187,63 @@ unbind：只调用一次，指令与元素解绑时调用。
 
 了每个状态的钩子函数，这样我们就可以让指令在不同状态下做不同的事情。当虚拟DOM渲染更新的时候会触发create、update、destroy这三个钩子函数，从而就会执行updateDirectives函数来处理指令的相关逻辑，执行指令函数，让指令生效。
 
+### vue-router初始化时做了什么？
+
+
+插件注册的时候的核心逻辑：给vue组件增加$router和$route，并全局注册RouterView和RouterLink组件。
+
+``` js
+// mixin
+  Vue.mixin({
+    beforeCreate () {
+      // $options.router存在则表示是根组件
+      if (isDef(this.$options.router)) {
+        this._routerRoot = this
+        this._router = this.$options.router
+        this._router.init(this)
+        Vue.util.defineReactive(this, '_route', this._router.history.current)
+      } else {
+        // 不是根组件则从父组件中获取
+        this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
+      }
+      registerInstance(this, this)
+    },
+    destroyed () {
+      registerInstance(this)
+    }
+  })
+  //$route 是“路由信息对象”，包括 path，params，hash，query，fullPath，matched，name 等路由信息参数。
+  // 而 $router 是“路由实例”对象包括了路由的跳转方法，钩子函数等。
+  Object.defineProperty(Vue.prototype, '$router', {
+    get () { return this._routerRoot._router }
+  })
+
+  Object.defineProperty(Vue.prototype, '$route', {
+    get () { return this._routerRoot._route }
+  })
+  // 注册组件
+  Vue.component('RouterView', View)
+  Vue.component('RouterLink', Link)
+```
+
+
+
+### router-view组件做了什么？
+
+router-view组件的作用是根据路由的变化渲染出路由所对应的组件。
+
+
+``` js
+// 根据路由的变化渲染出路由所对应的组件
+return h(component, data, children)
+```
+
+### 路由跳转的方法实现？
+
+以push为例，分为两种情况，hash情况下就是通过`window.location.hash = path`来实现，history情况下就是通过`history.pushState({ key: setStateKey(genStateKey()) }, '', url)` 来实现。
+
+
+
 
 
 

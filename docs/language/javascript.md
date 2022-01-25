@@ -1501,6 +1501,8 @@ WeakMap 中，每个键对自己所引用对象的引用都是弱引用，在没
 
 和 DOM 进行关联，某些库会维护一个自定义对象，来关联 DOM 元素，并且其映射关系会存储在内部对象缓存中。如果一个 DOM 元素已经不复存在于网页中，库就需要清除对该 DOM 的引用，避免内存泄漏。使用 WeakMap 来追踪 DOM 元素，当 DOM 并不存在了，WeakMap 将被自动销毁。
 
+还有一种场景就是管理class的私有属性。参考[在-javascript-中如何实现对象的私有属性](/language/javascript.html#%E5%9C%A8-javascript-%E4%B8%AD%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%A7%81%E6%9C%89%E5%B1%9E%E6%80%A7)
+
 ### requestAnimationFrame 了解吗？有使用过吗？说一下使用场景。
 
 requestAnimationFrame 是浏览器用于定时循环操作的一个接口，类似于 setTimeout，主要用途是按帧对网页进行重绘。
@@ -2392,6 +2394,69 @@ class Person {
   }
 }
 ```
+
+
+
+4、WeakMap
+
+
+上面提到的#操作符，在babel中是通过weakmap来实现，可以参考[私有属性怎么转？](/library/babel.html#%E7%A7%81%E6%9C%89%E5%B1%9E%E6%80%A7%E6%80%8E%E4%B9%88%E8%BD%AC%EF%BC%9F)
+
+
+
+``` js
+class Foo {
+  constructor() {
+    _bar.set(this, {
+      writable: true,
+      value: "bar",
+    });
+  }
+
+  test() {
+    return _bar.has(this);
+  }
+}
+
+var _bar = new WeakMap();
+```
+
+最大的缺陷则是兼容性带来的内存膨胀问题，在不支持 WeakMap 的浏览器中是无法实现 WeakMap 的弱引用特性，因此实例无法被垃圾回收。 比如示例代码中 privateProp 是一个很大的数据项，无弱引用的情况下，实例无法回收，从而造成内存泄露。
+
+
+5、Symbol
+
+``` js
+
+const size = Symbol('size');
+class Collection {
+  constructor() {
+    this[size] = 0;
+  }
+
+  add(item) {
+    this[this[size]] = item;
+    this[size]++;
+  }
+
+  static sizeOf(instance) {
+    return instance[size];
+  }
+}
+
+```
+
+缺点是
+
+写法上稍显别扭，必须为每一个私有成员都创建一个闭包变量让内部方法可以访问。
+
+
+外部还是可以通过 Object.getOwnPropertySymbols的方式获取实例的 symbol 属性名称
+
+
+
+
+
 
 
 
