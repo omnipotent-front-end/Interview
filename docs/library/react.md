@@ -2233,7 +2233,7 @@ commit阶段是一气呵成的，如下流程：
 然后再看看Hooks的原理。
 
 内容选自[一篇染陌同学的译文](https://github.com/answershuto/Blog/blob/master/blogs/(%E8%AF%91)Reacthooks%EF%BC%9A%E5%AE%83%E4%B8%8D%E6%98%AF%E4%B8%80%E7%A7%8D%E9%AD%94%E6%B3%95%EF%BC%8C%E5%8F%AA%E6%98%AF%E4%B8%80%E4%B8%AA%E6%95%B0%E7%BB%84%E2%80%94%E2%80%94%E4%BD%BF%E7%94%A8%E5%9B%BE%E8%A1%A8%E6%8F%AD%E7%A7%98%E6%8F%90%E6%A1%88%E8%A7%84%E5%88%99.MarkDown)
-**Hooks的状态管理都是依赖数组的**。
+**Hooks的状态管理都是依赖数组的**。但是在React的实现中是**以单链表的数据结构**来完成的。
 以一个简单的使用`useState()`的组件为例：
 ``` js
 function RenderFunctionComponent() {
@@ -2375,6 +2375,23 @@ function RenderFunctionComponent() {
 现在 firstName 与 lastName 这两个变量全部被设置为“Rudi”，与我们实际的存储状态不符。
 
 这个例子的用法显然是不正确的，但是它让我们知道了为什么我们必须使用 React 团队规定的规则去使用 Hooks。
+
+
+
+### hooks为什么用单链表存储而不是数组？
+
+首先说明下，react的hook是单链表的结构，而fre的hook则是数组结构。数组结构和单链表结构可以实现hook。
+
+但是我们在选择数据结构的时候需要考虑场景，hook的场景需要的是顺序访问，不需要随机访问；链表面对插入的场景，复杂度更低；数组会存在爆栈的隐患，而链表不会。
+
+根据132的介绍，hook用数组更好，effectlist和fiber用链表更好，因为hook不需要插入、也不会出现量大到爆栈的情况，而react团队当年是能不用数组就不用数组的政治正确。
+
+### hook为什么不能在条件判断中使用？
+
+hook无论用数组还是链表，都无法解决这个问题，因为hook只初始化一次，但需要执行多次。if-else会干扰初始化的顺序。
+
+而vue3的就没有这个问题，因为vue3不需要反复执行，所以顺序不会发生变化。
+
 
 
 ### React在批量处理事件时，是否需要开发者手动进行事件代理？为什么？
