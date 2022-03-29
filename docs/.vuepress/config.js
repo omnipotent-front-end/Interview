@@ -64,6 +64,7 @@ module.exports = {
         {
           title: "实践",
           children: [
+            "/practice/english.md",
             "/practice/project.md",
             "/practice/git.md",
             "/practice/iq.md",

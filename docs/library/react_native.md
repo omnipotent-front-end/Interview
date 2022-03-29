@@ -32,6 +32,10 @@ react-native 运行了一个带js引擎的线程，线程负责js和原生的通
 
 新架构采用JavaScript Interface (JSI)。
 
+JSI 移除了原生代码和JavaScript代码之间的桥接（bridge），同时也省去了两端相互调用时大量的JSON序列化和反序列化操作。JSI为原生和JS交互打开了新的大门。
+
+不同于之前直接将 JavaScript 代码输入给 JSC，JSI屏蔽 JavaScript 引擎的差异，允许换用不同的 JavaScript 引擎，同时JSI 所在的 C++层也可以作为复用 Native 代码的一种方式。
+
 参考：
 
 [React Native 原理与实践 - 知乎](https://zhuanlan.zhihu.com/p/343519887)

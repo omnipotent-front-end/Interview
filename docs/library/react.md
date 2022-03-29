@@ -1282,7 +1282,7 @@ export default Simple;
 
 #### 2、解决引用问题
 
-解决useEffect的依赖项为引用类型时，即使内容没用改变但是依旧触发update的问题。
+解决useEffect的依赖项为引用类型时，即使内容没有改变但是依旧触发update的问题。
 
 比如以下[笔记内容](https://github.com/FunnyLiu/reactDemo/blob/master/useCallback/components/Effect.jsx#L1)
 
@@ -1972,6 +1972,20 @@ function FiberNode(
 
 ### React16的的render阶段做了什么事情？
 
+
+**先整体介绍**：
+
+React 16 之前的渲染流程： jsx 编译出的 render function 执行后产生 vdom，递归渲染 vdom，也就是增删改 dom，实现 render 和 patch
+
+React 16 之后的渲染流程： jsx 编译出的 render function 执行后产生 vdom，通过空闲调度来慢慢的把 vdom 转成 fiber，vdom 转 fiber 的过程叫做 reconcile，最后都转完了就一次性渲染 fiber，也就是 commit，这样实现的 render 和 patch。之所以多了一层 vdom 转 fiber，是为了避免递归 patch 的时候需要做对比，而是通过可打断的方式来逐步计算如何修改 dom （是增、是删还是改）记录到 fiber 上，最后直接根据 fiber 直接增删改 dom
+
+
+
+
+再详细描述：
+
+
+
 render阶段，根据组件返回的JSX在内存中依次创建Fiber节点并连接在一起构建Fiber树。
 
 “递”阶段
@@ -2038,8 +2052,7 @@ beginWork的工作是传入当前Fiber节点，创建子Fiber节点。[源码在
 
 completeWork属于“归”阶段调用的函数，每次调用appendAllChildren时都会将已生成的子孙DOM节点插入当前生成的DOM节点下。那么当“归”到rootFiber时，我们已经有一个构建好的离屏DOM树。
 
-
-<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20211104160616.png"/>
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20211104160616.png"/>
 
 
 

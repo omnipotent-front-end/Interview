@@ -1,7 +1,9 @@
 # Axios
 
 
-## axios能够用于浏览器端和node端吗？这是什么设计模式？
+## 应用
+
+### axios能够用于浏览器端和node端吗？这是什么设计模式？
 
 可以的，是基于适配器模式，能使接口不兼容的对象能够相互合作。参考[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/adapter/index)。
 
@@ -13,6 +15,121 @@
 
 
 
+### axios怎么取消请求
+
+axios 如何取消一个请求提供了两种使用模式：
+
+第一种 调用CancelToken的静态方法source
+
+```
+const CancelToken = axios.CancelToken;
+const source = CancelToken.source();
+axios.post('/user/12345', {
+  name: 'new name'
+}, {
+  cancelToken: source.token
+})
+source.cancel('Operation canceled by the user.');
+
+```
+第二种 自己实例化:
+
+```
+let cancel;
+axios.get('/user/12345', {
+  cancelToken: new CancelToken(function executor(c) {
+    cancel = c;
+  })
+});
+cancel();
+```
+
+OK，可以看到使用非常简单，两种使用方式道理是一样的，分两步：
+
+获取cancelToken实例，注入请求的配置参数
+
+需要取消的时候，调用 提供的cancel方法.
+
+参考：
+
+[axios的cancelToken取消机制原理 - SegmentFault 思否](https://segmentfault.com/a/1190000039028389)
+
+### 页面切换后，需要将当前页面中的接口都取消，应该怎么做？
+
+在vuex中维护一个请求队列
+
+``` js
+export default {
+    state: {
+        cancelTokenArr:[] // 存储cancel token
+    },
+    mutations: {
+        addCancelToken({cancelTokenArr},data){
+            cancelTokenArr.push(data)
+        },
+        clearCancelToken(state){
+            state.cancelTokenArr.map(item => {
+                item.cancel(`${item.url}---路由切换取消请求`)
+            })
+            state.cancelTokenArr = []
+        }
+    }
+}
+
+```
+
+请求发出前，利用拦截器将取消的cancel函数与当次url利用addCancelToken存储到内存(vuex)中
+
+``` js
+import axios from 'axios'
+import store from '../store'
+
+// 请求拦截器
+axios.interceptors.request.use(config => {
+   // 请求发出时，添加到cancelTokenArr中
+   config.cancelToken = new axios.CancelToken(e => {
+       store.commit('addCancelToken', {
+           cancel: e,
+           url: location.host + config.url
+       })
+    })
+  })
+  return config
+}, error => {
+  Message.error('未知错误')
+  return Promise.reject(error)
+}）
+
+```
+
+请求发出后，利用响应拦截器处理取消请求
+
+``` js
+axios.interceptors.response.use(response => {...},error => {
+  // 这里判断异常情况，如果axios.isCancel 为 true时，说明请求被取消
+  if (axios.isCancel(error)) {
+    // 请求取消
+    console.warn(error)
+    console.table([error.message.split('---')[0]], 'cancel')
+  } else {...}
+}
+```
+
+利用router.beforeEach切换路由时取消当前pending中的请求
+
+``` js
+// 切换路由时取消正在pending的请求
+router.beforeEach((to, from, next) => {
+   store.commit('clearCancelToken')
+   next()   
+}
+
+```
+
+
+参考:
+
+[Axios利用拦截器取消页面切换pending中的请求_一只路过的小码农-CSDN博客](https://blog.csdn.net/Vue2018/article/details/105124922)
 
 
 ## 原理
@@ -90,3 +207,12 @@ while (chain.length) {
 ### 在nodejs端如何实现的
 
 主要是通过http模板实现的
+
+
+### cancelToken的原理是什么？
+
+最底层还是基于XmlHttpRequest实例的abort方法，如果是fetch的话则是AboutController。
+
+参考：
+
+[axios的cancelToken取消机制原理 - SegmentFault 思否](https://segmentfault.com/a/1190000039028389)

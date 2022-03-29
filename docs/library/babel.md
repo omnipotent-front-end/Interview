@@ -342,3 +342,68 @@ var d = 2;
 通过weakmap来存储私有属性，mock `#`操作符。
 
 
+### class和extends怎么转？
+
+先了解怎么实现继承：[简单实现继承](/language/javascript.html#%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0%E7%BB%A7%E6%89%BF)
+
+参考[@babel/plugin-transform-classes · Babel](https://babeljs.io/docs/en/babel-plugin-transform-classes)。
+
+class是通过构造函数和prototype来完成：
+
+``` js
+class Test {
+  constructor(name) {
+    this.name = name;
+  }
+
+  logger() {
+    console.log("Hello", this.name);
+  }
+}
+// 转为：
+
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+var Test = (function() {
+  function Test(name) {
+    _classCallCheck(this, Test);
+
+    this.name = name;
+  }
+
+  Test.prototype.logger = function logger() {
+    console.log("Hello", this.name);
+  };
+
+  return Test;
+})();
+```
+
+
+针对继承是通过封装一个方法，基本如下：
+
+``` js
+function extend(A, B) {
+  function f() {}
+  f.prototype = B.prototype;
+  A.prototype = new f();
+  A.prototype.constructor = A;
+}
+
+// 或者看看复杂版:
+
+function _inherits(subClass, superClass) {
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: { value: subClass, writable: true, configurable: true },
+  });
+  Object.defineProperty(subClass, "prototype", { writable: false });
+  if (superClass) _setPrototypeOf(subClass, superClass);
+}
+
+
+```
+
