@@ -2,6 +2,98 @@
 
 ## 应用
 
+### 怎么做到真正的跨三端？
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20220104173642.png"/>
+
+
+让我们自顶向下的来看看。首先我们的项目需要同时具备在app内和浏览器内使用的能力，这样才是真正的跨了三端。
+
+我们需要做到基于react做平行扩展，这样未来小程序内无论是webview嵌h5的方式还是小程序原生的方式，都存在可以想象和优化的空间。
+
+```
+那么问题来了，如何做到h5和app内通用呢？
+```
+
+这里我们需要分析两个容器的异同点：
+
+#### 原生能力
+
+App内的react native是通过nativeModule来通信；而hybird、h5、小程序等均是其他的实现，比如说jsbridge、后端接口、小程序API等等。
+
+针对这个点，我们通过适配器模式来解决。
+
+我们通过一个简单的模块来保存引用：
+
+``` js
+
+let bridge = null;
+
+export const setBridge = bge => {
+  bridge = bge;
+};
+
+export {bridge};
+```
+
+然后在不同的入口文件（h5、app入口文件区分开来），塞入不同的bridge即可：
+
+``` js
+// react native 入口
+const {YktNativeModule} = NativeModules;
+bridge.init({bridge: YktNativeModule});
+setBridge(bridge);
+
+// h5入口
+bridge.init({yktlog: window.YktTracker});
+setBridge(bridge);
+```
+
+
+#### UI跨端
+
+我们书写的react-native组件，比如说View、Text等，需要通过react-native-web来变成react-dom可以识别的节点：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20220105193144.png"/>
+
+它的原理就是把react-native这个库所有暴露的api，都实现了一遍，然后配合webpack的alias，在打包的时候别名替换一下即可。
+
+
+```  js
+  resolve: {
+    alias: {
+      'react-native': 'react-native-web',
+    },
+  },
+```
+
+
+### 如何进行拆包？
+
+答案就是拆包：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20220105104340.png"/>
+
+
+左上角的图片是整体的思路，可以看到左边是之前的现状，就是每个rn业务模块，都依赖了一些公共的代码，比如说react、react-native，我们想把这些公共的代码抽出来，不让每个业务包都含有大量重复代码，影响app的尺寸，同时客户端也可以预加载公共包的逻辑，从而降低白屏时间。
+
+```
+metro是Facebook出品的react native专用打包工具
+```
+
+整个流程分为3步。
+
+第一步是找到公共包依赖了哪些js文件。这里我们通过metro的api，在公共包打包的createModuleFactory的阶段，拿到每个参与打包的js模块路径，然后通过md5文件路径的方式生成唯一的id。
+
+第二步是把依赖列表保持到文件里，具体内容可以看右上角的图片，主要是文件路径和对应的模块id。
+
+第三步是在业务包打包的时候，通过metro的api，在processModuleFilter阶段，基于第二步生成的文件，将这些模块排除在打包过程之外，从而得到纯粹的业务包内容。
+
+这样即使日后公共包内容变多了，也可以自动计算出依赖列表，并通过唯一id去重。
+
+一起看看拆包对bundle尺寸大小的降低：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20220105191611.png"/>
 
 
 ## 原理
@@ -39,3 +131,16 @@ JSI 移除了原生代码和JavaScript代码之间的桥接（bridge），同时
 参考：
 
 [React Native 原理与实践 - 知乎](https://zhuanlan.zhihu.com/p/343519887)
+
+
+
+### Hermes引擎相比javascriptCore的优势
+
+关于hermes做了哪些优化，以及生产环境使用后效果提升如何，可以参考头条这篇文章[ReactNative在游戏营销场景中的实践和探索-Hermes引擎 - 掘金](https://juejin.cn/post/7000632245824258079)
+
+这里我们只看两点，一个是hermes可以直接运行字节码；一个是大大降低的内存占用和启动时间。
+
+可以看到启用了hermes和提供字节码后，TTI（可交互时间降低了一半左右）：
+
+<img src="https://raw.githubusercontent.com/brizer/graph-bed/master/img/20220105102841.png"/>
+
