@@ -269,7 +269,43 @@ npm unlink的本质就是 npm uninstall，没有单独文件，直接指向unins
 
 所有缓存的模块保存在require.cache之中。
 
+举个例子：
+
+``` js
+//index.js
+var a = require('./a')
+var b= require('./b')
+
+// a.js
+module.exports.a = '原始值-a模块内变量'
+console.log('a模块执行')
+var c = require('./c')
+
+// b.js
+module.exports.b = '原始值-b模块内变量'
+console.log('b模块执行')
+var c = require('./c')
+
+// c.js
+module.exports.c = '原始值-c模块内变量'
+console.log('c模块执行')
+```
+结果为：
+
+```
+a模块执行
+c模块执行
+b模块执行
+```
+
+可以看到，c模块只被执行了一次，当第二次引用c模块时，发现已经有缓存，则直接读取，而不会再去执行一次。
+
+
+参考：
+
 [有没有办法取消 node.js 对 require 模块的缓存？ - CNode技术社区](https://cnodejs.org/topic/52aa6e78a9526bff2232aaa9)
+
+[抖音二面：为什么模块循环依赖不会死循环？CommonJS和ES Module的处理有什么不同？](https://mp.weixin.qq.com/s/dklhkoF2qdkDYCojJAEcRw)
 
 ### require文件时，希望文件内容变化后，下一次不需要重启应用就生效。
 

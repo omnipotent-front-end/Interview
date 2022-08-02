@@ -192,7 +192,15 @@ ps / pidstat等传统linux命令，配合node内建的process.memoryUsage返回�
 简单的话用apachebench，系统性的可以考虑jmeter，用goreplay来回放线上流量。
 
 
-### 设计一个node应用远程调试方案（todo）
+### 设计一个node应用远程调试方案
+
+使用SIGUSR1通知现有的Node进程，启用和访问V8调试器。（Node API文档）
+
+使用docker killcommand，该命令实际上并没有杀死在Docker容器中运行的PID 1进程，而是向其发送Unix信号（默认情况下，它会发送SIGKILL）
+
+参考：
+
+[新知识点！一文告诉你如何调试运行在Docker容器中的远程Node.js应用程序 - 灰信网（软件开发博客聚合）](https://www.freesion.com/article/6889512430/)
 
 ### k8s了解吗？基于k8s，设计一个node serverless方案（todo）
 

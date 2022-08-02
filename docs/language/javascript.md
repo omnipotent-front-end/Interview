@@ -3229,6 +3229,136 @@ main执行
 前面的问题已经提到了esm是编译时解析，所以效率会更快。再者就是可以精确动态的定位依赖关系，所以可以treeshaking。
 
 
+### Commonjs如何处理循环依赖的
+
+``` js
+//index.js
+var a = require('./a')
+console.log('入口模块引用a模块：',a)
+
+// a.js
+exports.a = '原始值-a模块内变量'
+var b = require('./b')
+console.log('a模块引用b模块：',b)
+exports.a = '修改值-a模块内变量'
+
+// b.js
+exports.b ='原始值-b模块内变量'
+var a = require('./a')
+console.log('b模块引用a模块',a)
+exports.b = '修改值-b模块内变量'
+```
+
+输出结果为：
+
+```
+b模块引用a模块 {a: '原始值-a模块内变量'}
+a模块引用b模块 {b: '修改值-b模块内变量'}
+入口模块引用a模块 {a: '修改值-a模块内变量'}
+```
+
+这种AB模块间的互相引用，本应是个死循环，但是实际并没有，因为CommonJS做了特殊处理——模块缓存。
+
+依旧使用断点调试，可以看到变量require上有一个属性cache，这就是模块缓存。
+
+一行行来看执行过程，
+
+【入口模块】开始执行，把入口模块加入缓存，var a = require('./a') 执行 将a模块加入缓存，进入a模块，
+
+【a模块】exports.a = '原始值-a模块内变量'执行，a模块的缓存中给变量a初始化，为原始值，执行var b = require('./b')，将b模块加入缓存，进入b模块
+
+【b模块】exports.b ='原始值-b模块内变量'，b模块的缓存中给变量b初始化，为原始值，var a = require('./a')，尝试导入a模块，发现已有a模块的缓存，所以不会进入执行，而是直接取a模块的缓存，此时打印{ a: '原始值-a模块内变量' },exports.b = '修改值-b模块内变量 执行，将b模块的缓存中变量b替换成修改值，
+
+【a模块】console.log('a模块引用b模块：',b) 执行，取缓存中的值，打印{ b: '修改值-b模块内变量' }exports.a = '修改值-a模块内变量' 执行，将a模块缓存中的变量a替换成修改值，
+
+【入口模块】console.log('入口模块引用a模块：',a) 执行，取缓存中的值，打印{ a: '修改值-a模块内变量' }
+
+上面就是对循环引用的处理过程，循环引用无非是要解决两个问题，怎么避免死循环以及输出的值是什么。**CommonJS通过模块缓存来解决：每一个模块都先加入缓存再执行，每次遇到require都先检查缓存，这样就不会出现死循环；借助缓存，输出的值也很简单就能找到了**。
+
+
+参考：
+
+[抖音二面：为什么模块循环依赖不会死循环？CommonJS和ES Module的处理有什么不同？](https://mp.weixin.qq.com/s/dklhkoF2qdkDYCojJAEcRw)
+
+
+### esmodule怎么处理循环依赖的
+
+还是上面的例子：
+
+``` js
+
+// index.mjs
+import * as a from './a.mjs'
+console.log('入口模块引用a模块：',a)
+
+// a.mjs
+let a = "原始值-a模块内变量"
+export { a }
+import * as b from "./b.mjs"
+console.log("a模块引用b模块：", b)
+a = "修改值-a模块内变量"
+
+// b.mjs
+let b = "原始值-b模块内变量"
+export { b }
+import * as a from "./a.mjs"
+console.log("b模块引用a模块：", a)
+b = "修改值-b模块内变量"
+```
+
+输出结果为：
+
+```
+b模块引用a模块： {a: <uninitialized>}
+a模块引用b模块： {b: '修改值-b模块内变量'}
+入口模块引用a模块: {a: '修改值-a模块内变量'}
+```
+
+分析，import自带提升效果：
+
+``` js
+// index.mjs
+import * as a from './a.mjs'
+console.log('入口模块引用a模块：',a)
+
+// a.mjs
+import * as b from "./b.mjs"
+let a = "原始值-a模块内变量"
+export { a }
+console.log("a模块引用b模块：", b)
+a = "修改值-a模块内变量"
+
+// b.mjs
+import * as a from "./a.mjs"
+let b = "原始值-b模块内变量"
+export { b }
+console.log("b模块引用a模块：", a)
+b = "修改值-b模块内变量"
+```
+
+【入口模块】首先进入入口模块，在模块地图中把入口模块的模块记录标记为“获取中”（Fetching），表示已经进入，但没执行完毕，
+import * as a from './a.mjs' 执行，进入a模块，此时模块地图中a的模块记录标记为“获取中”
+
+【a模块】import * as b from './b.mjs' 执行，进入b模块，此时模块地图中b的模块记录标记为“获取中”，
+
+【b模块】import * as a from './a.mjs' 执行，检查模块地图，模块a已经是Fetching态，不再进去，
+let b = '原始值-b模块内变量' 模块记录中，存储b的内存块初始化，
+console.log('b模块引用a模块：', a) 根据模块记录到指向的内存中取值，是{ a:}
+b = '修改值-b模块内变量' 模块记录中，存储b的内存块值修改
+
+【a模块】let a = '原始值-a模块内变量' 模块记录中，存储a的内存块初始化，
+console.log('a模块引用b模块：', b) 根据模块记录到指向的内存中取值，是{ b: '修改值-b模块内变量' }
+a = '修改值-a模块内变量' 模块记录中，存储a的内存块值修改
+
+【入口模块】console.log('入口模块引用a模块：',a) 根据模块记录，到指向的内存中取值，是{ a: '修改值-a模块内变量' }
+
+**ES Module来处理循环使用一张模块间的依赖地图来解决死循环问题，标记进入过的模块为“获取中”，所以循环引用时不会再次进入；使用模块记录，标注要去哪块内存中取值，将导入导出做连接，解决了要输出什么值**。
+
+
+参考：
+
+[抖音二面：为什么模块循环依赖不会死循环？CommonJS和ES Module的处理有什么不同？](https://mp.weixin.qq.com/s/dklhkoF2qdkDYCojJAEcRw)
+
 ### 在同一段代码中，ES6是如何做到既要支持变量提升的特性，又要支持块级作用域的呢？
 
 以这段代码为例：
