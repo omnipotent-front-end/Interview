@@ -1756,6 +1756,83 @@ flutter思路：自绘引擎
 小程序思路：定制语法，定制浏览器
 
 
+### 大屏幕如何适配
+
+大屏幕适配需要从以下几个方面入手，第一个是宽高、第二个是字体大小、第三个是三方库的设置。
+
+1.针对宽高：
+
+从最外层到最内部的所有盒模型布局相关（margin/padding/width/height），全部用百分比来完成，部分无法撑开的高度可以用vh来完成。
+
+2.针对字体大小：
+
+需要使用rem，并封装对应的flexible，根据视觉稿来对应
+
+举个例子：
+
+``` js
+const baseSize = 16
+// 设置 rem 函数
+function setRem () {
+  const scale = document.documentElement.clientWidth / 1920
+  document.documentElement.style.fontSize = baseSize * Math.min(scale) + 'px'
+}
+// 初始化
+setRem()
+// 改变窗口大小时重新设置 rem
+window.onresize = function () {
+  setRem()
+}
+```
+
+同时封装css预处理器相关函数：
+
+``` scss
+@function pxTorem($px){//  默认16px
+  @return $px / 16 * 1rem;
+}
+```
+
+3.针对三方库
+
+有些三方库设置的时候是以像素为主的，故而在大屏视频中，需要手动计算，故而我们需要在resize时做一段逻辑，拿到一个charScale的缩放比例，这里以vue的mixin为例子：
+
+``` js
+import _ from 'lodash'
+
+export default {
+  data() {
+    return {
+      charScale: 0.5
+    }
+  },
+  mounted() {
+    this.__resizeHandler = _.debounce(() => {
+      const clientWidth = document.body.clientWidth
+      if (clientWidth) {
+        this.charScale = clientWidth / 1920
+      }
+    }, 100)
+    window.addEventListener('resize', this.__resizeHandler)
+    this.charScale = document.body.clientWidth ? document.body.clientWidth / 1920 : 1
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.__resizeHandler)
+  },
+  methods: {
+    // use $_ for mixins properties
+    // https://vuejs.org/v2/style-guide/index.html#Private-property-names-essential
+    $_sidebarResizeHandler(e) {
+      if (e.propertyName === 'width') {
+        this.__resizeHandler()
+      }
+    }
+  }
+}
+
+```
+
+
 ---
 
 ## 框架选型
@@ -2988,6 +3065,81 @@ const p = new Proxy(window,{});
 参考：
 
 [网易严选企业级微前端解决方案与落地实践 - 知乎](https://zhuanlan.zhihu.com/p/97226980)
+
+[将微前端做到极致-无界微前端方案 - 掘金](https://juejin.cn/post/7125646119727529992)
+
+### 目前几个微前端框架的优缺点说一下
+
+#### qiankun 方案
+
+qiankun 方案是基于 single-spa 的微前端方案。
+
+**特点**
+
+1.  html entry 的方式引入子应用，相比 js entry 极大的降低了应用改造的成本；
+2.  完备的沙箱方案，js 沙箱做了 SnapshotSandbox、LegacySandbox、ProxySandbox 三套渐进增强方案，css 沙箱做了 strictStyleIsolation、experimentalStyleIsolation 两套适用不同场景的方案；
+3.  做了静态资源预加载能力；
+
+**不足**
+
+1.  适配成本比较高，工程化、生命周期、静态资源路径、路由等都要做一系列的适配工作；
+2.  css 沙箱采用严格隔离会有各种问题，js 沙箱在某些场景下执行性能下降严重；
+3.  无法同时激活多个子应用，也不支持子应用保活；
+4.  无法支持 vite 等 esmodule 脚本运行；
+
+#### micro-app 方案
+
+micro-app 是基于 webcomponent + qiankun sandbox 的微前端方案。
+
+**特点**
+
+1.  使用 webcomponet 加载子应用相比 single-spa 这种注册监听方案更加优雅；
+2.  复用经过大量项目验证过 qiankun 的沙箱机制也使得框架更加可靠；
+3.  组件式的 api 更加符合使用习惯，支持子应用保活；
+4.  降低子应用改造的成本，提供静态资源预加载能力；
+
+**不足**
+
+1.  ~接入成本较 qiankun 有所降低，但是路由依然存在依赖；~（虚拟路由已解决）
+2.  ~多应用激活后无法保持各子应用的路由状态，刷新后全部丢失；~（虚拟路由已解决）
+3.  css 沙箱依然无法绝对的隔离，js 沙箱做全局变量查找缓存，性能有所优化；
+4.  支持 vite 运行，但必须使用 plugin 改造子应用，且 js 代码没办法做沙箱隔离；
+5.  对于不支持 webcompnent 的浏览器没有做降级处理；
+
+#### EMP 方案
+
+EMP 方案是基于 webpack 5 module federation 的微前端方案。
+
+**特点**
+
+1.  webpack 联邦编译可以保证所有子应用依赖解耦；
+2.  应用间去中心化的调用、共享模块；
+3.  模块远程 ts 支持；
+
+**不足**
+
+1.  对 webpack 强依赖，老旧项目不友好；
+2.  没有有效的 css 沙箱和 js 沙箱，需要靠用户自觉；
+3.  子应用保活、多应用激活无法实现；
+4.  主、子应用的路由可能发生冲突；
+
+
+#### 无界 方案
+
+基于web component 和 ifram的微前端方案
+
+**特点**
+
+1. 接入成本是最低的了
+
+**不足**
+
+1. 基于iframe，内存占用和通信带来额外问题
+2. 使用量少，问题暴露较少
+
+参考：
+
+[将微前端做到极致-无界微前端方案 - 掘金](https://juejin.cn/post/7125646119727529992)
 
 
 
