@@ -1246,6 +1246,79 @@ useEffect是异步调用，发生在浏览器把内容渲染到界面后。
 
 [useEffect和useLayoutEffect的区别 | 王鹏飞](https://pengfeixc.com/blog/605af93600f1525af762a725)
 
+### react组件什么情况下会重新re-render？
+
+有四个原因会导致组件 re-render：状态变化、父组件 re-render、Context 变化和 Hooks 变化
+
+参考：
+
+[关于 React Re-Render](https://mp.weixin.qq.com/s/BPFJSkvv_UPMux0dSZuh-A)
+
+
+### 如何排查react组件re-render？
+
+1）借助 React Devtools Chrome 插件，在「设置 > Profiler」里开启「Record why each component rendered while profiling」，再通过录制的方式排查，就能知道每个 re-render 的原因
+
+2）借助外部工具，比如 why-did-you-render 或 tilg。
+
+参考：
+
+[关于 React Re-Render](https://mp.weixin.qq.com/s/BPFJSkvv_UPMux0dSZuh-A)
+
+### 如何避免父组件 re-render 导致的 re-render？
+
+React.memo！使用 React.memo 后的组件只有 props 变更才会触发 re-render
+
+参考：
+
+[关于 React Re-Render](https://mp.weixin.qq.com/s/BPFJSkvv_UPMux0dSZuh-A)
+
+### 为什么React.memo不是默认行为？
+
+因为作为开发者，我们往往高估了重新渲染的成本。对于 props 很多且没有很多子组件的组件来说，相比 re-render，检查 props 是否变更带来的消耗可能更大。因此，如果对每个组件都进行 React.memo，可能会产生反效果。
+
+参考：
+
+[关于 React Re-Render](https://mp.weixin.qq.com/s/BPFJSkvv_UPMux0dSZuh-A)
+
+### 如何降低re-render的范围？
+
+在使用 React.memo() 之前，还可以考虑两个方法，让 re-render 保持在一个很小的范围之内。
+
+1）把状态往下移，把可变的部分拆到平行组件里，比如 `<Changed /><Expansive />`，确保更新只在 `<Changed />` 组件里；
+
+2）把内容往上提，把可变的部分拆到父级组件里，比如 `<Changed><Expansive /></Changed>`，在 `<Changed />` 变更时只要 props.children 不变化，就不会触发子组件的 re-render。用其他 props 属性可以吗？可以！比如 `<Changed left={<Expansive1 />} right={<Expansive2 />} />，<Changed />` re-render 并不会导致 `<Expansive />` re-render。这种方法叫「componets as props」。
+
+参考：
+
+[关于 React Re-Render](https://mp.weixin.qq.com/s/BPFJSkvv_UPMux0dSZuh-A)
+
+### 什么时候该用useCallback和useMemo？
+
+1）React.memo 过的组件的 props 应该用，因为他们只有 props 变更时才会 re-render，所以反之非 React.memo 过的组件的 props 无需使用，因为都会 re-render，用了也白用，
+
+2）useEffect、useMemo、useCallback 中非原始值的依赖应该用
+
+3）给 Pure Component 的非原始值 props 应该用，
+
+4）重消耗（比如生成渲染树）的部分应该用，反之轻消耗不要用，因为 useMemo/useCallback 本身也有消耗。
+
+
+参考：
+
+[关于 React Re-Render](https://mp.weixin.qq.com/s/BPFJSkvv_UPMux0dSZuh-A)
+
+
+### 如何规避函数参数每次生成一个新的匿名函数？
+
+使用 useCallback 要小心 dep 更新导致返回的函数更新。举个例子，我们遇到 `onClick={() => setCount(count+1)}` 时，由于考虑每次生成一个新的匿名函数，可能会把他改成 `useCallback(() => setCount(count+1), [count])`，此时 count 更新会导致 useCallback 返回新的匿名函数，解法是用 Functional Update，用 `useCallback(() => setCount(prevCount => prevCount + 1), [])`。
+
+参考：
+
+[关于 React Re-Render](https://mp.weixin.qq.com/s/BPFJSkvv_UPMux0dSZuh-A)
+
+
+
 ### useCallback用过没？使用场景是？
 
 useMemo和useCallback都会在组件第一次渲染的时候执行，之后会在其依赖的变量发生改变时再次执行；并且这两个hooks都返回缓存的值，useMemo返回缓存的变量，useCallback返回缓存的函数。
