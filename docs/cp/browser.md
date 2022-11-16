@@ -135,6 +135,27 @@ SameSite Cookie 表示同站 cookie，避免 cookie 被第三方所利用。
 [SameSite cookies - HTTP | MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Set-Cookie/SameSite)
 
 
+### Cookie怎么跨域？
+
+默认情况下，只能在 当前域 或者 当前域的父级写入Cookie(同级与子级都不行)；
+
+那么要跨域写cookie，服务端需要配置：
+
+``` yml
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: [特定域名] // 不可以是*
+```
+
+客户端需要：XMLHttpRequest发请求需要设置withCredentials=true，fetch 发请求需要设置 credentials = include：
+
+``` js
+const xhr = new XMLHttpRequest();
+xhr.open('get', '//localhost:3000/api/info')
+// 这里也需要加，不然浏览器会忽略 /api/info 种的cookie
+xhr.withCredentials = true;
+xhr.send();
+```
+
 ### 检测浏览器版本版本有哪些方式?
  
 检测浏览器版本一共有两种方式:

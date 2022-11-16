@@ -177,6 +177,10 @@ NaN、undefined、null 字面量
 
 (13)WebAssembly
 
+(14)媒介文件相关，比如File、Video、Audio、Blob、ArrayBuffer
+
+(15)几个observer，比如MutationObserver、IntersectionObserver、ResizeObserver等
+
 ### null 和 undefined 的区别?
 
 首先 Undefined 和 Null 都是基本数据类型，这两个基本数据类型分别都只有一个值， 就是 undefined 和 null。
@@ -1354,6 +1358,22 @@ Object.defineProperty(kxy, "sex", {
 ```
 
 [参考](https://www.cnblogs.com/kongxy/p/4618173.html)
+
+
+### Object有哪些静态方法？
+
+assign、create、defineProperty、defineProperties、freeze、entries、is、keys、values、setPropertyOf
+
+
+参考：
+
+[Object 的静态方法_小爱丨同学的博客-CSDN博客](https://blog.csdn.net/qq_44165263/article/details/121571088)
+
+
+### 静态方法和原型方法的区别？
+
+静态方法只有构造函数可以调用，原型方法是实例可以调用的方法。定义在构造函数.prototype上的方法。
+
 
 
 ### Object.defineProperty相比Proxy优缺点是？
