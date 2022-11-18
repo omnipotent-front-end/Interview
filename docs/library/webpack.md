@@ -41,6 +41,12 @@ contenthash
 
 loader的执行顺序是从后往前的，而plugin是作用于webpack整个生命周期，通过hook来决定执行顺序的，所以每一个都不一样。
 
+但是有一个情况需要注意，就是**在实际（从右到左）执行 loader 之前，会先 从左到右 调用 loader 上的 pitch 方法**。
+
+
+参考：
+
+[Loader Interface | webpack 中文文档 | webpack 中文文档 | webpack 中文网](https://www.webpackjs.com/api/loaders/#pitching-loader)
 
 ### 如何优化webpack构建速度？
 
